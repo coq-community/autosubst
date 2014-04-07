@@ -1,0 +1,7 @@
+-R theories Autosubst
+theories/Lib.v
+theories/Decidable.v
+theories/MMap.v
+theories/Size.v
+theories/Autosubst.v
+theories/Contexts.v
