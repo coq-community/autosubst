@@ -1,4 +1,4 @@
-Require Import Subst MMap.
+Require Import Autosubst MMap.
 Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
 
 Set Implicit Arguments.
@@ -21,25 +21,25 @@ Inductive term :=
 
 (* Substitution Lemmas *)
 
-Instance VarConstr_type : VarConstr type. gen_VarConstr. Defined.
-Instance Rename_type : Rename type. gen_Rename. Defined.
-Instance Subst_type : Subst type. gen_Subst. Defined.
+Instance VarConstr_type : VarConstr type. derive_VarConstr. Defined.
+Instance Rename_type : Rename type. derive_Rename. Defined.
+Instance Subst_type : Subst type. derive_Subst. Defined.
 
-Instance substLemmas_type : SubstLemmas type. gen_SubstLemmas. Qed.
+Instance substLemmas_type : SubstLemmas type. derive_SubstLemmas. Qed.
 
-Instance hsubst_term : HSubst type term. gen_HSubst. Defined.
+Instance hsubst_term : HSubst type term. derive_HSubst. Defined.
 
-Instance VarConstr_term : VarConstr term. gen_VarConstr. Defined.
-Instance Rename_term : Rename term. gen_Rename. Defined.
-Instance Subst_term : Subst term. gen_Subst. Defined.
+Instance VarConstr_term : VarConstr term. derive_VarConstr. Defined.
+Instance Rename_term : Rename term. derive_Rename. Defined.
+Instance Subst_term : Subst term. derive_Subst. Defined.
 
-Instance HSubstLemmas_term : HSubstLemmas type term _ _ _ _. gen_HSubstLemmas. Qed.
+Instance HSubstLemmas_term : HSubstLemmas type term _ _ _ _. derive_HSubstLemmas. Qed.
 
 Instance SubstHSubstComp_type_term : SubstHSubstComp type term _ _.
-gen_SubstHSubstComp.
+derive_SubstHSubstComp.
 Qed.
 
-Instance substLemmas_term : SubstLemmas term. gen_SubstLemmas. Qed.
+Instance substLemmas_term : SubstLemmas term. derive_SubstLemmas. Qed.
 
 (* Call-by value reduction *)
 
@@ -119,10 +119,10 @@ Proof.
   elim: A rho s xi => //=.
   - move=> A ih1 B ih2 rho v xi. split=> -[A' [s->h]]; do 2 eexists; try reflexivity;
       move=> t /ih1/h[u ev]/ih2 ih; by exists u.
-  - move=> A ih rho s xi; ssimpl.
-    split=> -[s' -> h]; eexists; ssimpl=> P B; move: {h} (h P B) => [v ev].
-    + move=> /ih {ih} ih. exists v => //. by ssimpl in ih.
-    + move=> h. exists v => //. apply/ih. by ssimpl.
+  - move=> A ih rho s xi; autosubst.
+    split=> -[s' -> h]; eexists; autosubst=> P B; move: {h} (h P B) => [v ev].
+    + move=> /ih {ih} ih. exists v => //. by autosubst in ih.
+    + move=> h. exists v => //. apply/ih. by autosubst.
 Qed.
 
 Lemma E_ren A rho s xi :
@@ -138,7 +138,7 @@ Proof.
   - move=> x rho v sigma /=. split; intuition eauto.
   - move=> A ih1 B ih2 rho v sigma /=. split=> -[A' [s->h]]; (do 2 eexists) => //;
       move=> t /ih1/h[u ev]/ih2 ih; by exists u.
-  - move=> A ih rho v sigma. split; ssimpl; move=> [s->{v}h]; eexists=> [//|P B].
+  - move=> A ih rho v sigma. split; autosubst; move=> [s->{v}h]; eexists=> [//|P B].
     + move: (h P B) => [v ev /ih hv]. exists v => //. apply: eq_V hv => -[|X] //= u.
       by intuition. move=> _. exact: V_ren.
     + move: (h P B) => [v ev hv]. exists v => //. apply/ih. apply: eq_V hv => -[|X] //= u.
@@ -154,13 +154,13 @@ Proof.
   elim=> {Gamma s A} [Gamma x xe|Gamma A B s _ ih|Gamma A B s t _ ih1 _ ih2|
                       Gamma A s _ ih|Gamma A B s _ ih] delta sigma rho l.
   - exact: l.
-  - eexists; first by ssimpl. (do 2 eexists)=> [//|t vt]. ssimpl.
+  - eexists; first by autosubst. (do 2 eexists)=> [//|t vt]. autosubst.
     apply: ih=> -[_/=|x/l//]. exact: V_to_E.
   - case: (ih1 delta _ _ l) => {ih1} /= v ev1 [A' [u eq ih1]]; subst v.
     case: (ih2 delta _ _ l) => {ih2} v ev2 ih2.
     case: (ih1 _ ih2) => {ih1} w ev3 ih1. exists w => //.
     exact: eval_beta ev1 ev2 ev3.
-  - apply: V_to_E. eexists=> [//=|P B]. ssimpl. apply: ih => x /=.
+  - apply: V_to_E. eexists=> [//=|P B]. autosubst. apply: ih => x /=.
     rewrite size_map => wf. rewrite (nth_map (Var 0)) //. apply/E_ren. exact: l.
   - move: (ih delta _ _ l) => [v ev1 {ih} /=[s' eq ih]]; subst v.
     specialize (ih (V B rho) B.[delta]). move: ih => [v ev2 ih]. exists v.
@@ -171,7 +171,7 @@ Qed.
 Corollary soundness_nil s A :
   has_type [::] s A -> E A (fun _ _ => False) s.
 Proof.
-  move=> /soundness h. specialize (h Var Var (fun _ _ => False)). ssimpl in h.
+  move=> /soundness h. specialize (h Var Var (fun _ _ => False)). autosubst in h.
   apply: h. by [].
 Qed.
 
@@ -197,4 +197,4 @@ Inductive step : term -> term -> Prop :=
     step (Abs A s) (Abs A t).
 
 Lemma substitutivity s t : step s t -> forall sigma tau, step s.|[tau].[sigma] t.|[tau].[sigma].
-Proof. elim=> /=; constructor; subst; ssimpl. Qed.
+Proof. elim=> /=; constructor; subst; autosubst. Qed.

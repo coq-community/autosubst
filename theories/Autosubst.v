@@ -6,11 +6,28 @@ Require Import MMap.
 (* _bind is used to annotate the position of binders in inductive definitions of syntactic objects *)
 
 Definition _bind (T1 : Type) (T2 : Type) (n : T2 -> nat) := T2.
-Notation "{ 'in' T2 'bind' n 'of' T1 }" := (_bind T1 T2 (fun _ => n)) : bind_scope.
-Notation "{ 'in' T2 'bind' T1 }" := (_bind T1 T2 (fun _ => 1)) : bind_scope.
-Notation "{ 'bind' n 'of' T }" := (_bind T T (fun _ => n)) : bind_scope.
-Notation "{ 'bind' T }" := (_bind T T (fun _ => 1)) : bind_scope.
-Notation "{ 'in' T2 'as' x 'bind' n 'of' T1 }" := (_bind T1 T2 (fun x => n)) (x ident): bind_scope.
+
+(*
+Notation "{ 'in' T2 'as' x 'bind' n 'of' T1 }" :=
+  (_bind T1 T2 (fun x => n)) (at level 0, x ident, format
+   "{ 'in' T2 'as' x 'bind' n 'of' T1 }") : bind_scope.
+*)
+
+Notation "{ 'bind' n 'of' T1 'in' T2 }" :=
+  (_bind T1 T2 (fun _ => n)) (at level 0,
+   format "{ 'bind'  n  'of'  T1  'in'  T2 }") : bind_scope.
+
+Notation "{ 'bind' n 'of' T }" :=
+  (_bind T T (fun _ => n)) (at level 0,
+   format "{ 'bind'  n  'of'  T }") : bind_scope.
+
+Notation "{ 'bind' T1 'in' T2 }" :=
+  (_bind T1 T2 (fun _ => 1)) (at level 0,
+   format "{ 'bind'  T1  'in'  T2 }") : bind_scope.
+
+Notation "{ 'bind' T }" :=
+  (_bind T T (fun _ => 1)) (at level 0,
+   format "{ 'bind'  T }") : bind_scope.
 
 Open Scope bind_scope.
 
@@ -18,8 +35,7 @@ Open Scope bind_scope.
 Definition var := nat.
 
 (* The up operation performed when going below a binder, specialized to renamings *)
-Definition upr (xi : var -> var) : (var -> var) := 0 .: (fun x => (+1) (xi x)).
-
+Definition upren (xi : var -> var) : (var -> var) := 0 .: (fun x => (+1) (xi x)).
 
 (* Classes for the basic substitution operations. 
  * They are singleton classes to enable the feature of simpl that folds back fix-bodies.
@@ -52,13 +68,19 @@ Notation "s ..[ sigma ]" := (mmap (subst sigma) s) (at level 2, sigma at level 2
 Notation beta s := (s .: Var) (only parsing).
 
 (* coercion from renamings to substitutions *)
+
 Definition ren {term : Type}{Var_term : VarConstr term} xi (x : var) := Var (xi x).
 Arguments ren {_ _} xi x/.
 
 (* the up operation: performed when going below a binder *)
+
 Notation up sigma := ((Var 0) .: sigma >> ren(+1)).
 Notation upn := (iter (fun sigma => up sigma)).
 
+(* internal variant for renamings *)
+
+Notation upr sigma := ((Var 0) .: sigma >>> rename (+1)).
+Notation uprn := (iter (fun sigma => upr sigma)).
 
 (* the essential substitution lemmas *)
 
@@ -361,8 +383,8 @@ Ltac derive_Rename :=
         let s2' := match s2_T with 
           | term => constr:(rename xi s2) 
           | var => constr:(xi s2)
-          | _bind term _ ?n => constr:(rename (iter upr (n s2) xi) s2)
-          | _bind term _ ?n => constr:(mmap(rename (iter upr (n s2) xi)) s2)
+          | _bind term _ ?n => constr:(rename (iter upren (n s2) xi) s2)
+          | _bind term _ ?n => constr:(mmap(rename (iter upren (n s2) xi)) s2)
           | context[term] => constr:(rename xi s2)
           | context[term] => constr:(mmap(rename xi) s2)
           | _ => s2 
@@ -443,7 +465,7 @@ Ltac derive_SubstLemmas :=
   let Var := constr:(@Var term VarConstr_term) in
 
   assert(up_upr : forall n xi,
-         iter (fun sigma : nat -> term => Var 0 .: sigma >>> rename (+1)) n (ren xi) = ren (iter upr n xi)) by (
+         iter (fun sigma : nat -> term => Var 0 .: sigma >>> rename (+1)) n (ren xi) = ren (iter upren n xi)) by (
   let n := fresh "n" in intros n ?;
   induction n; f_ext; simpl; trivial; 
   intros [|]; intros; simpl; repeat rewrite iter_S; trivial; autorew; now simpl
@@ -480,7 +502,7 @@ Ltac derive_SubstLemmas :=
   );
 
   assert(iter_ren_subst_comp : 
-    forall n xi sigma, ren (iter upr n xi) >> iter (fun sigma => up sigma) n sigma = iter (fun sigma => up sigma) n (ren xi >> sigma)) by (
+    forall n xi sigma, ren (iter upren n xi) >> iter (fun sigma => up sigma) n sigma = iter (fun sigma => up sigma) n (ren xi >> sigma)) by (
   let n := fresh "n" in intros n; 
   let IHn := fresh "IHn" in induction n as [| n IHn]; intros; trivial; 
   repeat rewrite iter_S; f_ext; intros [|] *; trivial; 
@@ -502,7 +524,7 @@ Ltac derive_SubstLemmas :=
   );
 
   assert (iter_subst_ren_comp : 
-    forall n sigma xi , iter (fun sigma => up sigma) n sigma >> ren (iter upr n xi) = iter (fun sigma => up sigma) n (sigma >> ren xi)) by (
+    forall n sigma xi , iter (fun sigma => up sigma) n sigma >> ren (iter upren n xi) = iter (fun sigma => up sigma) n (sigma >> ren xi)) by (
   let n := fresh "n" in intros n; 
   let IHn := fresh "IHn" in induction n as [| n IHn]; intros; trivial; 
   repeat rewrite iter_S; f_ext; intros [|] *; trivial; simpl; rewrite <- IHn; 
@@ -638,3 +660,13 @@ Proof.
 Qed.
 
 End SubstLemmas.
+
+(* User facing derive tactic *)
+
+Tactic Notation "derive" :=
+  match goal with
+    | |- VarConstr _ => derive_VarConstr
+    | |- Rename _ => derive_Rename
+    | |- Subst _ => derive_Subst
+    | |- SubstLemmas _ => derive_SubstLemmas
+  end.
