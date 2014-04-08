@@ -16,7 +16,7 @@ Inductive term :=
 | TeVar (x : var)
 | Abs   (A : type) (s : {bind term})
 | App   (s t : term)
-| TAbs  (s : {in term bind type})
+| TAbs  (s : {bind type in term})
 | TApp  (s : term) (A : type).
 
 (* Substitution Lemmas *)
