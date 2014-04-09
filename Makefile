@@ -23,4 +23,4 @@ doc: all
 install:
 	$(MAKE) -C theories install
 
-.PHONY: all clean install
+.PHONY: all clean dist doc install
