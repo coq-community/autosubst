@@ -16,7 +16,7 @@ body{
     padding: 0;
 }
 
-#page {
+#page, #toc {
     font-family: DejaVu Sans, sans-serif;
     line-height: 1.6;
     color: black;
@@ -47,7 +47,7 @@ body{
     margin: 1em;
 }
 
-a.idref, a.modref {
+a.idref, a.modref, #toc a {
     text-decoration: none;
     color: inherit;
 }
@@ -64,7 +64,11 @@ a.idref, a.modref {
     background-color: white;
 }
 
-.libtitle, .section {
+#toc{
+    color: #2874AE;
+}
+
+.libtitle, .section, #toc h2 {
     line-height: 1;
     color: #2874AE;
     text-rendering: optimizeLegibility;
@@ -229,14 +233,6 @@ tr.infrulemiddle hr {
 
 /* TOC */
 
-#toc h2 {
-    padding: 10px;
-    background-color: rgb(60%,60%,100%);
-}
-
-#toc li {
-    padding-bottom: 8px;
-}
 
 /* Index */
 
@@ -267,6 +263,8 @@ tr.infrulemiddle hr {
 
 #footer {
     width: 100%;
+    position: absolute;
+    bottom: 0;
     margin-top: 2em;
     text-align: right;
     background-color: #eee8d5;
