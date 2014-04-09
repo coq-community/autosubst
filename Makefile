@@ -18,7 +18,7 @@ dist:
 	git archive -o autosubst-HEAD.tar.gz HEAD
 
 doc: all
-	- mkdir $(DOC)
+	- mkdir -p $(DOC)
 	coqdoc --table-of-contents --html --interpolate \
 	  --index indexpage --no-lib-name --parse-comments \
 	  --with-header $(HEADER) --with-footer $(FOOTER) \
@@ -29,4 +29,4 @@ doc: all
 install:
 	$(MAKE) -C theories install
 
-.PHONY: all clean install doc
+.PHONY: all clean dist doc install
