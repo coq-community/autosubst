@@ -522,8 +522,8 @@ Proof.
         move: (propagation i) => [n /ty_prod_inv[_ tp3]]. exists n.
         exact: ty_ctx_conv tp3 con1 tp1.
       move: (tp2). eapply ty_conv. Focus 2. apply conv_sym. eassumption.
-      apply: ty_sub (sb). apply: ih tp1 _ => //.
-      exact: conv_prod. eassumption.
+      apply: ty_sub (sb). apply: ih tp1 _; eauto.
+      exact: conv_prod.
 Qed.
 
 Lemma ty_lam_inv Gamma s A B :
