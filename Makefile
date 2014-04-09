@@ -13,8 +13,8 @@ all: $(COQMAKEFILE)
 	$(COQMAKE) all
 
 doc: $(COQMAKEFILEEX)
-	mkdir -p doc
 	$(COQMAKEEX) html
+	cp extra/*.css -t html
 
 $(COQMAKEFILE): Make
 	$(COQBIN)coq_makefile -f Make > $(COQMAKEFILE)

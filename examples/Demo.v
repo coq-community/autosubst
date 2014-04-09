@@ -108,12 +108,12 @@ Inductive step : term -> term -> Prop :=
 Lemma step_subst s1 s2 :
   step s1 s2 -> forall sigma, step s1.[sigma] s2.[sigma].
 Proof.
-(** The proof of substitutivity proceeds by induction on the step relation.
+(* The proof of substitutivity proceeds by induction on the step relation.
     Every case, except for [Step_Beta] is trivial and solved by eauto. *)
   induction 1; eauto using step.
-(** In the beta case we can apply the constructor and simplify the goal. *)
+(* In the beta case we can apply the constructor and simplify the goal. *)
   intros sigma. autosubst. constructor. subst.
-(** At this point our goal is to show the equation:
+(* At this point our goal is to show the equation:
 <<
    s1.[beta t].[sigma] = s1.[up sigma].[beta t.[sigma]]
 >>

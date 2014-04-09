@@ -182,7 +182,7 @@ Proof. elim; eauto using pstep. Qed.
 Lemma pstep_red s t : pstep s t -> red s t.
 Proof.
   elim=> {s t} //=; eauto with red_congr.
-  move=> s1 s2 t1 t2 u -> {u} _ A _ B. apply: starES. by econstructor.
+  move=> s1 s2 t1 t2 u -> {u} _ A _ B. eapply starES. by econstructor.
   apply: (star_trans (s2.[t1.:Var])). exact: red_subst.
   by apply: red_compat => -[|].
 Qed.
@@ -191,7 +191,7 @@ Lemma pstep_subst sigma s t :
   pstep s t -> pstep s.[sigma] t.[sigma].
 Proof.
   move=> A. elim: A sigma => /=; eauto using pstep.
-  move=> s1 s2 t1 t2 u -> _ A _ B sigma. apply: pstep_beta; eauto. by autosubst.
+  move=> s1 s2 t1 t2 u -> _ A _ B sigma. eapply pstep_beta; eauto. by autosubst.
 Qed.
 
 Lemma psstep_up sigma tau :
@@ -250,7 +250,7 @@ Qed.
 Lemma inj_sort n m : conv step (Sort n) (Sort m) -> n = m.
 Proof.
   move=> A. suff: (Sort n = Sort m) => [[//]|].
-  apply: cr_conv_normal => //; done.
+  eapply cr_conv_normal => //; done.
 Qed.
 
 Lemma inj_prod A1 A2 B1 B2 :
@@ -353,8 +353,8 @@ Proof.
     + exact: ok_cons ty.
     + by move=> [|x] //=/subctx.
     + move=> [_|x]/=. by autosubst. move=> /eqn <-. by autosubst.
-  - apply: ty_conv. by eapply ih1. exact: conv_subst. by eapply ih2.
-  - apply: ty_sub. by eapply ih. exact: sub_subst.
+  - eapply ty_conv. by eapply ih1. exact: conv_subst. by eapply ih2.
+  - eapply ty_sub. by eapply ih. exact: sub_subst.
 Qed.
 
 Lemma weakening Gamma s A B n :
@@ -396,13 +396,13 @@ Proof.
       exact: ih1. exact: ih2.
   - apply: ty_lam. apply: ih2. apply: ok_cons => //. by eapply ih1.
     move=> [_|x /=/cty] //=. autosubst. rewrite -subst_comp. apply: ty_var => //.
-    apply: ok_cons => //. by eapply ih1. apply: weakenings; autosubst=> //.
+    apply: ok_cons => //. by eapply ih1. eapply weakenings; autosubst=> //.
     by eapply ih1.
   - apply: ty_prod. exact: ih1. apply ih2. apply: ok_cons => //. by eapply ih1.
     move=> [_|x /=/cty] /=. autosubst. rewrite -subst_comp. apply: ty_var => //.
-    apply: ok_cons => //. by eapply ih1. apply: weakenings; autosubst=> //. by eapply ih1.
-  - apply: ty_conv. by eapply ih1. exact: conv_subst. by eapply ih2.
-  - apply: ty_sub. by eapply ih. exact: sub_subst.
+    apply: ok_cons => //. by eapply ih1. eapply weakenings; autosubst=> //. by eapply ih1.
+  - eapply ty_conv. by eapply ih1. exact: conv_subst. by eapply ih2.
+  - eapply ty_sub. by eapply ih. exact: sub_subst.
 Qed.
 
 Lemma ty_subst1 Gamma s t A B s' B' :
@@ -425,7 +425,7 @@ Proof.
   have okgb: [ B :: Gamma |- ].
     apply: ok_cons (tp2). exact: ty_ok tp2.
   rewrite -[s]subst_id -[C]subst_id. apply: (ty_subst tp1) => // -[_|x dom] //=; autosubst.
-  - apply: (ty_conv (n := m)). by eapply ty_var. exact: conv_subst. exact: weakening tp3 tp2.
+  - eapply (ty_conv (n := m)). by eapply ty_var. exact: conv_subst. exact: weakening tp3 tp2.
   - exact: ty_var.
 Qed.
 
@@ -438,9 +438,9 @@ Proof.
     split. apply: ty_sub tp1 _. exact: sub_sort. apply: ty_sub tp2 _.
     exact: sub_sort.
   - move=> Gamma s A B n _ ih con _ _ A' B' n' m e1 e2 le_m_n'.
-    apply: ih e1 _ _. apply: conv_trans con _. eassumption. assumption.
+    apply: ih e1 _ le_m_n'. exact: conv_trans con _.
   - move=> Gamma s A B _ ih sb A' B' n m e1 e2 le_m_n. inv sb.
-    + move: e2 => /inj_sort e2. subst. apply: ih. reflexivity.
+    + move: e2 => /inj_sort e2. subst. eapply ih. reflexivity.
       econstructor. exact: leq_trans _ le_m_n.
     + exfalso. exact: conv_prod_sort e2.
 Qed.
@@ -513,17 +513,17 @@ Proof.
     move=> n1 n2 tp1 tp2. apply: ty_conv (conv_sym con2) tp2.
     exact: ty_ctx_conv con1 tp1.
   - move=> Gamma s A B n _ ih con1 _ _ A' B' t e con2 n1 n2 tp1 tp2.
-    apply: ih => //. apply: conv_trans con2 _. exact: conv_sym.
+    eapply ih => //. apply: conv_trans con2 _. exact: conv_sym.
     eassumption. eassumption.
   - move=> Gamma s A B i ih sb A' B' t e con n1 n2 tp1 tp2. destruct sb.
-    + exfalso. apply: conv_prod_sort; eauto.
+    + exfalso. eapply conv_prod_sort; eauto.
     + move: con => /inj_prod[con1 con2].
       have[n3 tp3]: exists n3, ty (A' :: Gamma) B1 (Sort n3).
         move: (propagation i) => [n /ty_prod_inv[_ tp3]]. exists n.
         exact: ty_ctx_conv tp3 con1 tp1.
-      apply: ty_conv (tp2). Focus 2. apply conv_sym. eassumption.
+      move: (tp2). eapply ty_conv. Focus 2. apply conv_sym. eassumption.
       apply: ty_sub (sb). apply: ih tp1 _ => //.
-      exact: conv_prod. eassumption.
+      exact: conv_prod.
 Qed.
 
 Lemma ty_lam_inv Gamma s A B :
@@ -540,16 +540,16 @@ Proof.
   - move=> Gamma x _ _ t st. by inv st.
   - move=> Gamma n _ t st. by inv st.
   - move=> Gamma A B s t u->{u} tp1 ih1 tp2 ih2 u st. inv st.
-    + apply ty_lam_inv in tp1. apply: ty_subst1; eauto.
-    + apply: ty_app => //. eapply ih1=>//. by [].
+    + apply ty_lam_inv in tp1. eapply ty_subst1; by eauto.
+    + eapply ty_app => //. eapply ih1=>//. by [].
     + case: (propagation tp1) => m /ty_prod_inv[_ tp3].
-      apply: ty_conv. eapply ty_app. reflexivity. eassumption.
+      eapply ty_conv. eapply ty_app. reflexivity. eassumption.
       apply: ih2 => //. apply: conv_beta. exact: conv1i.
       eapply ty_subst1; eauto. by autosubst.
   - move=> Gamma A B s n tp1 ih1 tp2 ih2 t st. inv st.
     apply: ty_lam. exact: ih2.
   - move=> Gamma A B n tp1 ih1 tp2 ih2 t st. inv st.
-    + apply: ty_prod. exact: ih1. apply: ty_ctx_conv tp2 _ _.
+    + apply: ty_prod. exact: ih1. eapply (ty_ctx_conv tp2).
       exact: conv1i. by eapply ih1.
     + apply: ty_prod. exact: tp1. exact: ih2.
   - move=> Gamma s A B n tp1 ih1 con tp2 ih2 t st. apply: ty_conv con tp2.

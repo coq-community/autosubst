@@ -1,5 +1,5 @@
 -R theories Autosubst
--R examples Examples
+-R examples Autosubst
 theories/Lib.v
 theories/Decidable.v
 theories/MMap.v
