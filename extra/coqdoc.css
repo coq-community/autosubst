@@ -19,8 +19,8 @@ body{
 
 #page, #toc {
     font-family: DejaVu Sans, sans-serif;
-    line-height: 1.6;
-    color: black;
+    line-height: 1.65;
+    color: #444;
     background-color: white;
     display:block;
     padding: 0;
@@ -38,7 +38,7 @@ body{
     vertical-align: middle;
     background-color: #153969;
     color: white;
-    fonst-style: bold;
+    font-weight: bold;
 }
 
 #header h1 { 
@@ -59,7 +59,7 @@ a.idref, a.modref, #toc a {
 
 #main a.idref:hover, #main a.modref:hover{
     background-color: #eee8d5;
-    border-radius: 10px;
+    border-radius: 3px;
     padding: 5px;
     margin: -5px;
 }
@@ -138,11 +138,11 @@ div:empty{ display: none;}
     display: block;
     position: relative;
     padding-left: 1em;
-    padding-rigt: 1em;
+    padding-right: 1em;
     margin-top: 1em;
     margin-bottom: 1em;
     background-color: #fdf6e3;
-    border-radius:1em;
+    border-radius: 0.3em;
     max-width: 54em;
  }
 
@@ -184,7 +184,7 @@ tr.infrulemiddle hr {
 }
 
 .infrulenamecol {
-    color: rgb(60%,60%,60%); 
+    color: rgb(60%,60%,60%);
     padding-left: 1em;
     padding-bottom: 0.1em
 }
@@ -192,55 +192,24 @@ tr.infrulemiddle hr {
 
 .id { display: inline; }
 
-.id[type="constructor"] { 
+.id[type="constructor"], .id[type="projection"], .id[type="method"] {
     color: #A30E16;
 }
 
-.id[type="var"] { 
-    color: black;
+.id[type="var"], .id[type="variable"] {
+    color: #444;
 }
 
-.id[type="variable"] { 
-    color: black;
-}
-
-.id[type="definition"] { 
+.id[type="definition"], .id[type="record"], .id[type="class"],
+.id[type="instance"], .id[type="inductive"] {
     color: #A6650F;
 }
 
-.id[type="abbreviation"] { 
-    color: black;
-}
-
-.id[type="lemma"] { 
+.id[type="lemma"] {
     color: #188B0C;
 }
 
-.id[type="instance"] { 
-    color: rgb(0%,40%,0%);
-}
-
-.id[type="projection"] { 
-    color: rgb(0%,40%,0%);
-}
-
-.id[type="method"] { 
-    color: red;
-}
-
-.id[type="inductive"] { 
-    color: #A6650F;
-}
-
-.id[type="record"] { 
-    color: black;
-}
-
-.id[type="class"] { 
-    color: rgb(0%,0%,80%);
-}
-
-.id[type="keyword"], .id[type="notation"] { 
+.id[type="keyword"], .id[type="notation"], .id[type="abbreviation"] {
  color : #2874AE;
 }
 

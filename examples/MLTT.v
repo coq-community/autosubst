@@ -523,7 +523,7 @@ Proof.
         exact: ty_ctx_conv tp3 con1 tp1.
       move: (tp2). eapply ty_conv. Focus 2. apply conv_sym. eassumption.
       apply: ty_sub (sb). apply: ih tp1 _ => //.
-      exact: conv_prod.
+      exact: conv_prod. eassumption.
 Qed.
 
 Lemma ty_lam_inv Gamma s A B :

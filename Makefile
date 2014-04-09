@@ -14,7 +14,7 @@ all: $(COQMAKEFILE)
 
 doc: $(COQMAKEFILEEX)
 	$(COQMAKEEX) html
-	cp extra/*.css -t html
+	cp extra/coqdoc.css html/coqdoc.css
 
 $(COQMAKEFILE): Make
 	$(COQBIN)coq_makefile -f Make > $(COQMAKEFILE)
