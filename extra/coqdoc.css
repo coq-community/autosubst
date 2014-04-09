@@ -19,7 +19,7 @@ body{
 
 #page, #toc {
     font-family: DejaVu Sans, sans-serif;
-    line-height: 1.6;
+    line-height: 1.65;
     color: black;
     background-color: white;
     display:block;
@@ -59,7 +59,7 @@ a.idref, a.modref, #toc a {
 
 #main a.idref:hover, #main a.modref:hover{
     background-color: #eee8d5;
-    border-radius: 10px;
+    border-radius: 3px;
     padding: 5px;
     margin: -5px;
 }
@@ -136,7 +136,7 @@ a.idref, a.modref, #toc a {
     margin-top: 1em;
     margin-bottom: 1em;
     background-color: #fdf6e3;
-    border-radius:1em;
+    border-radius: 0.3em;
     max-width: 54em;
  }
 
