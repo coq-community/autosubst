@@ -3,11 +3,11 @@ Require Import Omega List.
 Require Export Lib.
 Require Import MMap.
 
-(* _bind is used to annotate the position of binders in inductive definitions of syntactic objects *)
+(** _bind is used to annotate the position of binders in inductive definitions of syntactic objects *)
 
 Definition _bind (T1 : Type) (T2 : Type) (n : T2 -> nat) := T2.
 
-(*
+(**
 Notation "{ 'in' T2 'as' x 'bind' n 'of' T1 }" :=
   (_bind T1 T2 (fun x => n)) (at level 0, x ident, format
    "{ 'in' T2 'as' x 'bind' n 'of' T1 }") : bind_scope.
@@ -31,14 +31,14 @@ Notation "{ 'bind' T }" :=
 
 Open Scope bind_scope.
 
-(* A type synonym for natural numbers used as de Bruijn indices *)
+(** A type synonym for natural numbers used as de Bruijn indices *)
 Definition var := nat.
 
-(* The up operation performed when going below a binder, specialized to renamings *)
+(** The up operation performed when going below a binder, specialized to renamings *)
 Definition upren (xi : var -> var) : (var -> var) := 0 .: (fun x => (+1) (xi x)).
 
-(* Classes for the basic substitution operations. 
- * They are singleton classes to enable the feature of simpl that folds back fix-bodies.
+(** Classes for the basic substitution operations. 
+ They are singleton classes to enable the feature of simpl that folds back fix-bodies.
  *)
 Class VarConstr (term : Type) := Var : nat -> term.
 Class Rename (term : Type) := rename : (var -> var) -> term -> term.
@@ -53,7 +53,7 @@ Arguments Var {_ _} x : simpl never.
 Arguments rename {_ _} xi !s /.
 Arguments subst {_ _} sigma !s /.
 
-(* The heterogeneous substitution application can substitute a type different from the one it operates on *)
+(** The heterogeneous substitution application can substitute a type different from the one it operates on *)
 Class HSubst (inner outer : Type) := hsubst : (var -> inner) -> outer -> outer.
 Arguments hsubst {_ _ _} sigma !s / .
 
@@ -67,22 +67,22 @@ Notation "s ..[ sigma ]" := (mmap (subst sigma) s) (at level 2, sigma at level 2
 
 Notation beta s := (s .: Var) (only parsing).
 
-(* coercion from renamings to substitutions *)
+(** coercion from renamings to substitutions *)
 
 Definition ren {term : Type}{Var_term : VarConstr term} xi (x : var) := Var (xi x).
 Arguments ren {_ _} xi x/.
 
-(* the up operation: performed when going below a binder *)
+(** the up operation: performed when going below a binder *)
 
 Notation up sigma := ((Var 0) .: sigma >> ren(+1)).
 Notation upn := (iter (fun sigma => up sigma)).
 
-(* internal variant for renamings *)
+(** internal variant for renamings *)
 
 Notation upr sigma := ((Var 0) .: sigma >>> rename (+1)).
 Notation uprn := (iter (fun sigma => upr sigma)).
 
-(* the essential substitution lemmas *)
+(** the essential substitution lemmas *)
 
 Class Rename_Subst (term : Type) (VarConstr_term : VarConstr term) (Rename_term : Rename term) 
       (Subst_term : Subst term) :=
@@ -150,9 +150,9 @@ Class HSubstHSubstInd
 hsubst_hsubst_ind s (sigma : var -> inner1) (tau : var -> inner2) : s.|[sigma].|[tau] = s.|[tau].|[sigma].
 
 
-(* the derived substitution lemmas *)
+(** the derived substitution lemmas *)
 
-Section Subst.
+Section LemmasForSubst.
 
 Context {term : Type}.
 Context {VarConstr_term : VarConstr term} {Rename_term : Rename term} {Subst_term : Subst term}.
@@ -247,12 +247,12 @@ Proof.
     now autosubst.
 Qed.
 
-End Subst.
+End LemmasForSubst.
 
 
-(* derived substitution lemmas for heterogeneous substitutions *)
+(** derived substitution lemmas for heterogeneous substitutions *)
 
-Section HSubst.
+Section LemmasForHSubst.
 
 Context {inner outer : Type}.
 
@@ -304,12 +304,12 @@ Proof.
   f_ext. intros. now autosubst.
 Qed.  
 
-End HSubst.
+End LemmasForHSubst.
 
 
-(* the autosubst automation tactic *)
+(** the autosubst automation tactic *)
 
-Hint Rewrite @rename_subst' @subst_comp (*@to_lift*) @Var_comp_l @funcomp_scons_distr using exact _ : autosubst.
+Hint Rewrite @rename_subst' @subst_comp (**@to_lift*) @Var_comp_l @funcomp_scons_distr using exact _ : autosubst.
 Hint Rewrite @scons_lift lift0_id (lift0_id 0) using solve[exact _ | unfold lift in *; unfold var in *; omega] : autosubst.
 Hint Rewrite @scons_subst_lift @lift_scons using solve[exact _ | simpl; unfold lift in *; unfold var in *; repeat first [omega | f_equal] ] : autosubst.  
 Hint Rewrite @funcomp_assoc @id_funcomp @funcomp_id @subst_comp' @subst_id' @ren_id @ren_left @ren_comp @ren_scons @lift_comp @upn_upn_comp @upn_var @NPeano.Nat.add_1_r @iter_S @iter_0 using exact _ : autosubst.
@@ -363,7 +363,7 @@ Tactic Notation "autosubst" "in" ident(H) := autosubstH H.
 Tactic Notation "autosubst" "in" "*" := autosubst; (in_all autosubstH).
 
 
-(* tactics to derive typeclass instances *)
+(** tactics to derive typeclass instances *)
 
 Ltac app_var := match goal with [ |- var] => assumption end.
 
@@ -634,9 +634,9 @@ Ltac derive_SubstHSubstComp :=
   f_ext; intros; simpl; rewrite ?hsubst_comp; now autosubst.
 
 
-(* some additional lemmas *)
+(** some additional lemmas *)
 
-Section SubstLemmas.
+Section AdditionalLemmas.
 
 Context {term : Type}.
 Context {VarConstr_term : VarConstr term} {Rename_term : Rename term} {Subst_term : Subst term}.
@@ -659,9 +659,9 @@ Proof.
   now autosubst.
 Qed.
 
-End SubstLemmas.
+End AdditionalLemmas.
 
-(* User facing derive tactic *)
+(** User facing derive tactic *)
 
 Tactic Notation "derive" :=
   match goal with

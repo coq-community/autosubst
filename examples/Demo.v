@@ -58,10 +58,10 @@ Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
       substitution [fun x => (sigma x).[tau]].
 
     SubstLemmas contains the following lemmas:
-    - id_subst s x : [(Var x).[sigma] = sigma x]
-    - subst_id s : [s.[Var] = s]
-    - subst_comp sigma tau : [s.[sigma].[tau] = s.[sigma >> tau]]
-    - rename_subst xi s : [rename xi s = s.[ren xi]]
+    - [id_subst s x : (Var x).[sigma] = sigma x]
+    - [subst_id s : s.[Var] = s]
+    - [subst_comp sigma tau : s.[sigma].[tau] = s.[sigma >> tau]]
+    - [rename_subst xi s : rename xi s = s.[ren xi]]
     where [ren xi x = Var (xi x)].
 
     In addition these lemmas allow you to use the autosubst tactic. *)

@@ -17,7 +17,7 @@ Inductive dget {term : Type} {VarConstr_term : VarConstr term} {Subst_term : Sub
 | DGetS Delta x A B B' : dget Delta x B -> B' = B.[ren(+1)] -> dget (A :: Delta) (S x) B'
 .
 
-Section Subst.
+Section SubstInstance.
 
 
 Context {term : Type}.
@@ -121,4 +121,4 @@ Proof.
       eexists. econstructor; eauto.
 Qed.
 
-End Subst.
+End SubstInstance.
