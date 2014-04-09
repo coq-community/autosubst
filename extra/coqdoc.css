@@ -1,0 +1,307 @@
+@font-face {
+  font-family: DejaVu Sans Mono;
+  src:  url(./DejaVuSansMono.ttf) format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: DejaVu Sans;
+  src: url(./DejaVuSans.ttf) format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+body{
+    margin: 0;
+    padding: 0;
+}
+
+#page {
+    font-family: DejaVu Sans, sans-serif;
+    line-height: 1.6;
+    color: black;
+    background-color: white;
+    display:block;
+    padding: 0;
+    margin:0;
+}
+
+#header { 
+    display: block;
+    padding: 0;
+    padding-left: 1em;
+    margin: 0;
+    vertical-align: middle;
+    background-color: #153969;
+    color: white;
+    fonst-style: bold;
+}
+
+#header h1 { 
+    padding: 0; 
+    margin: 0;
+}
+
+#main {
+    display: block;
+    margin: 1em;
+}
+
+a.idref, a.modref {
+    text-decoration: none;
+    color: inherit;
+}
+
+#main a.idref:hover, #main a.modref:hover{
+    background-color: #eee8d5;
+    border-radius: 10px;
+    padding: 5px;
+    margin: -5px;
+}
+
+
+#main a.idref:active, #main a.modref:active{
+    background-color: white;
+}
+
+.libtitle, .section {
+    line-height: 1;
+    color: #2874AE;
+    text-rendering: optimizeLegibility;
+    font-weight: normal;
+    letter-spacing: 0.1em;
+}
+
+.libtitle {
+    border-color: grey;
+    border-bottom-style: solid;
+    border-top-style: solid;
+    padding: 0.2em;
+}
+
+.section {
+    margin-top:2em;
+}
+
+#main h1 {
+	font-size: 2em;
+}
+
+#main h2 {
+	font-size: 1.667rem;
+}
+
+#main h3 {
+	font-size: 1.333em;
+}
+
+#main h4, #main h5, #main h6 {
+	font-size: 1em;
+}
+
+
+#main .doc {
+    margin: 0px;
+    max-width: 54em;
+    text-align: justify;
+}
+
+.inlinecode, .code {
+    font-family: DejaVu Sans Mono, monospace;
+}
+
+.inlinecode{
+    display: inline;
+    color: #666666;
+}
+
+.code { 
+    display: block;
+    position: relative;
+    padding-left: 1em;
+    padding-rigt: 1em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    background-color: #fdf6e3;
+    border-radius:1em;
+    max-width: 54em;
+ }
+
+.code span {
+    display: inline-block;
+    padding: 0;
+}
+
+.code > span:first-of-type {
+    padding-top: 1em;
+}
+
+.code > span:last-of-type {
+    padding-bottom: 1em;
+}
+
+.code br:first-child,
+.code br:last-child {
+    display: none; 
+}
+
+
+table.infrule {
+  border: 0px;
+  margin-left: 50px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+td.infrule {
+    font-family: DejaVu Sans Mono, monospace;
+    text-align: center;
+    padding: 0;
+    line-height: 1;
+}
+
+tr.infrulemiddle hr {
+    margin: 1px 0 1px 0;
+}
+
+.infrulenamecol {
+    color: rgb(60%,60%,60%); 
+    padding-left: 1em;
+    padding-bottom: 0.1em
+}
+
+
+.id { display: inline; }
+
+.id[type="constructor"] { 
+    color: #A30E16;
+}
+
+.id[type="var"] { 
+    color: black;
+}
+
+.id[type="variable"] { 
+    color: black;
+}
+
+.id[type="definition"] { 
+    color: #A6650F;
+}
+
+.id[type="abbreviation"] { 
+    color: black;
+}
+
+.id[type="lemma"] { 
+    color: #188B0C;
+}
+
+.id[type="instance"] { 
+    color: rgb(0%,40%,0%);
+}
+
+.id[type="projection"] { 
+    color: rgb(0%,40%,0%);
+}
+
+.id[type="method"] { 
+    color: red;
+}
+
+.id[type="inductive"] { 
+    color: #A6650F;
+}
+
+.id[type="record"] { 
+    color: black;
+}
+
+.id[type="class"] { 
+    color: rgb(0%,0%,80%);
+}
+
+.id[type="keyword"], .id[type="notation"] { 
+ color : #2874AE;
+}
+
+
+
+/* TOC */
+
+#toc h2 {
+    padding: 10px;
+    background-color: rgb(60%,60%,100%);
+}
+
+#toc li {
+    padding-bottom: 8px;
+}
+
+/* Index */
+
+#index {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+#index #frontispiece {
+    margin: 1em auto;
+    padding: 1em;
+    width: 60%;
+}
+
+.booktitle { font-size : 140%  }
+.authors { font-size : 90%;
+	         line-height: 115%;  }
+.moreauthors { font-size : 60%  }
+
+#index #entrance {
+    text-align: center;
+}
+
+#index #entrance .spacer {
+    margin: 0 30px 0 30px;
+}
+
+#footer {
+    width: 100%;
+    margin-top: 2em;
+    text-align: right;
+    background-color: #eee8d5;
+    font-size: 88%;
+    font-family: DejaVu Sans, sans-serif;
+}
+
+#footer hr {
+    display: none;
+    visibility: hidden;
+}
+
+#footer a {
+    float: left;
+    padding-left: 1em;
+    padding-right: 1em;
+    text-decoration: none;
+    color: #2874AE;
+}
+
+#footer a:last-of-type {
+    float: none;
+    padding-left: 0;
+}
+
+.paragraph {
+    height: 0.75em;
+}
+
+ul.doclist {
+    margin-top: 0em;
+    margin-bottom: 0em;
+}
+
+
+
+
+
