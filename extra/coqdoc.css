@@ -96,6 +96,12 @@ a.idref, a.modref, #toc a {
     margin-top:2em;
 }
 
+.section + .section {
+    margin-top: 0em;
+}
+
+div:empty{ display: none;}
+
 #main h1 {
 	font-size: 2em;
 }
@@ -267,10 +273,6 @@ tr.infrulemiddle hr {
 #footer a:last-of-type {
     float: none;
     padding-left: 0;
-}
-
-.paragraph {
-    height: 0.75em;
 }
 
 ul.doclist {
