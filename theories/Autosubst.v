@@ -3,11 +3,11 @@ Require Import Omega List.
 Require Export Lib.
 Require Import MMap.
 
-(** _bind is used to annotate the position of binders in inductive definitions of syntactic objects *)
+(** [_bind] is used to annotate the position of binders in inductive definitions of syntactic objects *)
 
 Definition _bind (T1 : Type) (T2 : Type) (n : T2 -> nat) := T2.
 
-(**
+(*
 Notation "{ 'in' T2 'as' x 'bind' n 'of' T1 }" :=
   (_bind T1 T2 (fun x => n)) (at level 0, x ident, format
    "{ 'in' T2 'as' x 'bind' n 'of' T1 }") : bind_scope.
