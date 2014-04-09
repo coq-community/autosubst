@@ -14,7 +14,7 @@ dist:
 	git archive -o autosubst-HEAD.tar.gz HEAD
 
 doc: all
-	- mkdir html
+	- mkdir -p html
 	coqdoc --table-of-contents --html -d html \
 	  -R theories Autosubst $(THEORIES) $(EXAMPLES)
 	cp extra/*.css extra/*.ttf html/
