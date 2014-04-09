@@ -17,7 +17,7 @@ doc: all
 	- mkdir html
 	coqdoc --table-of-contents --html -d html \
 	  -R theories Autosubst $(THEORIES) $(EXAMPLES)
-	cp extra/coqdoc.css html/coqdoc.css
+	cp extra/*.css extra/*.ttf html/
 
 
 install:
