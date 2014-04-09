@@ -1,32 +1,26 @@
-COQMAKEFILE := Makefile.coq
-COQMAKE := +$(MAKE) -f $(COQMAKEFILE)
+THEORIES := $(wildcard theories/*.v)
+EXAMPLES := $(wildcard examples/*.v)
 
-COQMAKEFILEEX := Makefile.ex.coq
-COQMAKEEX := +$(MAKE) -f $(COQMAKEFILEEX)
-
-ifneq "$(COQBIN)" ""
-	COQBIN := $(COQBIN)/
-endif
-
-all: $(COQMAKEFILE)
-	mkdir -p bin
-	$(COQMAKE) all
-
-doc: $(COQMAKEFILEEX)
-	$(COQMAKEEX) html
-	cp extra/coqdoc.css html/coqdoc.css
-
-$(COQMAKEFILE): Make
-	$(COQBIN)coq_makefile -f Make > $(COQMAKEFILE)
-
-$(COQMAKEFILEEX): MakeEx
-	$(COQBIN)coq_makefile -f MakeEx > $(COQMAKEFILEEX)
-
-install:
-	$(COQMAKE) install
+all:
+	$(MAKE) -C theories
+	$(MAKE) -C examples
 
 clean:
-	-$(COQMAKE) clean
-	rm -rf $(COQMAKEFILE) bin
+	$(MAKE) -C theories clean
+	$(MAKE) -C examples clean
+	rm -rf html
 
-.PHONY: clean all install
+dist:
+	git archive -o autosubst-HEAD.tar.gz HEAD
+
+doc: all
+	- mkdir html
+	coqdoc --table-of-contents --html -d html \
+	  -R theories Autosubst $(THEORIES) $(EXAMPLES)
+	cp extra/coqdoc.css html/coqdoc.css
+
+
+install:
+	$(MAKE) -C theories install
+
+.PHONY: all clean install
