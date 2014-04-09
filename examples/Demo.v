@@ -10,7 +10,7 @@ Require Import Autosubst.
     The syntax of the untyped lambda calculus is given by the following grammar.
 
     #
-      <div class="code" syle="width:100%">
+      <div class="block">
        <img src="ulc.png" alt="s, t ::= x | s t | \ s"/>
       </div>
     #
@@ -63,11 +63,11 @@ Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
     rules
 
     #
-      <div class="code" style="text-align:center; width:100%">
+      <div class="block">
+        <img src="red4.png" alt="Beta"/>
         <img src="red1.png" alt="AppL"/>
         <img src="red2.png" alt="AppR"/>
-        <img src="red3.png" alt="Lam"/> <br/>
-        <img src="red4.png" alt="Beta"/>
+        <img src="red3.png" alt="Lam"/>
       </div>
     #
 
@@ -98,7 +98,9 @@ Inductive step : term -> term -> Prop :=
     by the tactic of the same name.
 
     In the case of beta reduction we have to show the equation
+    #<div class="block">#
     [s1.[t .: Var].[sigma] = s1.[up sigma].[t.[sigma] .: Var]].
+    #</div>#
 
     This goal can be solved using [autosubst], since both sides of the equation
     are equivalent to the normal form [s1.[t.[sigma] .: sigma]]. *)    

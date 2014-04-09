@@ -164,12 +164,21 @@ div:empty{ display: none;}
     display: block;
     margin-top: 1em;
     margin-bottom: 1em;
-    max-width: 54em;
+    padding-left: 1em;
+    padding-right: 1em;
+    max-width: 52em;
+}
+
+.block{
+    text-align: center;
+}
+
+.block img{
+    margin: 1em;
 }
 
 .code {
-    padding-left: 1em;
-    padding-right: 1em;
+    border-radius: 0.5em;
     background-color: #F2FAFF;/*#fdf6e3;*/
  }
 
