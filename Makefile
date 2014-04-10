@@ -23,7 +23,7 @@ doc: all
 	  --index indexpage --no-lib-name --parse-comments \
 	  --with-header $(HEADER) --with-footer $(FOOTER) \
 	  -d $(DOC) -R theories Autosubst $(THEORIES) $(EXAMPLES)
-	cp $(EXTRA_DIR)*.css $(EXTRA_DIR)*.ttf $(EXTRA_DIR)*.png $(DOC)
+	cp $(EXTRA_DIR)resources/* $(DOC)
 
 
 install:

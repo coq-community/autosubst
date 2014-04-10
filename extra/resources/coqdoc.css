@@ -1,9 +1,16 @@
-@import url(http://fonts.googleapis.com/css?family=Droid+Sans+Mono|Open+Sans);
+@import url(//fonts.googleapis.com/css?family=Droid+Sans+Mono|Open+Sans);
+
+/* hack to disable font boosting on Android */
+html * {
+    max-height: 1000000px;
+}
 
 body{
     margin: 0;
     padding: 0;
-    height: 100%;
+    -moz-text-size-adjust: none;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
 }
 
 #page, #toc {
