@@ -8,13 +8,8 @@ Require Import Autosubst.
 (** ** Syntax and the substitution operation
 
     The syntax of the untyped lambda calculus is given by the following grammar.
-
-    #
-      <div class="block">
-       <img src="ulc.png" alt="s, t ::= x | s t | \ s"/>
-      </div>
-    #
-
+    #\[ s, t := x \mid s \, t \mid \lambda s \]#
+    
     To generate the substitution operation we need an inductive type
     corresponding to the terms above with a few annotations.
 
@@ -61,15 +56,11 @@ Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
 
     The single-step reduction relation is defined by the following inference
     rules
-
-    #
-      <div class="block">
-        <img src="red4.png" alt="Beta"/>
-        <img src="red1.png" alt="AppL"/>
-        <img src="red2.png" alt="AppR"/>
-        <img src="red3.png" alt="Lam"/>
-      </div>
-    #
+    #\[ \cfrac{}{(\lambda s)\, t \rhd s.[t\cdot \text{id}]} \quad
+        \cfrac{s_1 \rhd s_2}{s_1 \, t \rhd s_2 \, t} \quad 
+        \cfrac{t_1 \rhd t_2}{s \, t_1 \rhd s \, t_2} \quad
+        \cfrac{s_1 \rhd s_2}{\lambda s_1 \rhd \lambda s_2} \quad
+    \]#
 
     The Coq notation for stream cons is [.:] and the identity substitution is
     [Var]. Additionally, we define the abbreviation [ beta t = t .: Var ].
