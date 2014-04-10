@@ -17,7 +17,7 @@ body{
     height: 100%;
 }
 
-#page {
+#page, #toc {
     font-family: DejaVu Sans, sans-serif;
     line-height: 1.65;
     color: #444;
@@ -54,6 +54,11 @@ body{
 
 #header > a {
     float: right;
+    color : #D6EFFF;
+}
+
+#header > a:hover {
+    color: white;
 }
 
 #main {
@@ -187,17 +192,21 @@ div:empty{ display: none;}
     padding: 0;
 }
 
-.code > span:first-of-type {
+.code > :first-child, .code > :nth-child(2), .code > :nth-child(3) {
     padding-top: 1em;
 }
 
-.code > span:last-of-type {
+.code > :last-child, .code > :nth-last-child(2), .code > :nth-last-child(3) {
     padding-bottom: 1em;
 }
 
 .code br:first-child,
 .code br:last-child {
     display: none; 
+}
+
+.idref {
+    display: inline-block; /* this is important because else the added padding does not resize the parent code-block */
 }
 
 
