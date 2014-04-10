@@ -73,7 +73,7 @@ a.idref, a.modref, #toc a {
 }
 
 #main a.idref:hover, #main a.modref:hover{
-    background-color: rgba(0,0,0,0.05); /*#D6EFFF;*/
+    background-color: #D6EFFF;
     border-radius: 3px;
     padding-left: 3px;
     padding-right: 3px;
