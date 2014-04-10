@@ -84,69 +84,69 @@ Notation uprn := (iter (fun sigma => upr sigma)).
 
 (** the essential substitution lemmas *)
 
-Class Rename_Subst (term : Type) (VarConstr_term : VarConstr term) (Rename_term : Rename term) 
-      (Subst_term : Subst term) :=
+Class Rename_Subst (term : Type) {VarConstr_term : VarConstr term} {Rename_term : Rename term} 
+      {Subst_term : Subst term} :=
   rename_subst xi s : rename xi s = s.[ren xi].
 
-Class Subst_Id (term : Type) (VarConstr_term : VarConstr term) (Subst_term : Subst term) := 
+Class Subst_Id (term : Type) {VarConstr_term : VarConstr term} {Subst_term : Subst term} := 
   subst_id s : s.[Var] = s.
 
-Class Id_Subst (term : Type) (VarConstr_term : VarConstr term) (Subst_term : Subst term) :=
+Class Id_Subst (term : Type) {VarConstr_term : VarConstr term} {Subst_term : Subst term} :=
   id_subst x sigma : (Var x).[sigma] = sigma x.
 
-Class Subst_Comp (term : Type) (Subst_term : Subst term) :=
+Class Subst_Comp (term : Type) {Subst_term : Subst term} :=
   subst_comp s sigma tau : s.[sigma].[tau] = s.[sigma >> tau].
 
 Class SubstLemmas (term : Type) {VarConstr_term : VarConstr term} {Rename_term : Rename term} 
       {Subst_term : Subst term} := {
-  SubstLemmas_Rename_Subst :> Rename_Subst term _ _ _;
-  SubstLemmas_Subst_Id :> Subst_Id term _ _;
-  SubstLemmas_Id_Subst :> Id_Subst term _ _;
-  SubstLemmas_Subst_Comp :> Subst_Comp term _
+  SubstLemmas_Rename_Subst :> Rename_Subst term;
+  SubstLemmas_Subst_Id :> Subst_Id term;
+  SubstLemmas_Id_Subst :> Id_Subst term;
+  SubstLemmas_Subst_Comp :> Subst_Comp term
 }.
 
 Class HSubst_Comp 
       (inner outer : Type)
-      (Subst_inner : Subst inner)
-      (HSubst_inner_outer : HSubst inner outer) := hsubst_comp s sigma tau : s.|[sigma].|[tau] = s.|[sigma >> tau].
+      {Subst_inner : Subst inner}
+      {HSubst_inner_outer : HSubst inner outer} := hsubst_comp s sigma tau : s.|[sigma].|[tau] = s.|[sigma >> tau].
 
 Class HSubst_Id (inner outer : Type) 
-      (VarConstr_inner : VarConstr inner) (HSubst_inner_outer : HSubst inner outer) :=
+      {VarConstr_inner : VarConstr inner} {HSubst_inner_outer : HSubst inner outer} :=
   hsubst_id s : s.|[Var] = s.
 
 Class Id_HSubst (inner outer : Type) 
-      (VarConstr_outer : VarConstr outer) (HSubst_inner_outer : HSubst inner outer) :=
+      {VarConstr_outer : VarConstr outer} {HSubst_inner_outer : HSubst inner outer} :=
   id_hsubst sigma x : (Var x).|[sigma] = Var x.
 
 Class HSubstLemmas 
       (inner outer : Type)
-      (VarConstr_inner : VarConstr inner)
-      (Subst_inner : Subst inner)
-      (VarConstr_outer : VarConstr outer)
-      (HSubst_inner_outer : HSubst inner outer) := {
-  HSubstLemmas_HSubst_Id :> HSubst_Id inner outer _ _ ;
-  HSubstLemmas_Id_HSubst :> Id_HSubst inner outer _ _ ;
-  HSubstLemmas_Hsubst_comp :> HSubst_Comp inner outer _ _
+      {VarConstr_inner : VarConstr inner}
+      {Subst_inner : Subst inner}
+      {VarConstr_outer : VarConstr outer}
+      {HSubst_inner_outer : HSubst inner outer} := {
+  HSubstLemmas_HSubst_Id :> HSubst_Id inner outer;
+  HSubstLemmas_Id_HSubst :> Id_HSubst inner outer;
+  HSubstLemmas_Hsubst_comp :> HSubst_Comp inner outer
 }.
 
 Class SubstHSubstComp 
       (inner outer : Type)
-      (Subst_outer : Subst outer)
-      (HSubst_inner_outer : HSubst inner outer) := 
+      {Subst_outer : Subst outer}
+      {HSubst_inner_outer : HSubst inner outer} := 
   subst_hsubst_comp s sigma tau : s.[sigma].|[tau] = s.|[tau].[sigma >>| tau]
 .
 
 Class HSubstHSubstComp
       (inner1 inner2 outer : Type)
-      (HSubst_inner1_outer : HSubst inner1 outer)
-      (HSubst_inner2_outer : HSubst inner2 outer)
-      (HSubst_inner2_inner1 : HSubst inner2 inner1) :=
+      {HSubst_inner1_outer : HSubst inner1 outer}
+      {HSubst_inner2_outer : HSubst inner2 outer}
+      {HSubst_inner2_inner1 : HSubst inner2 inner1} :=
 hsubst_hsubst_comp s sigma tau : s.|[sigma].|[tau] = s.|[tau].|[sigma >>| tau].
 
 Class HSubstHSubstInd
       (inner1 inner2 outer : Type)
-      (HSubst_inner1_outer : HSubst inner1 outer)
-      (HSubst_inner2_outer : HSubst inner2 outer) :=
+      {HSubst_inner1_outer : HSubst inner1 outer}
+      {HSubst_inner2_outer : HSubst inner2 outer} :=
 hsubst_hsubst_ind s (sigma : var -> inner1) (tau : var -> inner2) : s.|[sigma].|[tau] = s.|[tau].|[sigma].
 
 
@@ -156,10 +156,10 @@ Section LemmasForSubst.
 
 Context {term : Type}.
 Context {VarConstr_term : VarConstr term} {Rename_term : Rename term} {Subst_term : Subst term}.
-Context {RenameSubst_term : Rename_Subst term _ _ _}
-        {Subst_Id_term : Subst_Id term _ _}
-        {Id_Subst_term : Id_Subst term _ _}
-        {Subst_Comp_term : Subst_Comp term _}
+Context {RenameSubst_term : Rename_Subst term}
+        {Subst_Id_term : Subst_Id term}
+        {Id_Subst_term : Id_Subst term}
+        {Subst_Comp_term : Subst_Comp term}
 .
 
 Ltac autosubst := 
@@ -263,8 +263,8 @@ Context {VarConstr_outer : VarConstr outer} {Rename_outer : Rename outer} {Subst
 Context {SubstLemmas_outer : SubstLemmas outer}.
 
 Context {HSubst_inner_outer : HSubst inner outer}.
-Context {HSubstLemmas_inner_outer : HSubstLemmas inner outer _ _ _ _}.
-Context {SubstHSubstComp_inner_outer : SubstHSubstComp inner outer _ _}.
+Context {HSubstLemmas_inner_outer : HSubstLemmas inner outer}.
+Context {SubstHSubstComp_inner_outer : SubstHSubstComp inner outer}.
 
 
 Ltac autosubst := 
@@ -370,6 +370,8 @@ Ltac app_var := match goal with [ |- var] => assumption end.
 Ltac derive_VarConstr :=
 intro; solve[constructor 1; [app_var] | constructor 2; [app_var] | constructor 3; [app_var] | constructor 4; [app_var] | constructor 5; [app_var] | constructor 6; [app_var] | constructor 7; [app_var] | constructor 8; [app_var] | constructor 9; [app_var] | constructor 10; [app_var] | constructor 11; [app_var] | constructor 12; [app_var] | constructor 13; [app_var] | constructor 14; [app_var] | constructor 15; [app_var] | constructor 16; [app_var] | constructor 17; [app_var] | constructor 18; [app_var] | constructor 19; [app_var] | constructor 20].
 
+Hint Extern 0 (VarConstr _) => derive_VarConstr : derive.
+
 Ltac derive_Rename :=
   hnf; 
   fix rename 2; intros xi s;
@@ -395,6 +397,8 @@ Ltac derive_Rename :=
     let t' := map s' in 
     exact t'
   end.
+
+Hint Extern 0 (Rename _) => derive_Rename : derive.
 
 Ltac has_var s := 
   match s with 
@@ -450,6 +454,8 @@ Ltac derive_Subst :=
   end
   end.
 
+Hint Extern 0 (Subst _) => derive_Subst : derive.
+
 Ltac derive_SubstOps := 
   match goal with [|- SubstOps ?term] =>
   assert (VarConstr_term : VarConstr term) by derive_VarConstr;
@@ -457,6 +463,8 @@ Ltac derive_SubstOps :=
   assert (Subst_term : Subst term) by derive_Subst;
   constructor; assumption
   end.
+
+Hint Extern 0 (SubstOps _) => derive_SubstOps : derive.
 
 Ltac derive_SubstLemmas :=
   match goal with [ |- @SubstLemmas ?term ?VarConstr_term ?Rename_term ?Subst_term] =>
@@ -568,6 +576,7 @@ Ltac derive_SubstLemmas :=
   constructor; hnf; intros; autorew; now eauto
   end.
 
+Hint Extern 0 (SubstLemmas _) => derive_SubstLemmas : derive.
 
 Ltac derive_HSubst :=
   hnf; match goal with [|- (var -> ?inner) -> ?outer -> ?outer] =>
@@ -603,8 +612,10 @@ Ltac derive_HSubst :=
   end
   end.
 
+Hint Extern 0 (HSubst _ _) => derive_HSubst : derive.
+
 Ltac derive_HSubstLemmas :=
-  match goal with [|- HSubstLemmas ?inner ?outer _ _ _ _ ] =>
+  match goal with [|- HSubstLemmas ?inner ?outer ] =>
 
   assert(ren_hcomp : forall (xi : var -> var) (sigma : var -> inner), (ren xi : var -> outer) >>| sigma = ren xi) 
   by reflexivity;
@@ -617,6 +628,8 @@ Ltac derive_HSubstLemmas :=
   reflexivity |
   exact hsubst_comp] 
   end.
+
+Hint Extern 0 (HSubstLemmas _ _) => derive_HSubstLemmas : derive.
 
 Ltac derive_SubstHSubstComp :=
   assert(rename_hsubst_comp : forall s sigma xi, (rename xi s).|[sigma] = rename xi s.|[sigma]) by (
@@ -633,6 +646,7 @@ Ltac derive_SubstHSubstComp :=
   f_equal; f_equal;
   f_ext; intros; simpl; rewrite ?hsubst_comp; now autosubst.
 
+Hint Extern 0 (SubstHSubstComp _ _) => derive_SubstHSubstComp : derive.
 
 (** some additional lemmas *)
 
@@ -660,13 +674,3 @@ Proof.
 Qed.
 
 End AdditionalLemmas.
-
-(** User facing derive tactic *)
-
-Tactic Notation "derive" :=
-  match goal with
-    | |- VarConstr _ => derive_VarConstr
-    | |- Rename _ => derive_Rename
-    | |- Subst _ => derive_Subst
-    | |- SubstLemmas _ => derive_SubstLemmas
-  end.

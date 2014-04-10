@@ -29,6 +29,7 @@ match goal with
 end
 end.
 
+Hint Extern 0 (Size _) => derive_Size : derive.
 
 Lemma size_rec {A : Type} f (x : A) : forall P : A -> Type, (forall x, (forall y, f y < f x -> P y) -> P x) -> P x.
 Proof.
@@ -66,7 +67,7 @@ Ltac sizesimpl := repeat(simpl in *; repeat match goal with [|- context[size ?t]
 
 Tactic Notation "somega" := sizesimpl; try omega; now trivial.
 
-Instance size_list (A : Type) (size_A : Size A) : Size (list A). derive_Size. Show Proof. Defined.
+Instance size_list (A : Type) (size_A : Size A) : Size (list A). derive. Show Proof. Defined.
 
 Instance size_nat : Size nat := id.
 

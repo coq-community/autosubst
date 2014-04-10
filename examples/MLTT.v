@@ -16,10 +16,10 @@ Inductive term : Type :=
 | Lam  (s : {bind term})
 | Prod (s : term) (t : {bind term}).
 
-Instance VarConstr_term : VarConstr term. derive_VarConstr. Defined.
-Instance Rename_term : Rename term. derive_Rename. Defined.
-Instance Subst_term : Subst term. derive_Subst. Defined.
-Instance substLemmas_term : SubstLemmas term. derive_SubstLemmas. Qed.
+Instance VarConstr_term : VarConstr term. derive. Defined.
+Instance Rename_term : Rename term. derive. Defined.
+Instance Subst_term : Subst term. derive. Defined.
+Instance substLemmas_term : SubstLemmas term. derive. Qed.
 
 (* One-Step Reduction *)
 

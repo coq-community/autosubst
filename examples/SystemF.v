@@ -21,25 +21,22 @@ Inductive term :=
 
 (* Substitution Lemmas *)
 
-Instance VarConstr_type : VarConstr type. derive_VarConstr. Defined.
-Instance Rename_type : Rename type. derive_Rename. Defined.
-Instance Subst_type : Subst type. derive_Subst. Defined.
+Instance VarConstr_type : VarConstr type. derive. Defined.
+Instance Rename_type : Rename type. derive. Defined.
+Instance Subst_type : Subst type. derive. Defined.
 
-Instance substLemmas_type : SubstLemmas type. derive_SubstLemmas. Qed.
+Instance substLemmas_type : SubstLemmas type. derive. Qed.
 
-Instance hsubst_term : HSubst type term. derive_HSubst. Defined.
+Instance hsubst_term : HSubst type term. derive. Defined.
 
-Instance VarConstr_term : VarConstr term. derive_VarConstr. Defined.
-Instance Rename_term : Rename term. derive_Rename. Defined.
-Instance Subst_term : Subst term. derive_Subst. Defined.
+Instance VarConstr_term : VarConstr term. derive. Defined.
+Instance Rename_term : Rename term. derive. Defined.
+Instance Subst_term : Subst term. derive. Defined.
 
-Instance HSubstLemmas_term : HSubstLemmas type term _ _ _ _. derive_HSubstLemmas. Qed.
+Instance HSubstLemmas_term : HSubstLemmas type term. derive. Qed.
+Instance SubstHSubstComp_type_term : SubstHSubstComp type term. derive. Qed.
 
-Instance SubstHSubstComp_type_term : SubstHSubstComp type term _ _.
-derive_SubstHSubstComp.
-Qed.
-
-Instance substLemmas_term : SubstLemmas term. derive_SubstLemmas. Qed.
+Instance substLemmas_term : SubstLemmas term. derive. Qed.
 
 (* Call-by value reduction *)
 

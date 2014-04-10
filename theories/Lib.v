@@ -10,7 +10,13 @@ Ltac typeof s := let T := type of s in T.
 
 Ltac f_ext := apply functional_extensionality.
 
-Ltac autorew := repeat match goal with [H : _ |- _] => rewrite H end.
+Ltac autorew := 
+  repeat match goal with
+           | [H : _ = _ |- _] => rewrite H 
+           | [H : forall _, _ |- _] => progress rewrite H by now trivial  
+         end.
+
+Ltac derive := trivial with derive; fail.
 
 Notation nosimpl t := (let 'tt := tt in t).
 

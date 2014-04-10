@@ -5,11 +5,11 @@ Require Import Lib.
 Class MMap (A B: Type) := mmap : (A -> A) -> B -> B.
 Arguments mmap {A B _} f !s /.
 
-Class MMapExt {A B : Type} (MMap_A_B : MMap A B) := 
+Class MMapExt (A B : Type) {MMap_A_B : MMap A B} := 
   mmap_ext f g : (forall t, f t = g t) -> forall s, mmap f s = mmap g s.
 Arguments mmap_ext {A B MMap_A_B MMapExt f g} H s.
 
-Class MMapLemmas `(mmap_instance : MMap) := {
+Class MMapLemmas (A B : Type) {mmap_instance : MMap A B} := {
   mmap_id : mmap id = id;
   mmap_comp x f g: mmap f (mmap g x) = mmap (g >>> f) x
 }.
@@ -37,6 +37,8 @@ match goal with
     exact t'
 end
 end.
+
+Hint Extern 0 (MMap _ _) => derive_MMap : derive.
 
 
 Hint Rewrite @mmap_id @mmap_comp using exact _ : mmap.
@@ -66,51 +68,48 @@ constructor;[
 f_ext; induction 0; simpl; autorew; now msimpl |
 let x := fresh "x" in intros x; induction x; intros; simpl; autorew; now msimpl].
 
+Hint Extern 0 (MMapLemmas _ _) => derive_MMapLemmas : derive.
+
+
 Ltac derive_MMapExt := intros ? ? ?; fix 1; destruct 0; msimpl; f_equal; eauto; now rewrite mmap_ext.
+
+Hint Extern 0 (MMapExt _ _) => derive_MMapExt : derive.
+
+
 
 Require List.
 
-Instance mmap_refl (A : Type) : MMap A A := id.
-Arguments mmap_refl _ {_} f /.
-Instance mmap_lemmas_refl (A : Type) : MMapLemmas (mmap_refl A).
-constructor; intuition. Qed.
-Instance mmap_ext_refl (A : Type) : MMapExt (mmap_refl A).
-hnf. eauto. Defined.
+Section MMapInstances.
+
+Variable (A B C : Type).
+Variable (MMap_A_B : MMap A B).
+Variable (MMap_A_C : MMap A C).
+Variable (MMapLemmas_A_B : MMapLemmas A B).
+Variable (MMapLemmas_A_C : MMapLemmas A C).
+Variable (MMapExt_A_B : MMapExt A B).
+Variable (MMapExt_A_C : MMapExt A C).
+
+Global Instance mmap_refl: MMap A A := id.
+Arguments mmap_refl _ f /.
+Global Instance mmap_lemmas_refl : MMapLemmas A A. constructor; intuition. Qed.
+Global Instance mmap_ext_refl : MMapExt A A. hnf. eauto. Defined.
+
+Global Instance mmap_option : MMap A (option B). derive. Defined.
+Global Instance mmapLemmas_option : MMapLemmas A (option B). derive. Qed.
+Global Instance mmapExt_option : MMapExt A (option B). derive. Defined.
+
+Global Instance mmap_list : MMap A (list B). derive. Defined.
+Global Instance mmapLemmas_list : MMapLemmas A (list B). derive. Qed.
+Global Instance mmapExt_list : MMapExt A (list B). derive. Defined.
 
 
-Instance mmap_option (A B : Type) (mmap1 : MMap A B) : MMap A (option B).
-derive_MMap. Defined.
+Global Instance mmap_pair : MMap A (B * C). derive. Defined.
+Global Instance mmapLemmas_pair : MMapLemmas A (B * C). derive. Qed.
+Global Instance mmapExt_pair : MMapExt A (B * C). derive. Defined.
 
-Instance mmapLemmas_option (A B : Type) (mmap1 : MMap A B) (l1 : MMapLemmas mmap1) : MMapLemmas (mmap_option A B mmap1).
-derive_MMapLemmas. Qed.
+End MMapInstances.
 
-Instance mmapExt_option (A B : Type) (mmap1 : MMap A B) (l1 : MMapExt mmap1) : MMapExt (mmap_option A B mmap1).
-derive_MMapExt. Defined.
+Class MMapInv A {B} {mmap_inst : MMap A B} (f : B -> nat) := mmap_inv : forall g x, f (mmap g x) = f x.
 
-
-Instance mmap_list (A B : Type) (mmap1 : MMap A B) : MMap A (list B).
-derive_MMap. Defined.
-
-Instance mmapLemmas_list (A B : Type) (mmap1 : MMap A B) (l1 : MMapLemmas mmap1) : MMapLemmas (mmap_list A B mmap1).
-derive_MMapLemmas. Qed.
-
-Instance mmapExt_list (A B : Type) (mmap1 : MMap A B) (l1 : MMapExt mmap1) : MMapExt (mmap_list A B mmap1).
-derive_MMapExt. Defined.
-
-
-Instance mmap_pair (A B C : Type) (mmap1 : MMap A B) (mmap2 : MMap A C): MMap A (B * C).
-derive_MMap. Defined.
-
-Instance mmapLemmas_pair (A B C : Type) (mmap1 : MMap A B) (mmap2 : MMap A C) (l1 : MMapLemmas mmap1) (l2 : MMapLemmas mmap2) : MMapLemmas (mmap_pair A B C mmap1 mmap2).
-derive_MMapLemmas.
-Qed.
-
-
-Instance mmapExt_pair (A B C : Type) (mmap1 : MMap A B) (mmap2 : MMap A C) (l1 : MMapExt mmap1) (l2 : MMapExt mmap2) : MMapExt (mmap_pair A B C mmap1 mmap2).
-derive_MMapExt.
-Defined.
-
-Class MMapInv {A B} (mmap_inst : MMap A B) (f : B -> nat) := mmap_inv : forall g x, f (mmap g x) = f x.
-
-Instance mmapInv_length A B (mmap_inst : MMap B A) : MMapInv (mmap_list _ _ mmap_inst) (@length A).
+Instance mmapInv_length A B (mmap_inst : MMap A B) : MMapInv A (@length B).
 intros ? l.  induction l; simpl; eauto. Qed.
