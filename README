@@ -1,53 +1,49 @@
-╔════════════════════════════════════════════════════════════════════╗
-║                              AUTOSUBST                             ║
-╚════════════════════════════════════════════════════════════════════╝
+Autosubst
+=========
 
-
-Autosubst is a library for parallel de Bruijn substitutions
+Autosubst is a Coq library for parallel de Bruijn substitutions
 
 https://www.ps.uni-saarland.de/~ttebbi/autosubst
 
 
 
 Requirements
-────────────
+------------
 
-Coq 8.4
-
-some examples need ssreflect in version 1.4 or 1.5
+- Coq 8.4
+- ssreflect version 1.4 or 1.5 for some examples
 
 
 
 Installation
-────────────
+------------
 
 To build the library as well as the examples, type
 
-   make
+    make
+
+To install the library on your system, type
+
+    sudo make install
 
 
 To build the documentation, type
 
-   make doc
+    make doc
 
 You can use the file doc/toc.html to browse the documentation.
 
 
-To install the library on your system, type
-
-   sudo make install
-
-
 
 Bug Reports
-───────────
+-----------
 
-Please write a mail to ttebbi@ps.uni-saarland.de
+Please write to ( schaefer | ttebbi ) @ps.uni-saarland.de
 
 
 
 License
-───────
+-------
 
 Copyright (c) 2014 Steven Schäfer, Tobias Tebbi
 
