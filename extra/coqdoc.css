@@ -73,10 +73,12 @@ a.idref, a.modref, #toc a {
 }
 
 #main a.idref:hover, #main a.modref:hover{
-    background-color: #D6EFFF;
+    background-color: rgba(0,0,0,0.05); /*#D6EFFF;*/
     border-radius: 3px;
-    padding: 3px;
-    margin: -3px;
+    padding-left: 3px;
+    padding-right: 3px;
+    margin-left: -3px;
+    margin-right: -3px;
 }
 
 a .id {
@@ -85,8 +87,10 @@ a .id {
 
 .id[type="var"], .id[type="variable"] {
     background-color: white;
-    padding: 3px;
-    margin: -3px;
+    padding-left: 3px;
+    margin-left: -3px;
+    padding-right: 3px;
+    margin-right: -3px;
     cursor: text;
 }
 
@@ -185,6 +189,7 @@ div:empty{ display: none;}
 .code {
     border-radius: 0.5em;
     background-color: #F2FAFF;/*#fdf6e3;*/
+    margin-bottom: 2em;
  }
 
 .code span {
@@ -193,11 +198,11 @@ div:empty{ display: none;}
 }
 
 .code > :first-child, .code > :nth-child(2), .code > :nth-child(3) {
-    padding-top: 1em;
+    margin-top: 1em;
 }
 
 .code > :last-child, .code > :nth-last-child(2), .code > :nth-last-child(3) {
-    padding-bottom: 1em;
+    margin-bottom: 1em;
 }
 
 .code br:first-child,
