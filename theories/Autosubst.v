@@ -373,8 +373,10 @@ intro; solve[constructor 1; [app_var] | constructor 2; [app_var] | constructor 3
 Hint Extern 0 (VarConstr _) => derive_VarConstr : derive.
 
 Ltac derive_Rename :=
-  hnf; 
-  fix rename 2; intros xi s;
+  hnf;
+  let rename' := fresh "_rename" in
+  fix rename' 2; intros xi s;
+  pose (rename' : Rename _);
   destruct s eqn:E;
   let term := typeof s in
   match goal with [E : s = ?s' |- _] =>
