@@ -1,4 +1,4 @@
-@import url(//fonts.googleapis.com/css?family=Droid+Sans+Mono|Open+Sans);
+@import url(https://fonts.googleapis.com/css?family=Droid+Sans+Mono|Open+Sans);
 
 /* hack to disable font boosting on Android */
 html * {
@@ -82,26 +82,25 @@ a .id {
 }
 
 .id[type="var"], .id[type="variable"] {
-    background-color: white;
+    cursor: text;
+}
+
+.id[type="var"]:hover, .id[type="variable"]:hover {
     padding-left: 3px;
     margin-left: -3px;
     padding-right: 3px;
     margin-right: -3px;
-    cursor: text;
+    background-color: white;
 }
 
-.code .id[type="var"], .code .id[type="variable"] {
+.code .id[type="var"]:hover, .code .id[type="variable"]:hover {
     background-color: #F2FAFF;
 }
 
 
 #main a.idref:active, #main a.modref:active{
     background-color: white;
-}
-
-#toc{
-    color: #2874AE;
-}
+}    
 
 .libtitle {display: none}
 
@@ -269,6 +268,13 @@ tr.infrulemiddle hr {
 
 /* TOC */
 
+#toc {
+    color: #2874AE;
+}
+
+#toc h2{
+    font-size: 1.333em;
+}
 
 /* Index */
 
