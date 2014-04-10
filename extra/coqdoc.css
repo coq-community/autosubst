@@ -1,15 +1,4 @@
-@font-face {
-  font-family: DejaVu Sans Mono;
-  src:  url(./DejaVuSansMono.ttf) format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-@font-face {
-  font-family: DejaVu Sans;
-  src: url(./DejaVuSans.ttf) format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
+@import url(http://fonts.googleapis.com/css?family=Droid+Sans+Mono|Open+Sans);
 
 body{
     margin: 0;
@@ -18,7 +7,7 @@ body{
 }
 
 #page, #toc {
-    font-family: DejaVu Sans, sans-serif;
+    font-family:  "Open Sans", sans-serif;
     line-height: 1.65;
     color: #444;
     background-color: white;
@@ -161,7 +150,7 @@ div:empty{ display: none;}
 
 
 .inlinecode, .code, #main pre {
-    font-family: DejaVu Sans Mono, monospace;
+    font-family: "Droid Sans Mono", "DejaVu Sans Mono", monospace;
 }
 
 .inlinecode{
@@ -223,7 +212,7 @@ table.infrule {
 }
 
 td.infrule {
-    font-family: DejaVu Sans Mono, monospace;
+    font-family: "Droid Sans Mono", "DejaVu Sans Mono", monospace;
     text-align: center;
     padding: 0;
     line-height: 1;
@@ -299,36 +288,6 @@ tr.infrulemiddle hr {
 
 #index #entrance .spacer {
     margin: 0 30px 0 30px;
-}
-
-#footer {
-    position: fixed;
-    bottom: 0px;
-    height: 1.5em;
-    width: 100%;
-    margin-top: 2em;
-    text-align: right;
-    background-color: #eee8d5;
-    font-size: 88%;
-    font-family: DejaVu Sans, sans-serif;
-}
-
-#footer hr {
-    display: none;
-    visibility: hidden;
-}
-
-#footer a {
-    float: left;
-    padding-left: 1em;
-    padding-right: 1em;
-    text-decoration: none;
-    color: #2874AE;
-}
-
-#footer a:last-of-type {
-    float: none;
-    padding-left: 0;
 }
 
 ul.doclist {
