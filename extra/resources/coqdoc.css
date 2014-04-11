@@ -63,18 +63,18 @@ body{
     padding-bottom: 5em;
 }
 
-a.idref, a.modref, #toc a {
+#main a, #toc a {
     text-decoration: none;
-    color: inherit;
-}
-
-#main a.idref:hover, #main a.modref:hover{
-    background-color: #D6EFFF;
+    color: #2874AE;
     border-radius: 3px;
     padding-left: 3px;
     padding-right: 3px;
     margin-left: -3px;
     margin-right: -3px;
+}
+
+#main a:hover{
+    background-color: #D6EFFF;
 }
 
 a .id {
@@ -83,13 +83,13 @@ a .id {
 
 .id[type="var"], .id[type="variable"] {
     cursor: text;
-}
-
-.id[type="var"]:hover, .id[type="variable"]:hover {
     padding-left: 3px;
     margin-left: -3px;
     padding-right: 3px;
     margin-right: -3px;
+}
+
+.id[type="var"]:hover, .id[type="variable"]:hover {
     background-color: white;
 }
 

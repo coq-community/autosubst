@@ -1,3 +1,11 @@
+(** * POPLmark Part 1
+
+The #<a
+href="http://www.seas.upenn.edu/~plclub/poplmark/">POPLmark</a>#
+challenge is a set of benchmark problems to evaluate approaches to the
+formalization of syntactic theories.  We solve part 1, that is,
+progress and preservation of System F with subtyping.  *)
+
 Require Import Program.Equality List.
 Require Import Autosubst Size Decidable Contexts MMap.
 
