@@ -335,6 +335,7 @@ ul.doclist {
 
 #main {
     margin-right: auto;
+    max-width: 54em;
 }
 
 a:empty {
