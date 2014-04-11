@@ -1,3 +1,5 @@
+(* * Normalization of Call-By-Value System F *)
+
 Require Import Autosubst MMap.
 Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
 
@@ -5,7 +7,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Definitions *)
+(** **** Definitions *)
 
 Inductive type : Type :=
 | TyVar (x : var)
@@ -19,7 +21,7 @@ Inductive term :=
 | TAbs  (s : {bind type in term})
 | TApp  (s : term) (A : type).
 
-(* Substitution Lemmas *)
+(** **** Substitution Lemmas *)
 
 Instance VarConstr_type : VarConstr type. derive. Defined.
 Instance Rename_type : Rename type. derive. Defined.
@@ -38,7 +40,7 @@ Instance SubstHSubstComp_type_term : SubstHSubstComp type term. derive. Qed.
 
 Instance substLemmas_term : SubstLemmas term. derive. Qed.
 
-(* Call-by value reduction *)
+(** **** Call-by value reduction *)
 
 Inductive eval : term -> term -> Prop :=
 | eval_beta (A : type) (s t u1 u2 v : term) :
@@ -51,7 +53,7 @@ Inductive eval : term -> term -> Prop :=
     eval (TAbs A) (TAbs A).
 Hint Resolve eval_abs eval_tabs.
 
-(* Syntactic typing *)
+(** **** Syntactic typing *)
 
 Definition ctx := seq type.
 Local Notation "Gamma `_ i" := (nth (Var 0) Gamma i).
@@ -74,7 +76,7 @@ Inductive has_type (Gamma : ctx) : term -> type -> Prop :=
     has_type Gamma s (All A) ->
     has_type Gamma (TApp s B) A.[B.:Var].
 
-(* Semantic typing *)
+(** **** Semantic typing *)
 
 Definition L (P : term -> Prop) (s : term) :=
   exists2 v, eval s v & P v.

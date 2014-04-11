@@ -1,3 +1,9 @@
+(** * Martin-Löf Type Theory 
+
+  We will prove confluence and type preservation.
+*)
+
+
 Require Import Autosubst MMap Size Lib Decidable Contexts.
 Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
 Require Import ARS.
@@ -6,8 +12,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* The (Curry style) calculus of constructions with a hierarchy
- of predicative universes. *)
+(** **** The (Curry style) calculus of constructions with a hierarchy of predicative universes. *)
 
 Inductive term : Type :=
 | TVar (x : var)
@@ -21,7 +26,7 @@ Instance Rename_term : Rename term. derive. Defined.
 Instance Subst_term : Subst term. derive. Defined.
 Instance substLemmas_term : SubstLemmas term. derive. Qed.
 
-(* One-Step Reduction *)
+(** **** One-Step Reduction *)
 
 Inductive step : term -> term -> Prop :=
 | step_beta s t u :
@@ -49,7 +54,7 @@ Proof.
   move=> s t u -> sigma; apply: step_beta; by autosubst.
 Qed.
 
-(* Many-Step Reduction *)
+(** **** Many-Step Reduction *)
 
 Lemma red_app s1 s2 t1 t2 :
   red s1 s2 -> red t1 t2 -> red (App s1 t1) (App s2 t2).
@@ -93,7 +98,7 @@ Proof.
   elim: s sigma tau => *; autosubst; eauto with red_congr.
 Qed.
 
-(* Conversion *)
+(** **** Conversion *)
 
 Definition sconv (sigma tau : var -> term) :=
   forall x, sigma x === tau x.
@@ -145,7 +150,7 @@ Proof.
   move=> c. by apply: conv_compat => -[].
 Qed.
 
-(* Church-Rosser theorem *)
+(** **** Church-Rosser theorem *)
 
 Inductive pstep : term -> term -> Prop :=
 | pstep_beta s1 s2 t1 t2 u :
@@ -230,7 +235,7 @@ Proof.
 Qed.
 Hint Resolve church_rosser.
 
-(* Reduction behaviour *)
+(** **** Reduction behaviour *)
 
 Lemma normal_step_sort n : normal step (Sort n).
 Proof. move=> [s st]. inv st. Qed.
@@ -266,7 +271,7 @@ Proof.
   move=> h. apply cr_star_normal in h => //. apply red_prod_inv in h. inv h.
 Qed.
 
-(* Typing *)
+(** **** Typing *)
 
 Inductive sub : term -> term -> Prop :=
 | sub_sort n m : n <= m -> sub (Sort n) (Sort m)
