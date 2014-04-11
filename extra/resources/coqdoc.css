@@ -1,4 +1,4 @@
-@import url(https://fonts.googleapis.com/css?family=Droid+Sans+Mono|Open+Sans);
+@import url(https://fonts.googleapis.com/css?family=Droid+Sans+Mono|Open+Sans:400,600);
 
 /* hack to disable font boosting on Android */
 html * {
@@ -63,14 +63,22 @@ body{
     padding-bottom: 5em;
 }
 
-#main a, #toc a {
+#main a {
     text-decoration: none;
-    color: #2874AE;
     border-radius: 3px;
     padding-left: 3px;
     padding-right: 3px;
     margin-left: -3px;
     margin-right: -3px;
+}
+#main a {
+    color: inherit;
+    font-weight: bold;
+}
+
+#main .code a, #main .inlinecode a, #toc a {
+    color: inherit;
+    font-weight: inherit;
 }
 
 #main a:hover{
@@ -78,15 +86,17 @@ body{
 }
 
 a .id {
-    cursor: pointer;
+    cursor: inherit;
 }
 
-.id[type="var"], .id[type="variable"] {
-    cursor: text;
-    padding-left: 3px;
-    margin-left: -3px;
-    padding-right: 3px;
-    margin-right: -3px;
+a > .id[type="var"], a > .id[type="variable"] {
+   cursor: text;
+   padding: inherit;
+   margin: inherit;
+   margin-top: -5px;
+   margin-bottom: -5px;
+   padding-top: 5px;
+   padding-bottom: 5px;
 }
 
 .id[type="var"]:hover, .id[type="variable"]:hover {
@@ -104,7 +114,7 @@ a .id {
 
 .libtitle {display: none}
 
-.libtitle, .section, #toc h2 {
+h, h1, h2, h3, h4, h5 {
     line-height: 1;
     color: #2874AE;
     text-rendering: optimizeLegibility;
@@ -146,10 +156,12 @@ div:empty{ display: none;}
 	font-size: 1em;
 }
 
+#toc h2 {
+    padding-bottom: 0;
+}
 
 #main .doc {
     margin: 0px;
-    max-width: 54em;
     text-align: justify;
 }
 
@@ -170,7 +182,6 @@ div:empty{ display: none;}
     margin-bottom: 1em;
     padding-left: 1em;
     padding-right: 1em;
-    max-width: 52em;
 }
 
 .block{
@@ -308,7 +319,29 @@ ul.doclist {
     margin-bottom: 0em;
 }
 
+#toc > * {
+    clear: both;
+}
 
+#toc > a {
+    display: block;
+    float: left;
+    margin-top: 1em;
+}
 
+#toc a h2{
+    display: inline;
+}
 
+#main {
+    margin-right: auto;
+    max-width: 54em;
+}
 
+a:empty {
+    float: right;
+}
+
+#main > br + br {
+    display: none;
+}
