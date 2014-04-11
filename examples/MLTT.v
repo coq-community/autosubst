@@ -1,10 +1,8 @@
-(** * Martin-Löf Type Theory 
+(** * Martin-Löf Type Theory
 
-  We will prove confluence and type preservation.
-*)
+    Type preservation and confluence. *)
 
-
-Require Import Autosubst MMap Size Lib Decidable Contexts.
+Require Import Autosubst.
 Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
 Require Import ARS.
 
@@ -12,7 +10,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(** **** The (Curry style) calculus of constructions with a hierarchy of predicative universes. *)
+(** **** Curry-style type theory with a hierarchy of predicative universes. *)
 
 Inductive term : Type :=
 | TVar (x : var)
@@ -343,7 +341,8 @@ Proof.
   move=> tp. elim: tp xi Delta => {Gamma s A} /=
     [Gamma x _ si|Gamma n _|Gamma A B s t u->{u} _ ih1 _ ih2|
      Gamma A B s n _ ih1 _ ih2|Gamma A B n _ ih1 _ ih2|
-     Gamma A B s n _ ih1 conv _ ih2|Gamma A B s _ ih sub] xi Delta wf subctx eqn; autosubst.
+     Gamma A B s n _ ih1 conv _ ih2|Gamma A B s _ ih sub]
+    xi Delta wf subctx eqn; autosubst.
   - rewrite eqn //. apply: ty_var => //. exact: subctx.
   - exact: ty_sort wf.
   - apply: (@ty_app _ A.[ren xi] B.[up (ren xi)]). by autosubst.
@@ -394,18 +393,20 @@ Proof.
   move=> tp. elim: tp sigma Delta => {Gamma s A} /=
     [Gamma x _ si|Gamma n _|Gamma A B s t u->{u} _ ih1 _ ih2|
      Gamma A B s n _ ih1 _ ih2|Gamma A B n _ ih1 _ ih2|
-     Gamma A B s n _ ih1 conv _ ih2|Gamma A B s _ ih sub] sigma Delta wf cty; autosubst in *.
+     Gamma A B s n _ ih1 conv _ ih2|Gamma A B s _ ih sub]
+    sigma Delta wf cty; autosubst in *.
   - exact: cty.
   - exact: ty_sort.
   - apply: (@ty_app _ A.[sigma] B.[up sigma]). by autosubst.
       exact: ih1. exact: ih2.
   - apply: ty_lam. apply: ih2. apply: ok_cons => //. by eapply ih1.
-    move=> [_|x /=/cty] //=. autosubst. rewrite -subst_comp. apply: ty_var => //.
-    apply: ok_cons => //. by eapply ih1. eapply weakenings; autosubst=> //.
-    by eapply ih1.
+    move=> [_|x /=/cty] //=. autosubst. rewrite -subst_comp.
+    apply: ty_var => //. apply: ok_cons => //. by eapply ih1.
+    eapply weakenings; autosubst=> //. by eapply ih1.
   - apply: ty_prod. exact: ih1. apply ih2. apply: ok_cons => //. by eapply ih1.
     move=> [_|x /=/cty] /=. autosubst. rewrite -subst_comp. apply: ty_var => //.
-    apply: ok_cons => //. by eapply ih1. eapply weakenings; autosubst=> //. by eapply ih1.
+    apply: ok_cons => //. by eapply ih1. eapply weakenings; autosubst=> //.
+    by eapply ih1.
   - eapply ty_conv. by eapply ih1. exact: conv_subst. by eapply ih2.
   - eapply ty_sub. by eapply ih. exact: sub_subst.
 Qed.
@@ -429,8 +430,10 @@ Proof.
     move: tp1 => /ty_ok ok1. inv ok1; by eauto.
   have okgb: [ B :: Gamma |- ].
     apply: ok_cons (tp2). exact: ty_ok tp2.
-  rewrite -[s]subst_id -[C]subst_id. apply: (ty_subst tp1) => // -[_|x dom] //=; autosubst.
-  - eapply (ty_conv (n := m)). by eapply ty_var. exact: conv_subst. exact: weakening tp3 tp2.
+  rewrite -[s]subst_id -[C]subst_id.
+  apply: (ty_subst tp1) => // -[_|x dom] //=; autosubst.
+  - eapply (ty_conv (n := m)). by eapply ty_var. exact: conv_subst.
+    exact: weakening tp3 tp2.
   - exact: ty_var.
 Qed.
 
@@ -561,3 +564,4 @@ Proof.
     exact: ih1.
   - move=> Gamma s A B tp1 ih1 sb t st. apply: ty_sub sb. exact: ih1.
 Qed.
+

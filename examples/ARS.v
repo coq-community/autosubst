@@ -1,4 +1,6 @@
+(** * Abstract Reduction Systems
 
+    Useful lemmas when working with small-step reduction relations. *)
 Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
 
 Set Implicit Arguments.
@@ -226,7 +228,8 @@ Qed.
 
 End CoFinal.
 
-(* The Tait, Martin-Loef, Takahashi confluence proof method. *)
+(** **** The Tait, Martin-Loef, Takahashi confluence proof method. *)
+
 Lemma cr_method T (e1 e2 : Rel T) (rho : T -> T) :
   e1 <=2 e2 -> e2 <=2 star e1 -> triangle e2 rho -> CR e1.
 Proof.
@@ -236,7 +239,7 @@ Proof.
   exact: confluent_stable.
 Qed.
 
-(* Computing normal forms *)
+(** **** Computing normal forms *)
 
 Section ComputationN.
 Variables (T : Type) (e : Rel T) (rho : T -> T).
