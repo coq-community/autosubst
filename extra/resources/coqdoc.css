@@ -146,6 +146,9 @@ div:empty{ display: none;}
 	font-size: 1em;
 }
 
+#toc h2 {
+    padding-bottom: 0;
+}
 
 #main .doc {
     margin: 0px;
@@ -308,7 +311,16 @@ ul.doclist {
     margin-bottom: 0em;
 }
 
+#toc > * {
+    clear: both;
+}
 
+#toc > a {
+    display: block;
+    float: left;
+    margin-top: 1em;
+}
 
-
-
+#toc a h2{
+    display: inline;
+}
