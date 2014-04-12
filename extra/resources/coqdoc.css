@@ -196,11 +196,32 @@ div:empty{ display: none;}
     border-radius: 0.5em;
     background-color: #F2FAFF;/*#fdf6e3;*/
     margin-bottom: 2em;
+    position: relative;
  }
 
 .code span {
     display: inline-block;
     padding: 0;
+}
+
+.code > br{
+    display: block;
+}
+
+
+.code span:before {
+    color: #2874AE;
+    background-color: #F2FAFF;
+    content: "\21AA";
+    position: absolute;
+    left: 0.1em;
+    z-index: 1;
+}
+
+.code > br + span:before, .code > br + * span:before, .code > span:first-child:before, .code > *:first-child span:before {
+    color: #F2FAFF;
+    background-color: #F2FAFF;
+    z-index: 2;
 }
 
 .code > :first-child, .code > :nth-child(2), .code > :nth-child(3) {
