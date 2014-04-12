@@ -1,4 +1,4 @@
-(* * Normalization of Call-By-Value System F *)
+(** * Normalization of Call-By-Value System F *)
 
 Require Import Autosubst MMap.
 Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
@@ -27,9 +27,9 @@ Instance VarConstr_type : VarConstr type. derive. Defined.
 Instance Rename_type : Rename type. derive. Defined.
 Instance Subst_type : Subst type. derive. Defined.
 
-Instance substLemmas_type : SubstLemmas type. derive. Qed.
+Instance SubstLemmas_type : SubstLemmas type. derive. Qed.
 
-Instance hsubst_term : HSubst type term. derive. Defined.
+Instance HSubst_term : HSubst type term. derive. Defined.
 
 Instance VarConstr_term : VarConstr term. derive. Defined.
 Instance Rename_term : Rename term. derive. Defined.
@@ -38,7 +38,7 @@ Instance Subst_term : Subst term. derive. Defined.
 Instance HSubstLemmas_term : HSubstLemmas type term. derive. Qed.
 Instance SubstHSubstComp_type_term : SubstHSubstComp type term. derive. Qed.
 
-Instance substLemmas_term : SubstLemmas term. derive. Qed.
+Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
 
 (** **** Call-by value reduction *)
 
@@ -57,7 +57,7 @@ Hint Resolve eval_abs eval_tabs.
 
 Definition ctx := seq type.
 Local Notation "Gamma `_ i" := (nth (Var 0) Gamma i).
-Definition lift (Gamma : ctx) := [seq A.[ren (+1)] | A <- Gamma].
+Definition raise (Gamma : ctx) := [seq A.[ren (+1)] | A <- Gamma].
 
 Inductive has_type (Gamma : ctx) : term -> type -> Prop :=
 | ty_var (x : var) :
@@ -70,7 +70,7 @@ Inductive has_type (Gamma : ctx) : term -> type -> Prop :=
     has_type Gamma t A ->
     has_type Gamma (App s t) B
 | ty_tabs (A : type) (s : term) :
-    has_type (lift Gamma) s A ->
+    has_type (raise Gamma) s A ->
     has_type Gamma (TAbs s) (All A)
 | ty_tapp (A B : type) (s : term) :
     has_type Gamma s (All A) ->
@@ -116,8 +116,8 @@ Lemma V_ren A rho s xi :
   V A.[ren xi] rho s <-> V A (xi >>> rho) s.
 Proof.
   elim: A rho s xi => //=.
-  - move=> A ih1 B ih2 rho v xi. split=> -[A' [s->h]]; do 2 eexists; try reflexivity;
-      move=> t /ih1/h[u ev]/ih2 ih; by exists u.
+  - move=> A ih1 B ih2 rho v xi. split=> -[A'[s->h]];
+     (do 2 eexists) => // t /ih1/h[u ev]/ih2 ih; by exists u.
   - move=> A ih rho s xi; autosubst.
     split=> -[s' -> h]; eexists; autosubst=> P B; move: {h} (h P B) => [v ev].
     + move=> /ih {ih} ih. exists v => //. by autosubst in ih.
@@ -135,20 +135,23 @@ Lemma V_subst A rho v sigma :
 Proof.
   elim: A rho v sigma.
   - move=> x rho v sigma /=. split; intuition eauto.
-  - move=> A ih1 B ih2 rho v sigma /=. split=> -[A' [s->h]]; (do 2 eexists) => //;
-      move=> t /ih1/h[u ev]/ih2 ih; by exists u.
-  - move=> A ih rho v sigma. split; autosubst; move=> [s->{v}h]; eexists=> [//|P B].
-    + move: (h P B) => [v ev /ih hv]. exists v => //. apply: eq_V hv => -[|X] //= u.
-      by intuition. move=> _. exact: V_ren.
-    + move: (h P B) => [v ev hv]. exists v => //. apply/ih. apply: eq_V hv => -[|X] //= u.
-      intuition. split => [p|/V_ren//]. by apply/V_ren.
+  - move=> A ih1 B ih2 rho v sigma /=. split=> -[A' [s->h]];
+      (do 2 eexists) => // t /ih1/h[u ev]/ih2 ih; by exists u.
+  - move=> A ih rho v sigma. split;
+      autosubst; move=> [s->{v}h]; eexists=> [//|P B].
+    + move: (h P B) => [v ev /ih hv]. exists v => //.
+      apply: eq_V hv => -[|X] //= u. by intuition. move=> _. exact: V_ren.
+    + move: (h P B) => [v ev hv]. exists v => //. apply/ih.
+      apply: eq_V hv => -[|X] //= u. by intuition.
+      split => [p|/V_ren//]. by apply/V_ren.
 Qed.
 
-Definition VG (Gamma : ctx) (rho : var -> term -> Prop) (sigma : var -> term) : Prop :=
+Definition VG (Gamma : ctx) (rho : var -> term -> Prop) (sigma : var -> term) :=
   forall x, x < size Gamma -> E Gamma`_x rho (sigma x).
 
 Theorem soundness Gamma s A :
-  has_type Gamma s A -> forall delta sigma rho, VG Gamma rho sigma -> E A rho s.|[delta].[sigma].
+  has_type Gamma s A ->
+    forall delta sigma rho, VG Gamma rho sigma -> E A rho s.|[delta].[sigma].
 Proof.
   elim=> {Gamma s A} [Gamma x xe|Gamma A B s _ ih|Gamma A B s t _ ih1 _ ih2|
                       Gamma A s _ ih|Gamma A B s _ ih] delta sigma rho l.
@@ -167,11 +170,14 @@ Proof.
     by intuition.
 Qed.
 
+(** **** Applications *)
+
+Definition nilA : var -> term -> Prop := fun _ _ => False.
+
 Corollary soundness_nil s A :
-  has_type [::] s A -> E A (fun _ _ => False) s.
+  has_type [::] s A -> E A nilA s.
 Proof.
-  move=> /soundness h. specialize (h Var Var (fun _ _ => False)). autosubst in h.
-  apply: h. by [].
+  move=> h. cut (E A nilA s.|[Var].[Var]). by autosubst. exact: (soundness h).
 Qed.
 
 Corollary normalization s A :
@@ -187,13 +193,23 @@ Proof.
   by move=> [s {t} _ []].
 Qed.
 
+(** * Substitutivity of small step reduction. *)
+
 Inductive step : term -> term -> Prop :=
-| step_beta (A : type) (s s' t : term) : s' = s.[t.:Var] -> step (App (Abs A s) t) (s')
-| step_tbeta (B : type) s s' : s' = s.|[B.:Var] -> step (TApp (TAbs s) B) s'
-| step_app1 s s' t : step s s' -> step (App s t) (App s' t)
-| step_app2 s t t' : step t t' -> step (App s t) (App s t')
+| step_beta (A : type) (s s' t : term) :
+    s' = s.[t.:Var] -> step (App (Abs A s) t) (s')
+| step_tbeta (B : type) s s' :
+    s' = s.|[B.:Var] -> step (TApp (TAbs s) B) s'
+| step_app1 s s' t :
+    step s s' -> step (App s t) (App s' t)
+| step_app2 s t t' :
+    step t t' -> step (App s t) (App s t')
 | step_abs (A : type) (s t: term) : step s t ->
     step (Abs A s) (Abs A t).
 
-Lemma substitutivity s t : step s t -> forall sigma tau, step s.|[tau].[sigma] t.|[tau].[sigma].
-Proof. elim=> /=; constructor; subst; autosubst. Qed.
+Lemma substitutivity s t :
+  step s t -> forall sigma tau, step s.|[tau].[sigma] t.|[tau].[sigma].
+Proof.
+  elim=> /=; constructor; subst; autosubst.
+Qed.
+

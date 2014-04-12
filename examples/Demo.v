@@ -101,3 +101,4 @@ Lemma substitutivity s1 s2 :
 Proof.
   induction 1; intros; autosubst; constructor; trivial. subst. autosubst.
 Qed.
+
