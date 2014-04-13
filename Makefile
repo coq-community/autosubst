@@ -10,6 +10,10 @@ COQDOCFLAGS := --external 'http://ssr2.msr-inria.inria.fr/doc/ssreflect-1.5/' Ss
 	       --with-header $(HEADER) --with-footer $(FOOTER) \
 	       -d $(DOC)
 
+ifneq "$(COQBIN)" ""
+        COQBIN := $(COQBIN)/
+endif
+
 all:
 	$(MAKE) -C theories
 	$(MAKE) -C examples
@@ -26,7 +30,6 @@ doc: all
 	- mkdir -p $(DOC)
 	coqdoc $(COQDOCFLAGS) -R theories Autosubst $(THEORIES) $(EXAMPLES)
 	cp $(EXTRA_DIR)resources/* $(DOC)
-
 
 install:
 	$(MAKE) -C theories install
