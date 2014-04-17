@@ -204,10 +204,6 @@ div:empty{ display: none;}
     padding: 0;
 }
 
-.code > br{
-    display: block;
-}
-
 
 .code span:before {
     color: #2874AE;
@@ -361,8 +357,4 @@ ul.doclist {
 
 a:empty {
     float: right;
-}
-
-#main > br + br {
-    display: none;
 }
