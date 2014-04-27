@@ -54,7 +54,7 @@ Proof.
 Qed.
 
 Fixpoint wf_ty Delta A := match A with
-  | TyVar x => exists B, dget Delta x B
+  | TyVar x => exists B, atnd Delta x B
   | Top => True
   | Arr A B => wf_ty Delta A /\ wf_ty Delta B
   | All A B => wf_ty Delta A /\ wf_ty (A :: Delta) B
@@ -68,7 +68,7 @@ Inductive sub (Delta : list type) : type -> type -> Prop :=
 | SA_Refl x :
     wf_ty Delta (Var x) -> SUB Delta |- Var x <: Var x
 | SA_Trans x A B :
-    dget Delta x A -> SUB Delta |- A <: B -> SUB Delta |- Var x <: B
+    atnd Delta x A -> SUB Delta |- A <: B -> SUB Delta |- Var x <: B
 | SA_Arrow A1 A2 B1 B2 :
     SUB Delta |- B1 <: A1 -> SUB Delta |- A2 <: B2 ->
     SUB Delta |- Arr A1 A2 <: Arr B1 B2
@@ -79,33 +79,30 @@ where "'SUB' Delta |- A <: B" := (sub Delta A B).
 
 Lemma wf_weak Delta1 Delta2 A xi :
   wf_ty Delta1 A ->
-  (forall x B, dget Delta1  x B -> exists B', dget Delta2 (xi x) B') ->
+  (forall x B, atnd Delta1  x B -> exists B', atnd Delta2 (xi x) B') ->
   wf_ty Delta2 A.[ren xi].
 Proof.
   autorevert A. induction A; intros; ainv; simpl; eauto.
   autosubst. split; eauto.
   eapply IHA0. eassumption.
-  intros. ainv (autosubst; eauto using @dget).
-  edestruct H0; eauto. eauto using @dget.
+  intros. ainv (autosubst; eauto using @atnd).
+  edestruct H0; eauto. eauto using @atnd.
 Qed.
 
 Lemma wf_weak1 Delta A A' B :
   wf_ty Delta A -> A' = A.[ren(+1)] -> wf_ty (B :: Delta) A'.
-Proof. intros. subst. eauto using wf_weak, @dget. Qed.
+Proof. intros. subst. eauto using wf_weak, @atnd. Qed.
 
 Corollary wf_weak' Delta1 Delta2 A :
   wf_ty Delta1 A ->
   (length Delta1 <= length Delta2) ->
   wf_ty Delta2 A.
 Proof.
-  intros.
-  cutrewrite(A = A.[ren id]);[idtac|now autosubst].
+  intros. replace A with A.[ren id] by now autosubst.
   eapply wf_weak; eauto.
-  intros.
-  apply dget_defined.
+  intros. apply atnd_defined.
   cut(id x < length Delta1). omega.
-  apply dget_defined.
-  eexists. eassumption.
+  apply atnd_defined. eauto.
 Qed.
 
 Lemma sub_refl Delta A : wf_ty Delta A -> SUB Delta |- A <: A.
@@ -115,9 +112,8 @@ Proof.
 Qed.
 
 Lemma sub_weak Delta1 Delta2 A1 A2 A1' A2' xi : SUB Delta1 |- A1 <: A2 ->
-  (forall x B, dget Delta1 x B -> dget Delta2 (xi x) B.[ren xi]) ->
-  A1' = A1.[ren xi] ->
-  A2' = A2.[ren xi] ->
+  (forall x B, atnd Delta1 x B -> atnd Delta2 (xi x) B.[ren xi]) ->
+  A1' = A1.[ren xi] -> A2' = A2.[ren xi] ->
   SUB Delta2 |- A1' <: A2' .
 Proof.
    intros H. intros. subst. autorevert H.
@@ -131,7 +127,7 @@ Qed.
 Lemma sub_weak1 Delta A A' B B' C :
   SUB Delta |- A <: B ->  A' = A.[ren(+1)] ->  B' = B.[ren(+1)] ->
   SUB (C :: Delta) |- A' <: B'.
-Proof.  intros. eapply sub_weak; eauto using @dget. Qed.
+Proof.  intros. eapply sub_weak; eauto using @atnd. Qed.
 
 Lemma sub_wf {Delta A B} : SUB Delta |- A <: B -> wf_ty Delta A /\ wf_ty Delta B.
 Proof.
@@ -180,12 +176,12 @@ Proof.
       eapply wf_weak'. eassumption.
       repeat rewrite app_length. simpl. omega.
     - constructor. simpl.
-      apply dget_defined. apply dget_defined in H.
+      apply atnd_defined. apply atnd_defined in H.
       repeat rewrite -> app_length in *. simpl in *. omega.
     - decide (x = length Delta').
       + subst.
-        econstructor. { apply dget_repl. }
-        apply dget_steps' with (x := 0) in H.
+        econstructor. { apply atnd_repl. }
+        apply atnd_steps' with (x := 0) in H.
         destruct H as [? [? H]]. inv H.
         eapply H_trans;[idtac | eapply sub_weak;
           try reflexivity; try eassumption | idtac].
@@ -193,12 +189,12 @@ Proof.
         * intros. change (B' :: Delta) with ((B' :: nil) ++ Delta).
           rewrite app_assoc.
           cutrewrite (S (length Delta') = length (Delta' ++ B' :: nil)).
-          now apply dget_steps.
+          now apply atnd_steps.
           rewrite app_length. simpl. omega.
         * autosubst in IHsub.
           eapply IHsub; now eauto.
       + econstructor; eauto.
-        eapply dget_repl; now eauto.
+        eapply atnd_repl; now eauto.
     - constructor; now eauto.
     - constructor.
       + now eauto.
@@ -268,7 +264,7 @@ where "'EV' s => t" := (eval s t).
 
 Lemma ty_weak  xi zeta Delta1 Delta2 Gamma1 Gamma2 s A :
   TY Delta1;Gamma1 |- s : A ->
-  (forall x B, dget Delta1 x B -> dget Delta2 (xi x) B.[ren xi]) ->
+  (forall x B, atnd Delta1 x B -> atnd Delta2 (xi x) B.[ren xi]) ->
   (forall x B, atn Gamma1 x B -> atn Gamma2 (zeta x) B.[ren xi]) ->
   TY Delta2;Gamma2 |- s.|[ren xi].[ren zeta] : A.[ren xi] .
 Proof.
@@ -280,7 +276,7 @@ Proof.
      + eauto using wf_weak.
    - autosubst. econstructor; autosubst; eauto; apply IHty1; eauto.
    - autosubst. econstructor. apply IHty.
-     + intros. now eapply up_dget; eauto.
+     + intros. now eapply up_atnd; eauto.
      + intros. eapply up_mmap_atn; eauto.
      + eauto using wf_weak.
    - autosubst. econstructor.
@@ -292,7 +288,7 @@ Qed.
 
 Lemma ty_weak_ty  xi Delta1 Delta2 Gamma1 Gamma2 s s' A A':
   TY Delta1;Gamma1 |- s : A ->
-  (forall x B, dget Delta1 x B -> dget Delta2 (xi x) B.[ren xi]) ->
+  (forall x B, atnd Delta1 x B -> atnd Delta2 (xi x) B.[ren xi]) ->
   (forall x B, atn Gamma1 x B -> atn Gamma2 x B.[ren xi]) ->
   A' = A.[ren xi] ->
   s' = s.|[ren xi] ->
@@ -349,7 +345,7 @@ Qed.
 
 Lemma wf_subst Delta1 Delta2 A sigma :
   wf_ty Delta1 A ->
-  (forall x B, dget Delta1 x B -> wf_ty Delta2 (sigma x)) ->
+  (forall x B, atnd Delta1 x B -> wf_ty Delta2 (sigma x)) ->
   wf_ty Delta2 A.[sigma].
 Proof.
   intros H. autorevert A. induction A; eauto; intros; autosubst.
@@ -357,13 +353,13 @@ Proof.
   - ainv; eauto.
   - split. ainv; eauto. ainv. eapply IHA0. eassumption.
     intros [|]; intros.
-    + simpl. eauto using @dget.
-    + ainv. eapply wf_weak; eauto using @dget.
+    + simpl. eauto using @atnd.
+    + ainv. eapply wf_weak; eauto using @atnd.
 Qed.
 
 Lemma sub_subst Delta1 Delta2 A B sigma:
   SUB Delta1 |- A <: B ->
-  (forall x C, dget Delta1 x C -> SUB Delta2 |- sigma x <: C.[sigma]) ->
+  (forall x C, atnd Delta1 x C -> SUB Delta2 |- sigma x <: C.[sigma]) ->
   SUB Delta2 |- A.[sigma] <: B.[sigma].
 Proof.
   intros H. autorevert H.
@@ -372,7 +368,7 @@ Proof.
   - inv H. eauto using sub_refl, wf_subst, sub_wf_1.
   - eauto using sub_trans.
   - apply IHsub2. intros. inv H3.
-    + econstructor. eauto using @dget.
+    + econstructor. eauto using @atnd.
       autosubst. apply sub_refl.
       eapply wf_weak1; eauto using sub_wf_1. now autosubst.
     + autosubst. eapply sub_weak1; try reflexivity; eauto. now autosubst.
@@ -380,7 +376,7 @@ Qed.
 
 Lemma ty_subst Delta1 Delta2 Gamma1 Gamma2 s A sigma tau:
   TY Delta1;Gamma1 |- s : A ->
-  (forall x B, dget Delta1 x B -> SUB Delta2 |- sigma x <: B.[sigma] ) ->
+  (forall x B, atnd Delta1 x B -> SUB Delta2 |- sigma x <: B.[sigma] ) ->
   (forall x B, atn Gamma1 x B -> TY Delta2;Gamma2 |- tau x : B.[sigma]) ->
   TY Delta2;Gamma2 |- s.|[sigma].[tau] : A.[sigma].
 Proof.
@@ -397,7 +393,7 @@ Proof.
     + intros ? ? H_get. inv H_get; autosubst.
       * econstructor. constructor; eauto.
         autosubst. apply sub_refl. eauto using wf_weak1, wf_subst, sub_wf_1.
-      * eapply sub_weak; eauto using @dget. now autosubst.
+      * eapply sub_weak; eauto using @atnd. now autosubst.
     + intros.
       apply mmap_atn in H3. ainv.
       eapply ty_weak_ty'; eauto. now autosubst.
@@ -408,7 +404,7 @@ Qed.
 
 Corollary ty_subst_term Delta Gamma1 Gamma2 s A sigma:
   TY Delta;Gamma1 |- s : A ->
-  (forall x B, dget Delta x B -> wf_ty Delta B) ->
+  (forall x B, atnd Delta x B -> wf_ty Delta B) ->
   (forall x B, atn Gamma1 x B -> TY Delta;Gamma2 |- sigma x : B) ->
   TY Delta;Gamma2 |- s.[sigma] : A.
 Proof.
@@ -473,7 +469,7 @@ Qed.
 
 Theorem preservation Delta Gamma s t A :
   TY Delta;Gamma |- s : A -> EV s => t ->
-  (forall x B, dget Delta x B -> wf_ty Delta B) ->
+  (forall x B, atnd Delta x B -> wf_ty Delta B) ->
   TY Delta;Gamma |- t : A.
 Proof.
   intros H_ty H_ev.
@@ -487,7 +483,7 @@ Proof.
   - cutrewrite (s.|[B .: Var] = s.|[B .: Var].[Var]);[idtac|now autosubst].
     inv H_ty; [idtac | pose proof (ty_inv_tabs H1 H2) as [? [B' [? ?]]]];
     (eapply ty_subst; eauto using ty; [
-        now intros ? ? H_dget; inv H_dget; autosubst; eauto using sub, sub_refl
+        now intros ? ? H_atnd; inv H_atnd; autosubst; eauto using sub, sub_refl
       | now intros [|] ? H_atn; simpl in *; subst; apply mmap_atn in H_atn;
         destruct H_atn as [? [? ?]]; subst; autosubst; eauto using ty ]).
 Qed.

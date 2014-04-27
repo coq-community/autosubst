@@ -11,18 +11,17 @@ Fixpoint atn {X} l n (x : X) :=
   end.
 
 
-Inductive dget {term : Type} {VarConstr_term : VarConstr term} {Subst_term : Subst term} 
-: list term -> var -> term -> Prop :=
-| DGet0 Delta A A': A' = A.[ren(+1)] -> dget (A :: Delta) 0 A'
-| DGetS Delta x A B B' : dget Delta x B -> B' = B.[ren(+1)] -> dget (A :: Delta) (S x) B'
-.
-
 Section SubstInstance.
 
 
 Context {term : Type}.
 Context {VarConstr_term : VarConstr term} {Rename_term : Rename term} {Subst_term : Subst term}.
 Context {subst_lemmas : SubstLemmas term}.
+
+Inductive atnd: list term -> var -> term -> Prop :=
+| Atnd0 Delta A A': A' = A.[ren(+1)] -> atnd (A :: Delta) 0 A'
+| AtndS Delta x A B B' : atnd Delta x B -> B' = B.[ren(+1)] -> atnd (A :: Delta) (S x) B'
+.
 
 Lemma atn_mmap {f : term -> term} {Gamma x A A'} : atn Gamma x A -> A' = (f A) -> atn (mmap f Gamma) x A'.
 Proof.
@@ -48,16 +47,16 @@ Proof.
   eapply atn_mmap; eauto. now autosubst.
 Qed.
 
-Lemma up_dget xi Delta1 Delta2 A B x:
-  (forall x C, dget Delta1 x C -> dget Delta2 (xi x) C.[ren xi]) ->
-  dget (A :: Delta1) x B ->
-  dget (A.[ren xi] :: Delta2) ((0 .: xi >>> (+1)) x) B.[ren (0 .: xi >>> (+1))].
+Lemma up_atnd xi Delta1 Delta2 A B x:
+  (forall x C, atnd Delta1 x C -> atnd Delta2 (xi x) C.[ren xi]) ->
+  atnd (A :: Delta1) x B ->
+  atnd (A.[ren xi] :: Delta2) ((0 .: xi >>> (+1)) x) B.[ren (0 .: xi >>> (+1))].
 Proof.
   intros H1 H2; destruct x; autosubst; inv H2; econstructor; eauto; now autosubst.
 Qed.
 
 
-Lemma dget_steps x Gamma Delta A : dget Gamma x A <-> dget (Delta ++ Gamma) (length Delta + x) A.[ren(+(length Delta))].
+Lemma atnd_steps x Gamma Delta A : atnd Gamma x A <-> atnd (Delta ++ Gamma) (length Delta + x) A.[ren(+(length Delta))].
 Proof.
   revert A x.
   induction Delta; intros.
@@ -70,8 +69,8 @@ Proof.
       + intros H. inv H. rewrite IHDelta. apply lift_inj in H5. subst. eassumption.
 Qed.
 
-Lemma dget_steps' x Gamma Delta A :  dget (Delta ++ Gamma) (x + length Delta) A ->
-                               exists B, A = B.[ren(+(length Delta))] /\ dget Gamma x B.
+Lemma atnd_steps' x Gamma Delta A :  atnd (Delta ++ Gamma) (x + length Delta) A ->
+                               exists B, A = B.[ren(+(length Delta))] /\ atnd Gamma x B.
 Proof.
   revert A x.
   induction Delta; intros.
@@ -86,17 +85,17 @@ Proof.
     autosubst. intuition.
 Qed.
 
-Corollary dget_step Delta A x B : dget Delta x A <-> dget (B :: Delta) (S x) A.[ren(+1)].
+Corollary atnd_step Delta A x B : atnd Delta x A <-> atnd (B :: Delta) (S x) A.[ren(+1)].
 Proof.
-  apply dget_steps with (Delta := B :: nil).
+  apply atnd_steps with (Delta := B :: nil).
 Qed.
 
-Lemma dget_repl Gamma A Delta : 
-  (dget (Delta ++ A :: Gamma) (length Delta) A.[ren(+ S (length Delta))]) /\
-  (forall x B A', x <> length Delta -> dget (Delta ++ A :: Gamma) x B -> dget (Delta ++ A' :: Gamma) x B).
+Lemma atnd_repl Gamma A Delta : 
+  (atnd (Delta ++ A :: Gamma) (length Delta) A.[ren(+ S (length Delta))]) /\
+  (forall x B A', x <> length Delta -> atnd (Delta ++ A :: Gamma) x B -> atnd (Delta ++ A' :: Gamma) x B).
 Proof.
   split.
-  - pose proof (dget_steps 0 (A :: Gamma) Delta A.[ren(+1)]) as H.
+  - pose proof (atnd_steps 0 (A :: Gamma) Delta A.[ren(+1)]) as H.
     rewrite plus_0_r in H.
     cutrewrite (A.[ren (+1)].[ren (+length Delta)] =  A.[ren (+S (length Delta))]) in H. { apply H. now constructor. }
     now autosubst.
@@ -110,7 +109,7 @@ Proof.
       * inv H_atn. econstructor. eapply IHx; eauto. reflexivity.
 Qed.
 
-Lemma dget_defined Delta x : (exists B, dget Delta x B) <-> x < length Delta.
+Lemma atnd_defined Delta x : (exists B, atnd Delta x B) <-> x < length Delta.
 Proof.
   revert x. induction Delta; intuition; autosubst in *; ainv.
   - destruct x. omega. cut(x < length Delta). omega.
