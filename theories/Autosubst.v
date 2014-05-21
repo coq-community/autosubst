@@ -1,7 +1,7 @@
 Require Import Omega List.
 
-Require Export Lib.
-Require Import MMap.
+Require Export Autosubst.Lib.
+Require Import Autosubst.MMap.
 
 (** [_bind] is used to annotate the position of binders in inductive definitions of syntactic objects *)
 
@@ -57,10 +57,10 @@ Arguments subst {_ _} sigma !s /.
 Class HSubst (inner outer : Type) := hsubst : (var -> inner) -> outer -> outer.
 Arguments hsubst {_ _ _} sigma !s / .
 
-Notation "sigma >> tau" := (sigma >>> subst tau) (at level 55, right associativity) : subst_scope.
+Notation "sigma >>> tau" := (sigma >> subst tau) (at level 55, right associativity) : subst_scope.
 Notation "s .[ sigma ]" := (subst sigma s) (at level 2, sigma at level 200, left associativity, format "s .[ sigma ]" ) : subst_scope.
 
-Notation "sigma >>| tau" := (sigma >>> hsubst tau) (at level 55, right associativity) : subst_scope.
+Notation "sigma >>| tau" := (sigma >> hsubst tau) (at level 55, right associativity) : subst_scope.
 Notation "s .|[ sigma ]" := (hsubst sigma s) (at level 2, sigma at level 200, left associativity, format "s .|[ sigma ]" ) : subst_scope.
 Notation "s ..[ sigma ]" := (mmap (subst sigma) s) (at level 2, sigma at level 200, left associativity, format "s ..[ sigma ]" ) : subst_scope.
 
@@ -69,12 +69,11 @@ Notation beta s := (s .: Var) (only parsing).
 
 (** coercion from renamings to substitutions *)
 
-Definition ren {term : Type}{Var_term : VarConstr term} xi (x : var) := Var (xi x).
-Arguments ren {_ _} xi x/.
+Notation ren xi := (xi >> Var).
 
 (** the up operation: performed when going below a binder *)
 
-Notation up sigma := ((Var 0) .: sigma >> ren(+1)).
+Notation up sigma := ((Var 0) .: sigma >>> (ren(+1))).
 Notation upn := (iter (fun sigma => up sigma)).
 
 (** internal variant for renamings *)
@@ -95,7 +94,7 @@ Class Id_Subst (term : Type) {VarConstr_term : VarConstr term} {Subst_term : Sub
   id_subst x sigma : (Var x).[sigma] = sigma x.
 
 Class Subst_Comp (term : Type) {Subst_term : Subst term} :=
-  subst_comp s sigma tau : s.[sigma].[tau] = s.[sigma >> tau].
+  subst_comp s sigma tau : s.[sigma].[tau] = s.[sigma >>> tau].
 
 Class SubstLemmas (term : Type) {VarConstr_term : VarConstr term} {Rename_term : Rename term} 
       {Subst_term : Subst term} := {
@@ -108,7 +107,7 @@ Class SubstLemmas (term : Type) {VarConstr_term : VarConstr term} {Rename_term :
 Class HSubst_Comp 
       (inner outer : Type)
       {Subst_inner : Subst inner}
-      {HSubst_inner_outer : HSubst inner outer} := hsubst_comp s sigma tau : s.|[sigma].|[tau] = s.|[sigma >> tau].
+      {HSubst_inner_outer : HSubst inner outer} := hsubst_comp s sigma tau : s.|[sigma].|[tau] = s.|[sigma >>> tau].
 
 Class HSubst_Id (inner outer : Type) 
       {VarConstr_inner : VarConstr inner} {HSubst_inner_outer : HSubst inner outer} :=
@@ -162,19 +161,20 @@ Context {RenameSubst_term : Rename_Subst term}
         {Subst_Comp_term : Subst_Comp term}
 .
 
-Ltac autosubst := 
-  repeat (try rewrite funcomp_scons_distr;
-  try rewrite rename_subst;
-  simpl;
-  try rewrite subst_id;
-  try rewrite id_subst;
-  try rewrite subst_comp).
+Ltac simple_autosubst := 
+  repeat (
+      rewrite ?funcomp_scons_distr, ?funcomp_assoc, ?id_funcomp, ?rename_subst;
+      simpl; rewrite ?subst_id, ?id_subst, ?subst_comp
+    ).
 
 Lemma rename_subst' xi : rename xi = subst (ren xi).
 Proof. f_ext. apply rename_subst. Qed.
 
-Lemma Var_comp_l (sigma : var -> term) : Var >> sigma = sigma.
-Proof. f_ext. intros. unfold funcomp. now autosubst. Qed.
+Lemma Var_comp_l (sigma : var -> term) : Var >>> sigma = sigma.
+Proof. f_ext. intros. unfold funcomp. now simple_autosubst. Qed.
+
+Lemma Var_comp_l' {A} (sigma : var -> term) (f : _ -> A)  : Var >> subst sigma >> f = sigma >> f.
+Proof. rewrite <- funcomp_assoc. now rewrite Var_comp_l. Qed.
 
 Lemma scons_lift (x y: var) : y = S x -> Var x .: ren (+ y) = ren (+x).
 Proof.
@@ -182,57 +182,47 @@ Proof.
   f_ext; intro y; destruct y; unfold lift; simpl; f_equal; omega.
 Qed.
 
-Lemma scons_subst_lift sigma s n : n > 0 -> sigma (pred n) = s -> s .: (ren(+n) >> sigma) = ren(+ pred n) >> sigma. 
+Lemma lift_scons {X} (s : X) sigma n: n > 0 -> (+ n) >> (s .: sigma) = (+ pred n) >> sigma.
 Proof.
-  intros. subst.
-  f_ext. intros [|] *; autosubst; f_equal; unfold lift; unfold var in *; omega.
-Qed.
-
-Lemma lift_scons {X} (s : X) sigma n: n > 0 -> (+ n) >>> (s .: sigma) = (+ pred n) >>> sigma.
-Proof.
-  intros. destruct n. omega. f_ext. intros [|] *; repeat autosubst; repeat first[omega | f_equal].
+  intros. destruct n. omega. f_ext. intros [|] *; repeat simple_autosubst; repeat first[omega | f_equal].
 Qed.
 
 Lemma lift0_id n: n = 0 -> (+n) = id.
 Proof. intros. subst. reflexivity. Qed.
 
-Lemma ren_id : ren id = Var. 
-Proof. reflexivity. Qed.
-
-Lemma ren_comp xi zeta : ren (xi >>> zeta) = xi >>> ren zeta.
+Lemma lift_comp n m: (+n) >> (+m) = (+(n+m)).
 Proof.
-  f_ext. intro. now autosubst.
+  unfold lift. f_ext. intro.  simpl. omega.
 Qed.
 
-Lemma ren_left xi sigma : ren xi >> sigma = xi >>> sigma.
-Proof. f_ext. intros. autosubst. reflexivity. Qed.
 
-Lemma ren_scons x xi : ren (x .: xi) = Var x .: ren xi.
+Lemma lift_comp' {A} n m (f : _ -> A) : (+n) >> (+m) >> f = (+(n+m)) >> f.
 Proof.
-  f_ext. now intros [|].
-Qed.
-
-Lemma lift_comp n m: (+n) >>> ren(+m) = ren(+(n+m)).
-Proof.
-  unfold ren. unfold lift. f_ext. intro. autosubst. f_equal. unfold var in *. omega.
+  rewrite <- funcomp_assoc. now rewrite lift_comp.
 Qed.
 
 Lemma subst_id' : subst Var = id.
 Proof. f_ext. exact subst_id. Qed.
 
-
-Lemma subst_comp' sigma tau : subst tau >> sigma = subst (tau >> sigma).
+Lemma subst_comp' sigma tau : subst sigma >>> tau = subst (sigma >>> tau).
 Proof.
-  f_ext. intro. now autosubst.
+  f_ext. intro. now simple_autosubst.
 Qed.
 
-Lemma upn_upn_comp n sigma tau : upn n (sigma >> tau) = upn n sigma >> upn n tau.
+Lemma subst_comp'' {A} sigma tau (f : _ -> A) : subst sigma >> subst tau >> f = subst (sigma >>> tau) >> f.
 Proof.
-  induction n; autosubst. 
+  f_ext. intro. now simple_autosubst.
+Qed.
+
+Lemma upn_comp n sigma tau : upn n (sigma >>> tau) = upn n sigma >>> (upn n tau).
+Proof.
+  induction n; simple_autosubst. 
   - reflexivity. 
-  - repeat rewrite iter_S. rewrite IHn. autosubst. 
+  - repeat rewrite iter_S. rewrite IHn. simple_autosubst. 
     f_equal. repeat rewrite funcomp_assoc. repeat rewrite subst_comp'.
-    rewrite ren_left.
+    do 2 f_equal.
+    rewrite funcomp_assoc.
+    rewrite Var_comp_l.
     rewrite lift_scons by omega.
     simpl.
     rewrite (lift0_id 0) by omega.
@@ -241,11 +231,17 @@ Qed.
 
 Lemma upn_var n : upn n Var = Var.
 Proof.
-  induction n; autosubst.
+  induction n; simple_autosubst.
   - reflexivity.
   - rewrite iter_S. autorew. f_ext. intros [|] *. reflexivity.
-    now autosubst.
+    now simple_autosubst.
 Qed.
+
+Lemma fold_ren_comp (xi zeta : nat -> nat) : xi >> ren zeta = ren (xi >> zeta).
+Proof. now simple_autosubst. Qed.
+
+Lemma fold_ren_scons x xi : Var x .: ren xi = ren (x .: xi).
+Proof. now simple_autosubst. Qed.
 
 End LemmasForSubst.
 
@@ -267,41 +263,50 @@ Context {HSubstLemmas_inner_outer : HSubstLemmas inner outer}.
 Context {SubstHSubstComp_inner_outer : SubstHSubstComp inner outer}.
 
 
-Ltac autosubst := 
+Ltac simple_autosubst := 
   simpl;
   try rewrite hsubst_id;
   try rewrite id_hsubst;
   try rewrite hsubst_comp;
   try rewrite subst_hsubst_comp.
 
-Lemma ren_hcomp (sigma : var -> inner) xi : ren xi >>| sigma = ren xi.
+Lemma Var_hcomp_l (sigma : var -> inner) : Var >> hsubst sigma = Var.
 Proof.
-  f_ext. intros. now autosubst.
+  f_ext. intros. now simple_autosubst.
 Qed.
 
-Lemma Var_hcomp_l (sigma : var -> inner) : Var >>| sigma = Var.
+Lemma Var_hcomp_l' A (f : _ -> A) (sigma : var -> inner) : Var >> hsubst sigma >> f = Var >> f.
 Proof.
-  apply ren_hcomp.
+  f_ext. intros. now simple_autosubst.
 Qed.
-
 
 Lemma hsubst_id' : hsubst Var = id.
 Proof. f_ext. exact hsubst_id. Qed.
 
 
-Lemma comp_hcomp (sigma1 sigma2 : var -> outer) (sigma3 : var -> inner) : (sigma1 >> sigma2) >>| sigma3 = (sigma1 >>| sigma3) >> (sigma2 >>| sigma3).
+Lemma comp_hcomp (sigma1 sigma2 : var -> outer) (sigma3 : var -> inner) : sigma1 >> subst sigma2 >> hsubst sigma3 = sigma1 >> hsubst sigma3 >>> (sigma2 >> hsubst sigma3).
 Proof.
-  f_ext. intros. now autosubst.
+  f_ext. intros. now simple_autosubst.
 Qed.
 
-Lemma hsubst_comp' sigma tau : hsubst sigma >>| tau = hsubst (sigma >> tau).
+Lemma hsubst_comp' sigma tau : hsubst sigma >> hsubst tau = hsubst (sigma >>> tau).
 Proof.
-  f_ext. intro. now autosubst.
+  f_ext. intro. now simple_autosubst.
 Qed.
 
-Lemma subst_hsubst_comp' sigma tau : subst sigma >>| tau = hsubst tau >> (sigma >>| tau).
+Lemma hsubst_comp'' {A} sigma tau (f : _ -> A) : hsubst sigma >> hsubst tau >> f = hsubst (sigma >>> tau) >> f.
 Proof.
-  f_ext. intros. now autosubst.
+  f_ext. intro. now simple_autosubst.
+Qed.
+
+Lemma subst_hsubst_comp' sigma tau : subst sigma >> hsubst tau = hsubst tau >>> (sigma >> hsubst tau).
+Proof.
+  f_ext. intros. now simple_autosubst.
+Qed.
+
+Lemma subst_hsubst_comp'' {A} sigma tau (f : _ -> A) : subst sigma >> hsubst tau >> f = hsubst tau >> subst (sigma >> hsubst tau) >> f.
+Proof.
+  f_ext. intros. now simple_autosubst.
 Qed.  
 
 End LemmasForHSubst.
@@ -309,12 +314,21 @@ End LemmasForHSubst.
 
 (** the autosubst automation tactic *)
 
-Hint Rewrite @rename_subst' @subst_comp (**@to_lift*) @Var_comp_l @funcomp_scons_distr using exact _ : autosubst.
-Hint Rewrite @scons_lift lift0_id (lift0_id 0) using solve[exact _ | unfold lift in *; unfold var in *; omega] : autosubst.
-Hint Rewrite @scons_subst_lift @lift_scons using solve[exact _ | simpl; unfold lift in *; unfold var in *; repeat first [omega | f_equal] ] : autosubst.  
-Hint Rewrite @funcomp_assoc @id_funcomp @funcomp_id @subst_comp' @subst_id' @ren_id @ren_left @ren_comp @ren_scons @lift_comp @upn_upn_comp @upn_var @NPeano.Nat.add_1_r @iter_S @iter_0 using exact _ : autosubst.
+Hint Rewrite @rename_subst' @subst_comp (**@to_lift*) @Var_comp_l @funcomp_scons_distr 
+     using exact _ : autosubst.
+Hint Rewrite @scons_lift lift0_id (lift0_id 0) 
+     using solve[exact _ | unfold lift in *; unfold var in *; omega] : autosubst.
+Hint Rewrite  @lift_scons 
+     using solve[
+               exact _ 
+             | simpl; unfold lift in *; unfold var in *; repeat first [omega | f_equal] 
+           ] : autosubst.  
+Hint Rewrite @funcomp_assoc @id_funcomp @funcomp_id
+      @lift_comp @lift_comp' @subst_id' @subst_comp' @subst_comp''  @upn_comp @upn_var 
+      @NPeano.Nat.add_1_r @iter_S @iter_0 using exact _ : autosubst.
 Hint Rewrite @hsubst_id' @id_hsubst @hsubst_comp @subst_hsubst_comp
-             @ren_hcomp @Var_hcomp_l @comp_hcomp @hsubst_comp' @subst_hsubst_comp' using exact _ : autosubst.
+             @Var_hcomp_l @Var_hcomp_l' @comp_hcomp @hsubst_comp' @hsubst_comp'' @subst_hsubst_comp' @subst_hsubst_comp'' 
+             using exact _ : autosubst.
 
 Ltac autosubst :=
   trivial;
@@ -329,13 +343,13 @@ Ltac autosubst :=
                simpl;
                try unfold _bind;
                autorewrite with autosubst;
-               rewrite ?subst_hsubst_comp, ?ren_hcomp, ?hsubst_id', ?hsubst_comp', ?hsubst_comp
+               rewrite ?subst_hsubst_comp, ?hsubst_id', ?Var_hcomp_l', ?hsubst_comp', ?hsubst_comp'', ?hsubst_comp
              )
          | match goal with [|- context[(_ .: _) ?x]] => 
-             match goal with [y : _ |- _ ] => unify y x; destruct x; simpl end
+             match goal with [y : _ |- _ ] => unify y x; destruct x; simpl scons end
            end];
   (try (unfold lift in *; unfold var in *; simpl; repeat first [omega | f_equal]; fail));
-  repeat (try rewrite <- ren_comp; try rewrite <- ren_scons).
+  rewrite ?fold_ren_comp, ?fold_ren_scons.
 
 Ltac autosubstH H :=
   let T_H := typeof H in
@@ -350,13 +364,14 @@ Ltac autosubstH H :=
                simpl in H;
                try unfold _bind in H;
                autorewrite with autosubst in H;
-               rewrite ?subst_hsubst_comp, ?ren_hcomp, ?hsubst_id', ?hsubst_comp', ?hsubst_comp in H
+               rewrite ?subst_hsubst_comp,  ?hsubst_id', ?Var_hcomp_l', ?hsubst_comp', ?hsubst_comp'', ?hsubst_comp in H
              )|
             match typeof H with context[(_ .: _) ?x] => 
-             match goal with [y : _ |- _ ] => unify y x; destruct x; simpl in H end
+             match goal with [y : _ |- _ ] => unify y x; destruct x; simpl scons in H end
            end
          ];
-  repeat (try rewrite <- ren_comp in H; try rewrite <- ren_scons in H).
+  rewrite ?fold_ren_comp, ?fold_ren_scons in H
+.
 
 Tactic Notation "autosubst" "in" ident(H) := autosubstH H.
 
@@ -418,7 +433,7 @@ Ltac has_var s :=
 
 
 Notation _up_ := 
-  (fun sigma => (Var 0) .: (sigma >>> rename (+1))) (only parsing).
+  (fun sigma => (Var 0) .: (sigma >> rename (+1))) (only parsing).
 
 Ltac derive_Subst :=
   match goal with [ |- Subst ?term] =>
@@ -475,7 +490,7 @@ Ltac derive_SubstLemmas :=
   let Var := constr:(@Var term VarConstr_term) in
 
   assert(up_upr : forall n xi,
-         iter (fun sigma : nat -> term => Var 0 .: sigma >>> rename (+1)) n (ren xi) = ren (iter upren n xi)) by (
+         iter (fun sigma : nat -> term => Var 0 .: sigma >> rename (+1)) n (ren xi) = ren (iter upren n xi)) by (
   let n := fresh "n" in intros n ?;
   induction n; f_ext; simpl; trivial; 
   intros [|]; intros; simpl; repeat rewrite iter_S; trivial; autorew; now simpl
@@ -512,14 +527,14 @@ Ltac derive_SubstLemmas :=
   );
 
   assert(iter_ren_subst_comp : 
-    forall n xi sigma, ren (iter upren n xi) >> iter (fun sigma => up sigma) n sigma = iter (fun sigma => up sigma) n (ren xi >> sigma)) by (
+    forall n xi sigma, ren (iter upren n xi) >>>(iter (fun sigma => up sigma) n sigma) = iter (fun sigma => up sigma) n (ren xi >>> sigma)) by (
   let n := fresh "n" in intros n; 
   let IHn := fresh "IHn" in induction n as [| n IHn]; intros; trivial; 
   repeat rewrite iter_S; f_ext; intros [|] *; trivial; 
   simpl; trivial; f_equal; now rewrite <- IHn 
   );
 
-  assert(rename_subst_comp : forall sigma xi s, (rename xi s).[sigma] = s.[ren xi >> sigma]) by (
+  assert(rename_subst_comp : forall sigma xi s, (rename xi s).[sigma] = s.[ren xi >>> sigma]) by (
   let IH := fresh "IH_rename_subst_comp" in
   fix IH 3;
   intros ??; let s := fresh "s" in intros s; destruct s;
@@ -528,23 +543,23 @@ Ltac derive_SubstLemmas :=
   f_equal; f_equal; repeat rewrite mmap_inv; now autorew
   );
 
-  assert(rename_comp : forall xi zeta s, s.[ren xi].[ren zeta] = s.[ren(xi >>> zeta)]) by (
+  assert(rename_comp : forall xi zeta s, s.[ren xi].[ren zeta] = s.[ren(xi >> zeta)]) by (
   intros; repeat rewrite <- rename_subst; rewrite rename_subst;
   rewrite rename_subst_comp; now rewrite rename_subst 
   );
 
   assert (iter_subst_ren_comp : 
-    forall n sigma xi , iter (fun sigma => up sigma) n sigma >> ren (iter upren n xi) = iter (fun sigma => up sigma) n (sigma >> ren xi)) by (
+    forall n sigma xi , iter (fun sigma => up sigma) n sigma >>> (ren (iter upren n xi)) = iter (fun sigma => up sigma) n (sigma >>> (ren xi))) by (
   let n := fresh "n" in intros n; 
   let IHn := fresh "IHn" in induction n as [| n IHn]; intros; trivial; 
   repeat rewrite iter_S; f_ext; intros [|] *; trivial; simpl; rewrite <- IHn; 
   simpl; now autorew 
   );
 
-  assert(subst_rename_comp : forall sigma xi s, rename xi s.[sigma] = s.[sigma >> (ren xi)]) by (
+  assert(subst_rename_comp : forall sigma xi s, rename xi s.[sigma] = s.[sigma >>> (ren xi)]) by (
   let IH := fresh "IH_subst_rename_comp" in
   fix IH 3; let s := fresh "s" in intros ? ? s; destruct s;
-  intros; simpl; rewrite ?mmap_inv; autorew; autosubst; rewrite ?ren_hcomp; trivial; f_equal;
+  intros; simpl; rewrite ?mmap_inv; autorew; autosubst; trivial; f_equal;
   msimpl; repeat rewrite <- rename_subst; try (unfold funcomp at 1; rewrite (mmap_ext (IH _ _)));
   repeat f_equal; eauto; now autorew
   );
@@ -556,7 +571,7 @@ Ltac derive_SubstLemmas :=
   );
 
   assert(iter_comp : 
-    forall n sigma tau, iter (fun sigma => up sigma) n sigma >> iter (fun sigma => up sigma) n tau = iter (fun sigma => up sigma) n (sigma >> tau)) by (
+    forall n sigma tau, iter (fun sigma => up sigma) n sigma >>> (iter (fun sigma => up sigma) n tau) = iter (fun sigma => up sigma) n (sigma >>> tau)) by (
   let n := fresh "n" in let IHn := fresh "IHn" in
   intros n;
   induction n as [|n IHn]; intros; trivial; repeat rewrite iter_S; 
@@ -565,7 +580,7 @@ Ltac derive_SubstLemmas :=
   now rewrite <- IHn 
   );
 
-  assert(subst_comp : forall (sigma tau : var -> term) (s : term), s.[sigma].[tau] = s.[sigma >> tau]) by (
+  assert(subst_comp : forall (sigma tau : var -> term) (s : term), s.[sigma].[tau] = s.[sigma >>> tau]) by (
   let IH := fresh "IH_subst_comp" in
   fix IH 3;
   let s := fresh "s" in
@@ -622,7 +637,7 @@ Ltac derive_HSubstLemmas :=
   assert(ren_hcomp : forall (xi : var -> var) (sigma : var -> inner), (ren xi : var -> outer) >>| sigma = ren xi) 
   by reflexivity;
 
-  assert(hsubst_comp : forall (s : outer) (sigma tau : var -> inner), s.|[sigma].|[tau] = s.|[sigma >> tau]) 
+  assert(hsubst_comp : forall (s : outer) (sigma tau : var -> inner), s.|[sigma].|[tau] = s.|[sigma >>> tau]) 
   by( intros s; induction s; intros; autosubst; autorew; now autosubst );
 
   constructor; hnf;
@@ -638,7 +653,7 @@ Ltac derive_SubstHSubstComp :=
   let IH := fresh "IH" in let s := fresh "s" in
   fix IH 1; intro s; destruct s; intros; simpl; autorew; trivial);
 
-  assert(rename_hsubst_comp' : forall tau xi, rename xi >>| tau = hsubst tau >>> rename xi) by (
+  assert(rename_hsubst_comp' : forall tau xi, rename xi >>| tau = hsubst tau >> rename xi) by (
   intros; f_ext; intros; now simpl);
 
   hnf;
@@ -663,14 +678,14 @@ Proof.
   intros H. 
   apply (f_equal (subst (ren (fun x => x - n)))) in H.
   autosubst in H.
-  unfold funcomp in H.
+  unfold funcomp at 2 4 in H.
   unfold lift in H.
-  cutrewrite ((fun x : var => n + x - n) = id) in H.
+  cutrewrite ((fun x : nat => n + x - n) = id) in H.
   now autosubst in H.
   f_ext. intros x. simpl. omega.
 Qed.
 
-Lemma ren_uncomp A xi zeta : A.[ren (xi >>> zeta)] = A.[ren xi].[ren zeta].
+Lemma ren_uncomp A xi zeta : A.[ren (xi >> zeta)] = A.[ren xi].[ren zeta].
 Proof.
   now autosubst.
 Qed.

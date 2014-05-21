@@ -213,3 +213,11 @@ Proof.
   elim=> /=; constructor; subst; autosubst.
 Qed.
 
+Lemma substitutivity' s t :
+  step s t -> forall sigma tau, step s.[tau].|[sigma] t.[tau].|[sigma].
+Proof.
+  elim=> /=; constructor; subst; autosubst.
+  Print Rewrite HintDb autosubst.
+  autorewrite with autosubst.
+  repeat rewrite Var_hcomp_l'. autosubst.
+Qed.

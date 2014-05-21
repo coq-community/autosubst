@@ -11,7 +11,7 @@ Arguments mmap_ext {A B MMap_A_B MMapExt f g} H s.
 
 Class MMapLemmas (A B : Type) {mmap_instance : MMap A B} := {
   mmap_id : mmap id = id;
-  mmap_comp x f g: mmap f (mmap g x) = mmap (g >>> f) x
+  mmap_comp x f g: mmap f (mmap g x) = mmap (g >> f) x
 }.
 
 Ltac derive_MMap :=
@@ -42,7 +42,7 @@ Hint Extern 0 (MMap _ _) => derive_MMap : derive.
 
 
 Hint Rewrite @mmap_id @mmap_comp using exact _ : mmap.
-Hint Rewrite @mmap_id @mmap_comp using exact _ : ssimpl.
+Hint Rewrite @mmap_id @mmap_comp using exact _ : autosubst.
 
 Ltac msimpl := 
 repeat(

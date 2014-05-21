@@ -118,15 +118,17 @@ Definition funcomp {A B C : Type} (f : A -> B) (g : B -> C) x := g(f(x)).
 Arguments funcomp {A B C} f g x /.
 
 (** ... with reversed notation *)
-Notation "f >>> g" := (funcomp f g) (at level 55, right associativity) : subst_scope.
 
-Lemma funcomp_assoc A B C D (f : A -> B) (g : B -> C) (h : C -> D): (f >>> g) >>> h = f >>> g >>> h.
+Reserved Notation "sigma >>> tau" (at level 55, right associativity).
+Notation "f >> g" := (funcomp f g) (at level 55, right associativity) : subst_scope.
+
+Lemma funcomp_assoc A B C D (f : A -> B) (g : B -> C) (h : C -> D): (f >> g) >> h = f >> g >> h.
 Proof. f_ext. reflexivity. Qed.
 
-Lemma id_funcomp A B (f : A -> B) : id >>> f = f.
+Lemma id_funcomp A B (f : A -> B) : id >> f = f.
 Proof. f_ext. reflexivity. Qed.
 
-Lemma funcomp_id A B (f : A -> B) : f >>> id = f.
+Lemma funcomp_id A B (f : A -> B) : f >> id = f.
 Proof. f_ext. reflexivity. Qed.
 
 (** the cons operation on streams represented as functions from natural numbers *)
@@ -134,7 +136,7 @@ Definition scons {X : Type} s sigma x : X := match x with S x' => sigma x' | _ =
 Infix ".:" := scons (at level 55, right associativity) : subst_scope.
 
 Lemma funcomp_scons_distr (X Y : Type) (f : X -> Y) (x : X) (xs : nat -> X) : 
-  (x .: xs) >>> f = (f x) .: (xs >>> f).
+  (x .: xs) >> f = (f x) .: (xs >> f).
 Proof.
   f_ext. now intros [|].
 Qed.
@@ -151,4 +153,4 @@ Notation "( + x )" := (lift x) (format "( + x )").
 
 
 (** take a prefix from a stream *)
-Fixpoint take {X : Type} n (sigma : nat -> X) : list X := match n with 0 => nil | S n' => sigma 0 :: take n' ((+1) >>> sigma) end.
+Fixpoint take {X : Type} n (sigma : nat -> X) : list X := match n with 0 => nil | S n' => sigma 0 :: take n' ((+1) >> sigma) end.

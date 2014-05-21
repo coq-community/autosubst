@@ -1,5 +1,5 @@
-Require Import Omega MMap List Program.Equality.
-Require Import Lib Autosubst.
+Require Import Omega Autosubst.MMap List Program.Equality.
+Require Import Autosubst.Lib Autosubst.Autosubst.
 
 Fixpoint atn {X} l n (x : X) := 
   match l with 
@@ -40,7 +40,7 @@ Qed.
 Lemma up_mmap_atn zeta xi Gamma1 Gamma2 A x: 
   (forall x B, atn Gamma1 x B -> atn Gamma2 (zeta x) B.[ren xi]) ->
   atn (mmap (subst (ren (+1))) Gamma1) x A ->
-  atn (mmap (subst (ren (+1))) Gamma2) (zeta x) A.[ren (0 .: xi >>> (+1))].
+  atn (mmap (subst (ren (+1))) Gamma2) (zeta x) A.[ren (0 .: xi >> (+1))].
 Proof.
   intros H1 H2. 
   edestruct (mmap_atn H2) as [? [? ?]]. subst.
@@ -50,7 +50,7 @@ Qed.
 Lemma up_atnd xi Delta1 Delta2 A B x:
   (forall x C, atnd Delta1 x C -> atnd Delta2 (xi x) C.[ren xi]) ->
   atnd (A :: Delta1) x B ->
-  atnd (A.[ren xi] :: Delta2) ((0 .: xi >>> (+1)) x) B.[ren (0 .: xi >>> (+1))].
+  atnd (A.[ren xi] :: Delta2) ((0 .: xi >> (+1)) x) B.[ren (0 .: xi >> (+1))].
 Proof.
   intros H1 H2; destruct x; autosubst; inv H2; econstructor; eauto; now autosubst.
 Qed.

@@ -487,4 +487,3 @@ Proof.
       | now intros [|] ? H_atn; simpl in *; subst; apply mmap_atn in H_atn;
         destruct H_atn as [? [? ?]]; subst; autosubst; eauto using ty ]).
 Qed.
-
