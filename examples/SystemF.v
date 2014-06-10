@@ -113,7 +113,7 @@ Proof.
 Qed.
 
 Lemma V_ren A rho s xi :
-  V A.[ren xi] rho s <-> V A (xi >>> rho) s.
+  V A.[ren xi] rho s <-> V A (xi >> rho) s.
 Proof.
   elim: A rho s xi => //=.
   - move=> A ih1 B ih2 rho v xi. split=> -[A'[s->h]];
@@ -125,7 +125,7 @@ Proof.
 Qed.
 
 Lemma E_ren A rho s xi :
-  E A.[ren xi] rho s <-> E A (xi >>> rho) s.
+  E A.[ren xi] rho s <-> E A (xi >> rho) s.
 Proof.
   split=> -[v ev /V_ren h]; by exists v.
 Qed.
@@ -217,7 +217,4 @@ Lemma substitutivity' s t :
   step s t -> forall sigma tau, step s.[tau].|[sigma] t.[tau].|[sigma].
 Proof.
   elim=> /=; constructor; subst; autosubst.
-  Print Rewrite HintDb autosubst.
-  autorewrite with autosubst.
-  repeat rewrite Var_hcomp_l'. autosubst.
 Qed.
