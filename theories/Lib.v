@@ -16,7 +16,7 @@ Ltac autorew :=
            | [H : forall _, _ |- _] => progress rewrite H by now trivial  
          end.
 
-Ltac derive := trivial with derive; fail.
+Ltac derive := trivial with derive; fail "No hint in the database 'derive' could produce an instance.".
 
 Notation nosimpl t := (let 'tt := tt in t).
 
