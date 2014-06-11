@@ -40,7 +40,7 @@ Definition upren (xi : var -> var) : (var -> var) := 0 .: (fun x => (+1) (xi x))
 (** Classes for the basic substitution operations. 
  They are singleton classes to enable the feature of simpl that folds back fix-bodies.
  *)
-Class VarConstr (term : Type) := Var : nat -> term.
+Class VarConstr (term : Type) := Var : var -> term.
 Class Rename (term : Type) := rename : (var -> var) -> term -> term.
 Class Subst (term : Type) := subst : (var -> term) -> term -> term.
 Class SubstOps (term : Type) := {
