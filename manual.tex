@@ -1,0 +1,190 @@
+\documentclass{scrartcl}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{xspace}
+
+\usepackage{enumitem}
+\usepackage{colonequals}
+\usepackage{stmaryrd}
+\usepackage{tikz}
+
+% Manual Macros
+\def\changemargin#1#2{}
+\newcommand{\faq}[2]{\vspace{\topsep}\noindent\textbf{#1}\\\vspace{-\topsep}\begin{itemize}[nolistsep]\item[]{#2}\end{itemize}}
+
+
+% Operations and Names
+
+\newcommand{\Autosubst}{\textsc{Autosubst}\xspace}
+
+\newcommand{\up}{\ensuremath{{}\mathop{\!\Uparrow\!}{}}}
+\newcommand{\lift}{\text{\tiny\raisebox{0.15em}+\!\small{1}}}%\ensuremath{{}\mathop{\!\uparrow\!}{}}}
+\newcommand{\scons}{\ensuremath{\coloncolon}}
+\newcommand{\scomp}{\,\textrm{\guillemotright}\,}
+\newcommand{\id}{\textsf{id}}
+\newcommand{\subst}[1]{[#1]}
+
+% remember TikZ positions.
+\newcommand{\tmark}[1]{
+  \tikz[remember picture, baseline, inner xsep=0, inner ysep=0.2em]{ \node [anchor=base] (#1) {\vphantom{M}};
+}}%
+
+% References
+
+\newcommand{\sref}[1]{{\tiny[#1]}}
+
+% Lambda-terms
+
+\newcommand{\ldot}{.\,}
+\newcommand{\lam}[2][l0]{\lambda #2\!\tmark{#1}\,.\,}
+\newcommand{\dlam}[1][l0]{\lambda\!\tmark{#1}\,\,}
+\newcommand{\ind}[2][l0]{
+  \tikz[remember picture, baseline=(i.base), inner xsep=0, inner ysep=0.2em]\node(i){$#2$};
+  \tikz[remember picture, overlay]{
+    \draw[->] (i.north) to[bend right] (#1.north);}}
+\newcommand{\indb}[2][l0]{
+  \tikz[remember picture, baseline=(i.base), inner xsep=0, inner ysep=0.2em]\node(i){$#2$};
+  \tikz[remember picture, overlay]{
+    \draw[->] (i.south) to[bend left] (#1.south);}}
+
+
+% listings
+
+\usepackage{listings}
+
+\newcommand*{\lstitem}[1]{
+  \setbox0\hbox{\lstinline{#1}}  
+  \item[\usebox0]  
+  % \item[\hbox{\lstinline{#1}}]
+  \hfill \\
+}
+
+\newcommand{\lst}{\lstinline}
+\lstdefinelanguage{Coq}%
+  {morekeywords={Variable,Inductive,CoInductive,Fixpoint,CoFixpoint,%
+      Definition,Lemma,Theorem,Axiom,Local,Save,Grammar,Syntax,Intro,%
+      Trivial,Qed,Intros,Symmetry,Simpl,Rewrite,Apply,Elim,Assumption,%
+      Left,Cut,Case,Auto,Unfold,Exact,Right,Hypothesis,Pattern,Destruct,%
+      Constructor,Defined,Fix,Record,Proof,Induction,Hints,Exists,let,in,%
+      Parameter,Split,Red,Reflexivity,Transitivity,if,then,else,Opaque,%
+      Transparent,Inversion,Absurd,Generalize,Mutual,Cases,of,end,Analyze,%
+      AutoRewrite,Functional,Scheme,params,Refine,using,Discriminate,Try,%
+      Require,Load,Import,Scope,Set,Open,Section,End,match,with,Ltac,%
+      Instance,%
+      bind,as,%
+      % , exists, forall
+	},%
+   sensitive, %
+   morecomment=[n]{(*}{*)},%
+   morestring=[d]",%
+   literate={=>}{{$\Rightarrow$}}1 {>->}{{$\rightarrowtail$}}2{->}{{$\rightarrow$}}1
+   {\/\\}{{$\wedge$}}1
+   {|-}{{$\vdash$}}1
+   {\\\/}{{$\vee$}}1
+   {~}{{$\sim$}}1
+   {exists}{{$\exists\!\!$}}1
+   {forall}{{$\forall\!\!$}}1
+   {sigma}{{$\sigma$}}1
+   {theta}{{$\theta$}}1
+   {tau}{{$\tau$}}1
+   {rho}{{$\rho$}}1
+   {xi}{{$\xi$}}1
+   {exi}{exi}3 % insufficient patch to print reflexivity correctly
+   {zeta}{{$\zeta$}}1
+   {Gamma}{{$\Gamma$}}1
+   {Delta}{{$\Delta$}}1
+   {\\rhd}{{$\rhd$}}1
+   %{>>}{\scomp}1
+   %{<>}{{$\neq$}}1 indeed... no.
+  }[keywords,comments,strings]%
+
+\lstset{
+   basicstyle=\ttfamily,
+   keywordstyle=\bfseries\color{blue}
+  }
+\lstset{language=Coq}
+\lstset{columns=fullflexible,keepspaces}
+
+\begin{document}
+
+\title{Autosubst Manual}
+\date{\today}
+\maketitle
+
+\section{Introduction}
+\label{sec:introduction}
+
+\section{Defining the Syntax}
+\label{sec:defining-syntax}
+
+To start using \Autosubst, you first have to define an inductive type of terms with de~Bruijn indices.
+This should be a simple inductive definition without dependent types.
+There must be at most one constructor for variables, aka de~Bruijn indices. It must have a single argument of type \lst$var$, which is a type synonym for \lst$nat$.
+If a constructor acts as a binder for a variable of the term type \lst$T$ in a constructor argument of type \lst$U$, then \lst$U$ has to be replaced by \lst${bind T in U}$.
+We can write \lst${bind T}$ instead of \lst${bind T in T}$.
+
+Here is an example of how this looks for the two-sorted syntax of System F.
+
+\begin{lstlisting}
+Inductive type : Type :=
+| TyVar (x : var)
+| Arr   (A B : type)
+| All   (A : {bind type}).
+
+Inductive term :=
+| TeVar (x : var)
+| Abs   (A : type) (s : {bind term})
+| App   (s t : term)
+| TAbs  (s : {bind type in term})
+| TApp  (s : term) (A : type).
+\end{lstlisting}
+
+\section{Generating the Operations}
+\label{sec:gener-oper}
+
+\begin{tabular}{c c c c}
+  Notation & Definition & Type & Typeclass \\\hline\noalign{\vspace{0.5em}}
+
+                   & \lst$Var x$          & \lst$var -> term$ & \lst$VarConstr term$ \\
+                   & \lst$rename xi s$    & \lst$(var -> var) -> term -> term$ & \lst$Rename term$ \\
+  \lst$s.[sigma]$  & \lst$subst sigma s$  & \lst$(var -> term) -> term -> term$ & \lst$Subst term$ \\
+  \lst$s.|[sigma]$ & \lst$hsubst sigma s$ & \lst$(var -> term1) -> term2 -> term2$ & \lst$HSubst term1 term2$
+\end{tabular}
+
+\section{The \lst$autosubst$ Tactic}
+\label{sec:lstautosubst-tactic}
+
+\section{Best Practices}
+\label{sec:best-practices}
+
+\subsection{Adding Primitives to \lst$autosubst$}
+\label{sec:adding-prim}
+
+If you want to add a new primitive and add support in \lst$autosubst$, you should do the following.
+
+First, try to define the primitive using function composition or other existing primitives.
+If this is possible, then you should define it using the notation mechanism to enable \lst$autosubst$ to simplify the function composition.
+For example, if you want to lift a semantic interpretation to substitutions 
+\begin{lstlisting}
+subst_interp : (var -> value) -> (var -> term) -> var -> value  
+\end{lstlisting}
+then you should define
+\begin{lstlisting}
+Notation subst_interp rho sigma := sigma >> interp rho.
+\end{lstlisting}
+This automatically adds some limited support.
+
+
+\section{Frequently Asked Questions}
+\label{sec:faq}
+
+\faq{I used \lst$simpl$ and now my goal contains strange identifiers.}
+{The built-in tactic \lst$simpl$ can uncover implementation details. Use \lst$asimpl$ instead, which performs \lst$simpl$ and further simplifies the \Autosubst operations afterwards.}
+
+\faq{I called \lst$constructor$ or \lst$apply$ and now the goal contains strange constructions that \lst$asimpl$ cannot hide.}
+{These tactics sometimes perform aggressive reductions to match the goal that are not reachable with \lst$simpl$. You should try to call \lst$asimpl$ \emph{before} you call \lst$constructor$ or \lst$apply$ to make sure that no further reductions are needed.
+}
+
+
+\end{document}
