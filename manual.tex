@@ -4,10 +4,18 @@
 \usepackage[T1]{fontenc}
 \usepackage{xspace}
 
+\usepackage{hyperref}
 \usepackage{enumitem}
 \usepackage{colonequals}
 \usepackage{stmaryrd}
 \usepackage{tikz}
+\usepackage{amsmath}
+
+\usepackage{todonotes}
+
+% style adjustments
+
+\renewcommand{\arraystretch}{1.5}
 
 % Manual Macros
 \def\changemargin#1#2{}
@@ -29,6 +37,13 @@
 \newcommand{\tmark}[1]{
   \tikz[remember picture, baseline, inner xsep=0, inner ysep=0.2em]{ \node [anchor=base] (#1) {\vphantom{M}};
 }}%
+
+% general stuff
+
+\newcommand{\stackl}[2]{\vtop{\hbox{\strut#1}\hbox{\strut#2}}}
+\newcommand{\stackc}[2]{\vtop{\setbox0\hbox{\strut #1}\copy0\hbox to\wd0{\hss\strut #2\hss}}}
+\newcommand{\stackr}[2]{\vtop{\setbox0\hbox{\strut #1}\copy0\hbox to\wd0{\hss\strut #2}}}
+
 
 % References
 
@@ -112,10 +127,171 @@
 \date{\today}
 \maketitle
 
-\section{Introduction}
-\label{sec:introduction}
+\begin{abstract}
+  Formalizing syntactic theories with variable binders is not easy. We present Autosubst, a library for the Coq proof assistant to automate this process. Given an inductive definition of syntactic objects in de Bruijn representation augmented with binding annotations, Autosubst synthesizes the parallel substitution operation and automatically proves the basic lemmas about substitutions. Our core contribution is an automation tactic that solves equations involving terms and substitutions. This makes the usage of substitution lemmas unnecessary. The tactic is based on our current work on a decision procedure for the equational theory of an extension of the sigma-calculus by Abadi et. al. The library is completely written in Coq and uses Ltac to synthesize the substitution operation.
+\end{abstract}
 
-\section{Defining the Syntax}
+\section{Tutorial}
+\label{sec:Tutorial}
+
+We start by importing the \Autosubst library.
+\begin{lstlisting}
+Require Import Autosubst.
+\end{lstlisting}
+
+Using de~Bruijn Syntax in Coq, the untyped lambda calculus is usually defined as shown Figure~\ref{fig:naive-ulc-term-def}.
+\begin{figure}
+\begin{minipage}{0.45\textwidth}
+  \centering
+\begin{lstlisting}
+Inductive term : Type :=
+  | TVar (x : nat)
+  | App (s t : term)
+  | Lam (s : term).
+\end{lstlisting}
+  \caption{Usual term definition with de~Bruijn indices}
+  \label{fig:naive-ulc-term-def}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\textwidth} 
+  \begin{lstlisting}
+Inductive term : Type :=
+  | Var (x : var)
+  | App (s t : term)
+  | Lam (s : {bind term}). 
+\end{lstlisting}
+\caption{Term definition for \Autosubst}
+\label{fig:autosubst-ulc-term-def}
+\end{minipage}
+\end{figure}
+Using \Autosubst, we can automatically generate the substitution operation.
+To do so, we annotate the positions of binders in the term type, since de Bruijn indices are interpreted differently if occuring below a binder. The annotated definition is shown in Figure~\ref{fig:autosubst-ulc-term-def}.
+We write \lst${bind term}$ instead of \lst$term$ for the argument type of a constructor to indicate that this constructor serves as a binder for the argument. 
+The type \lst${bind term}$ is definitionally equal to \lst$term$ and just serves as a tag interpreted while generating the substitution operation.
+We also need to tag the constructor that builds variables. We do so by specifying the type of its single argument as \lst$var$, which is definitionally equal to \lst$nat$.
+
+Using this definition of term, we can generate the substitution operation \lst@subst@ by declaring an instance of the \lst$Subst$ type class using our custom tactic \lst$derive$. This is comparable to the usage of deriving-clauses in Haskell.
+We also need to define instances for the two auxiliary type classes \lst$Ids$ and \lst$Rename$, defining the generic functions \lst$ids$ and \lst$rename$. 
+The function \lst$rename$ is only needed for technical reasons\footnote{The function rename applies a renaming \lst@var -> var@ to a term. While it is possible to give a direct structurally recursive definition of \lst@rename@, we need \lst@rename@ to give a structurally recursive definition of \lst@subst@. By unfolding \lst@subst@, it is possible to stumble upon an occurrence of \lst@rename@. We try to prevent this by eagerly replacing \lst@rename xi@ with \lst@subst (ren xi)@ in our custom tactics.} and is mostly hidden from the interface.
+The function \lst$ids$ is the identity substitution, which is identical to the variable constructor.
+\begin{lstlisting}
+Instance Ids_type : Ids type. derive. Defined.
+Instance Rename_type : Rename type. derive. Defined.
+Instance Subst_type : Subst type. derive. Defined.
+\end{lstlisting}
+
+We can now use the pre-defined generic notations to call the just created substitution operation for \lst$term$. Given substitutions \lst$sigma$ and \lst$tau$, that is, values of type \lst$var -> term$, we can now write \lst$s.[sigma]$ for the application of \lst$sigma$ to  the term \lst$s$ and \lst$sigma >> tau$ for the composition of \lst$sigma$ and \lst$tau$. 
+The notation \lst$s.[sigma]$ stands for \lst$subst sigma s$. 
+The notation \lst$sigma >> tau$ stands for \lst$sigma >>> subst tau$, where \lst$>>>$ is function composition, i.e., \lst$(f >>> g) x = g(f(x))$.
+
+Next, we derive the corresponding substitution lemmas by generating an instance of the \lst$SubstLemmas$ type class.
+\begin{figure}
+\begin{lstlisting}
+subst_comp s sigma tau : s.[sigma].[tau] = s.[sigma >> tau]
+subst_id s : s.[ids] = s
+id_subst x sigma : (ids x).[sigma] = sigma x
+rename_subst xi s : rename xi s = s.[ren xi]
+\end{lstlisting}
+  \caption{Substitution Lemmas in \lst$SubstLemmas$}
+  \label{fig:SubstLemmas}
+\end{figure}
+It contains the lemmas depiced in \autoref{fig:SubstLemmas}.
+The lemma \lst$subst_comp$ states that instead of applying two substitutions in sequence, you can apply the composition of the two. This property is essential and surprisingly difficult to show if done manually. 
+The lemma \lst$rename_subst$ is needed to eliminate occurrences of the renaming function \lst$rename$. Renaming can be expressed with ordinary substitutions using the function \lst$ren$ which lifts a function on variables \lst$var -> var$ to a substitution \lst$var -> term$. It satisfies \lst$ren xi = xi >>> ids$.
+\begin{lstlisting}
+Instance SubstLemmas_type : SubstLemmas type. gen_SubstLemmas. Qed.
+\end{lstlisting}
+
+
+This was all the boilerplate code needed to start using the library.
+We can define the reduction relation for our untyped lambda terms as follows.
+\begin{lstlisting}
+Inductive step : term -> term -> Prop :=
+| Step_Beta s s' t : s' = s.[t .: ids] -> step (App (Lam s) t) s'
+| Step_App1 s s' t: step s s' -> step (App s t) (App s' t)
+| Step_App2 s t t': step t t' -> step (App s t) (App s t')
+| Step_Lam s s' : step s s' -> step (Lam s) (Lam s')
+.
+\end{lstlisting}
+The most interesting rule is \lst$Step_Beta$, which expresses beta reduction using the stream-cons operator. Stream-cons \lst$(a .: f) : nat -> X$ for \lst$a : X$ and \lst$f : nat -> X$ satisfies the equations
+\begin{align*}
+  \lst$(a .: f) 0$ &= \lst$a$ \\
+  \lst$(a .: f) (S n)$ &= \lst$f n$
+\end{align*}
+So \lst$s.[t .: ids]$ is \lst$s$ where the index \lst$0$ is replaced by \lst$t$ and all other indices are reduced by one.
+Also note that the rule \lst$Step_Beta$ contains a superfluous equation to make it applicable in more situations.
+
+
+Now let us show a property of the reduction relation, the fact that it is closed under substitutions.
+\begin{lstlisting}
+Lemma step_subst s s' : step s s' -> forall sigma, step s.[sigma] s'.[sigma].
+Proof. induction 1; constructor; subst; autosubst. Qed.
+\end{lstlisting}
+The automation tactic \lst$autosubst$ solves equations by normalizing them using a powerful rewriting system. 
+
+We conclude this section with a detailed proof of type preservation for simply typed lambda calculus.
+First, we need simple types. We define a base type \lst$Base$ and an arrow type \lst$Arr A B$ for functions from \lst$A$ to \lst$B$.
+\begin{lstlisting}
+Inductive type :=
+| Base
+| Arr (A B : type).
+\end{lstlisting}
+Then, we can define the typing judgment.
+\begin{lstlisting}
+Inductive ty (Gamma : var -> type) : term -> type -> Prop :=
+| Ty_Var x A :     Gamma x = A -> 
+                   ty Gamma (Var x) A
+| Ty_Lam s A B :   ty (A .: Gamma) s B -> 
+                   ty Gamma (Lam s) (Arr A B)
+| Ty_App s t A B : ty Gamma s (Arr A B) -> ty Gamma t A -> 
+                   ty Gamma (App s t) B.
+\end{lstlisting}
+We use infinite contexts. This allows us to encode contexts as functions of type \lst$var -> type$, which coincides with substitutions. Thus we can reuse the primitives and tactics of \Autosubst for the contexts.
+
+Usually, a type preservation proof starts with a weakening lemma for the typing relation, which states that you can add a binding to the context. 
+In de~Bruijn formalizations, it is usually stated with an operation that adds a single binding at an arbitrary position in the context.
+Using parallel substitutions, we can generalize this to all contexts that can be obtained by reinterpreting the indices. This subsumes weakening, contraction and exchange.
+\begin{lstlisting}
+Lemma ty_ren Gamma s A: ty Gamma s A  -> forall Delta xi, 
+                    Gamma = (xi >>> Delta)  ->
+                    ty Delta s.[ren xi] A.
+Proof.
+  induction 1; intros; subst; autosubst; econstructor; eauto. 
+  - eapply IHty. autosubst.
+Qed.
+\end{lstlisting}
+The last application of \lst@autosubst@ solves a nontrivial equation between contexts built with \lst@.:@ and \lst@>>>@.
+
+By generalizing \lst@ty_ren@ to substitutions, we obtain that we preserve typing if we replace variables by terms of the same type. Note that the proof uses \lst@ty_ren@, so it follows the structure of the definition of substitution.
+\begin{lstlisting}
+Lemma ty_subst Gamma s A: ty Gamma s A  -> forall sigma Delta,
+                      (forall x, ty Delta (sigma x) (Gamma x))  ->
+                      ty Delta s.[sigma] A.
+Proof.
+  induction 1; intros; subst; autosubst; eauto using ty. 
+  - econstructor. eapply IHty.
+    intros [|]; simpl; eauto using ty, ty_ren.
+Qed.
+\end{lstlisting}
+
+To show type preservation of the simply typed lambda calculus, we use \lst@ty_subst@ to justify the typing of the result of the beta reduction.
+The tactic \lst$ainv$ performs \lst$inversion$ on all hypothesis where this does not produce more than one subgoal.
+\begin{lstlisting}
+Lemma ty_pres Gamma s A : ty Gamma s A  -> forall s', 
+                      step s s'  -> 
+                      ty Gamma s' A.
+Proof.
+  induction 1; intros s' H_step; autosubst;
+  inversion H_step; ainv; eauto using ty.
+  - eapply ty_subst; try eassumption.
+    intros [|]; simpl; eauto using ty.
+Qed.      
+\end{lstlisting}
+
+\section{Manual}
+\label{sec:manual}
+
+\subsection{Defining the Syntax}
 \label{sec:defining-syntax}
 
 To start using \Autosubst, you first have to define an inductive type of terms with de~Bruijn indices.
@@ -123,10 +299,10 @@ This should be a simple inductive definition without dependent types.
 There must be at most one constructor for variables, aka de~Bruijn indices. It must have a single argument of type \lst$var$, which is a type synonym for \lst$nat$.
 If a constructor acts as a binder for a variable of the term type \lst$T$ in a constructor argument of type \lst$U$, then \lst$U$ has to be replaced by \lst${bind T in U}$.
 We can write \lst${bind T}$ instead of \lst${bind T in T}$.
-
-Here is an example of how this looks for the two-sorted syntax of System F.
-
-\begin{lstlisting}
+\autoref{fig:term-type-example} shows how this looks for the two-sorted syntax of System F. 
+\begin{figure}
+  \centering
+  \begin{lstlisting}
 Inductive type : Type :=
 | TyVar (x : var)
 | Arr   (A B : type)
@@ -139,20 +315,123 @@ Inductive term :=
 | TAbs  (s : {bind type in term})
 | TApp  (s : term) (A : type).
 \end{lstlisting}
+  \caption{Declaration of the syntax of System F}
+  \label{fig:term-type-example}
+\end{figure}
 
-\section{Generating the Operations}
+\subsection{Generating the Operations}
 \label{sec:gener-oper}
 
-\begin{tabular}{c c c c}
-  Notation & Definition & Type & Typeclass \\\hline\noalign{\vspace{0.5em}}
-
-                   & \lst$Var x$          & \lst$var -> term$ & \lst$VarConstr term$ \\
-                   & \lst$rename xi s$    & \lst$(var -> var) -> term -> term$ & \lst$Rename term$ \\
-  \lst$s.[sigma]$  & \lst$subst sigma s$  & \lst$(var -> term) -> term -> term$ & \lst$Subst term$ \\
-  \lst$s.|[sigma]$ & \lst$hsubst sigma s$ & \lst$(var -> term1) -> term2 -> term2$ & \lst$HSubst term1 term2$
+To use \Autosubst, you have to derive the substitution operations for the used term types and the corresponding lemmas.
+This is done with instance declarations for the corresponding typeclass instances and the tactic \lst$derive$, which tries to build such an instance using the hint database \lst$derive$. The operations are summarized in \autoref{tab:derived-ops} and the corresponding lemmas in \autoref{tab:derived-lemmas}.
+\begin{table}
+  \centering
+  \begin{tabular}{l l l l}
+  Typeclass                & Notation         & Definition           & Type                                   \\\hline\noalign{\vspace{0.5em}}
+                             
+  \lst$VarConstr term$     &                  & \lst$Var x$          & \lst$var -> term$                      \\
+  \lst$Rename term$        &                  & \lst$rename xi s$    & \stackr{\lst$(var -> var) ->$}{\lst$term -> term$}     \\
+  \lst$Subst term$         & \lst$s.[sigma]$  & \lst$subst sigma s$  & \stackr{\lst$(var -> term) ->$}{\lst$term -> term$}    \\
+  \lst$HSubst term1 term2$ & \lst$s.|[sigma]$ & \lst$hsubst sigma s$ & \stackr{\lst$(var -> term1) ->$}{\lst$term2 -> term2$} 
 \end{tabular}
+  \caption{Operations that can be derived with \Autosubst}
+  \label{tab:derived-ops}
+\end{table}
+\begin{table}
+  \centering
+  \begin{tabular}{l l}
+    Typeclass & Contained Lemmas \\\hline\noalign{\vspace{0.5em}}
+    
+    \lst$SubstLemmas term$ & 
+    \vtop{\hbox{\strut \lst$rename xi s = s.[ren xi]$,\quad \lst$s.[Var] = s$,}
+          \hbox{\strut\lst$(Var x).[sigma] = sigma x$,\quad \lst$s.[sigma].[tau] = s.[sigma >>> tau]$}} \\
+     \lst$HSubstLemmas term1 term2$ &
+     \vtop{\hbox{\strut\lst$s.|[Var] = s$,\quad \lst$(Var x).|[sigma] = Var x$,}
+           \hbox{\strut \lst$s.|[sigma].|[tau] = s.|[sigma >>> tau]$}} \\
+    \lst$SubstHSubstComp term1 term2$ & \lst$s.[sigma].|[tau] = s.|[tau].[sigma >>| tau]$
+  \end{tabular}
+  \caption{Lemmas that can be derived with \Autosubst}
+  \label{tab:derived-lemmas}
+\end{table}
 
-\section{The \lst$autosubst$ Tactic}
+For example, the syntax of System F needs the declarations shown in \autoref{fig:derive-example}.
+\begin{figure}
+  \centering
+\begin{lstlisting}
+Instance VarConstr_type : VarConstr type. derive. Defined.
+Instance Rename_type : Rename type. derive. Defined.
+Instance Subst_type : Subst type. derive. Defined.
+
+Instance SubstLemmas_type : SubstLemmas type. derive. Qed.
+
+Instance HSubst_term : HSubst type term. derive. Defined.
+
+Instance VarConstr_term : VarConstr term. derive. Defined.
+Instance Rename_term : Rename term. derive. Defined.
+Instance Subst_term : Subst term. derive. Defined.
+
+Instance HSubstLemmas_term : HSubstLemmas type term. derive. Qed.
+Instance SubstHSubstComp_type_term : SubstHSubstComp type term. derive. Qed.
+
+Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
+\end{lstlisting}
+  \caption{Declarations to derive the operations and lemmas for System F}
+  \label{fig:derive-example}
+\end{figure}
+It is important to build the instances in the right order because they depend on each other.
+We summarize the dependencies between the type class instances in \autoref{tab:decl-order}.
+\begin{table}
+  \centering
+  \begin{tabular}{l l}
+    Typeclass & Required Prior Declarations \\\hline\noalign{\vspace{0.5em}}
+
+    \lst$VarConstr term$ & none \\
+
+    \lst$Rename term$ & none \\
+
+    \lst$Subst term$ & \vtop{
+      \hbox{\strut
+        \lst$Rename term$,
+      }
+      \hbox{\strut
+        \lst$HSubst term' term$ if \lst$term$ contains \lst${bind term' in term}$
+      }
+    } \\
+
+    \lst$HSubst term1 term2$ & \vtop{
+      \hbox{\strut
+        \lst$Subst term1$,
+      }
+      \hbox{\strut
+        \lst$HSubst term3 term4$ if \lst$term2$ contains \lst${bind term3 in term4}$,
+      }
+      \hbox{\strut
+        \lst$HSubst term1 term3$ if \lst$term2$ contains \lst$term3$
+      }
+    } \\
+    
+    \lst$SubstLemmas term$ & \vtop{
+      \hbox{\strut
+        \lst$Subst term$,
+      }
+      \hbox{\strut
+        \lst$HSubstLemmas term1 term2$ and \lst$SubstHSubstComp term1 term2$
+      }
+      \hbox{\strut
+        if \lst$Subst term$ requires \lst$HSubst term1 term2$
+    }} \\
+
+    
+    \lst$HSubstLemmas term1 term2$ & 
+    \lst$HSubst term1 term2$,\quad \lst$SubstLemmas term1$
+
+  \end{tabular}
+  \caption{Required Declaration Order of the Typeclass Instances}
+  \label{tab:decl-order}
+\end{table}
+
+
+\subsection{The \lst$autosubst$ Tactic}
 \label{sec:lstautosubst-tactic}
 
 \section{Best Practices}
@@ -173,7 +452,7 @@ then you should define
 \begin{lstlisting}
 Notation subst_interp rho sigma := sigma >> interp rho.
 \end{lstlisting}
-This automatically adds some limited support.
+This automatically adds some limited support. To get full support, you can add the required lemmas to the autorewrite database \lst$autosubst$, which is used by the tactic \lst$autosubst$.
 
 
 \section{Frequently Asked Questions}
