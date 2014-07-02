@@ -184,6 +184,13 @@ Definition wn x := exists y, nf x y.
 Inductive sn x : Prop :=
 | SNI : (forall y, e x y -> sn y) -> sn x.
 
+Lemma sn_preimage (h : T -> T) x :
+  (forall x y, e x y -> e (h x) (h y)) -> sn (h x) -> sn x.
+Proof.
+  move eqn:(h x) => v A B. elim: B h x A eqn => {v} v _ ih h x A eqn.
+  apply: SNI => y /A. rewrite eqn => /ih; eauto.
+Qed.
+
 Lemma normal_star x y : star e x y -> normal x -> x = y.
 Proof. move=> A B. elim: A => // y' z _ <- A. case: B. by exists z. Qed.
 

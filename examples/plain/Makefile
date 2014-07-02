@@ -1,7 +1,7 @@
 COQMAKEFILE := Makefile.coq
 COQMAKE := +$(MAKE) -f $(COQMAKEFILE)
 
-LIB := ../theories
+LIB := ../../theories
 VS := $(wildcard *.v)
 
 all: $(COQMAKEFILE)

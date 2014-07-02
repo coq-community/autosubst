@@ -1,5 +1,6 @@
 THEORIES := $(wildcard theories/*.v)
-EXAMPLES := $(wildcard examples/*.v)
+EXAMPLES_PLAIN := $(wildcard examples/plain/*.v)
+EXAMPLES_SSR   := $(wildcard examples/ssr/*.v)
 DOC := doc/
 EXTRA_DIR := extra/
 HEADER := $(EXTRA_DIR)header.html
@@ -16,28 +17,36 @@ ifneq "$(COQBIN)" ""
         COQBIN := $(COQBIN)/
 endif
 
-all:
+all: lib examples-plain examples-ssr
+
+lib:
 	$(MAKE) -C theories
-	$(MAKE) -C examples
+
+examples-plain:
+	$(MAKE) -C examples/plain
+
+examples-ssr:
+	$(MAKE) -C examples/ssr
 
 clean:
 	$(MAKE) -C theories clean
-	$(MAKE) -C examples clean
+	$(MAKE) -C "examples/plain" clean
+	$(MAKE) -C "examples/ssr" clean
+	$(MAKE) -f TexMakefile clean
 	rm -rf $(DOC)
 
 dist:
 	git archive -o autosubst-HEAD.tar.gz HEAD
 
-doc: all manual.pdf
+doc: all
 	- mkdir -p $(DOC)
-	coqdoc $(COQDOCFLAGS) -R theories Autosubst $(THEORIES) $(EXAMPLES)
+	coqdoc $(COQDOCFLAGS) -R theories Autosubst $(THEORIES) $(EXAMPLES_PLAIN) $(EXAMPLES_SSR)
 	cp $(EXTRA_DIR)resources/* $(DOC)
 
 install:
 	$(MAKE) -C theories install
 
-.PHONY: all clean dist doc install
-
 %.pdf:
-	make -f TexMakefile $@
+	$(MAKE) -f TexMakefile $@
 
+.PHONY: all clean dist doc examples-plain examples-ssr install lib

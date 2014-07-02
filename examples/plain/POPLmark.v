@@ -6,7 +6,7 @@
     progress and preservation of System F with subtyping.  *)
 
 Require Import Program.Equality List.
-Require Import Autosubst Size Decidable Contexts MMap.
+Require Import Autosubst Size Decidable Context.
 
 Inductive type : Type :=
 | TyVar (x : var)
@@ -14,7 +14,7 @@ Inductive type : Type :=
 | Arr (A1 A2 : type)
 | All (A1 : type) (A2 : {bind type}).
 
-Instance VarConstr_type : VarConstr type. derive. Defined.
+Instance Ids_type : Ids type. derive. Defined.
 Instance Rename_type : Rename type. derive. Defined.
 Instance Subst_type : Subst type. derive. Defined.
 
@@ -33,8 +33,7 @@ Inductive term :=
 
 Instance hsubst_term : HSubst type term. derive. Defined.
 
-
-Instance VarConstr_term : VarConstr term. derive. Defined.
+Instance Ids_term : Ids term. derive. Defined.
 Instance Rename_term : Rename term. derive. Defined.
 Instance Subst_term : Subst term. derive. Defined.
 
@@ -42,7 +41,7 @@ Instance HSubstLemmas_term : HSubstLemmas type term. derive. Qed.
 
 Instance SubstHSubstComp_type_term : SubstHSubstComp type term. derive. Qed.
 
-Instance substLemmas_term : SubstLemmas term. derive. Qed.
+Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
 
 Instance size_term : Size term.
   assert(Size var). exact(fun _ => 0). derive.
@@ -50,7 +49,7 @@ Defined.
 
 Lemma ren_size_inv (A : type) : forall xi, size A.[ren xi] = size A.
 Proof.
-  induction A; intros; sizesimpl; repeat(autosubst; try autorew); somega.
+  induction A; intros; sizesimpl; repeat(asimpl; try autorew); somega.
 Qed.
 
 Fixpoint wf_ty Delta A := match A with
@@ -66,9 +65,9 @@ Inductive sub (Delta : list type) : type -> type -> Prop :=
 | SA_Top A :
     wf_ty Delta A -> SUB Delta |- A <: Top
 | SA_Refl x :
-    wf_ty Delta (Var x) -> SUB Delta |- Var x <: Var x
+    wf_ty Delta (TyVar x) -> SUB Delta |- TyVar x <: TyVar x
 | SA_Trans x A B :
-    atnd Delta x A -> SUB Delta |- A <: B -> SUB Delta |- Var x <: B
+    atnd Delta x A -> SUB Delta |- A <: B -> SUB Delta |- TyVar x <: B
 | SA_Arrow A1 A2 B1 B2 :
     SUB Delta |- B1 <: A1 -> SUB Delta |- A2 <: B2 ->
     SUB Delta |- Arr A1 A2 <: Arr B1 B2
@@ -83,9 +82,9 @@ Lemma wf_weak Delta1 Delta2 A xi :
   wf_ty Delta2 A.[ren xi].
 Proof.
   autorevert A. induction A; intros; ainv; simpl; eauto.
-  autosubst. split; eauto.
+  asimpl. split; eauto.
   eapply IHA0. eassumption.
-  intros. ainv (autosubst; eauto using @atnd).
+  intros. ainv (asimpl; eauto using @atnd).
   edestruct H0; eauto. eauto using @atnd.
 Qed.
 
@@ -119,9 +118,9 @@ Proof.
    intros H. intros. subst. autorevert H.
    induction H; intros; simpl; try now (econstructor; simpl; ainv eauto).
    - eauto using sub, wf_weak.
-   - econstructor; autosubst; eauto using wf_weak.
+   - econstructor; asimpl; eauto using wf_weak.
      apply IHsub2.
-     intros [|]; intros; autosubst; ainv; econstructor; eauto; now autosubst.
+     intros [|]; intros; asimpl; ainv; econstructor; eauto; now autosubst.
 Qed.
 
 Lemma sub_weak1 Delta A A' B B' C :
@@ -191,7 +190,7 @@ Proof.
           cutrewrite (S (length Delta') = length (Delta' ++ B' :: nil)).
           now apply atnd_steps.
           rewrite app_length. simpl. omega.
-        * autosubst in IHsub.
+        * asimpl in IHsub.
           eapply IHsub; now eauto.
       + econstructor; eauto.
         eapply atnd_repl; now eauto.
@@ -226,7 +225,7 @@ Reserved Notation "'TY' Delta ; Gamma |- A : B"
 Inductive ty (Delta Gamma : list type) : term -> type -> Prop :=
 | T_Var A x :
     atn Gamma x A ->
-    TY Delta;Gamma |- Var x : A
+    TY Delta;Gamma |- TeVar x : A
 | T_Abs A B s:
     TY Delta;A::Gamma |- s : B   ->   wf_ty Delta A   ->
     TY Delta;Gamma |- Abs A s : Arr A B
@@ -238,7 +237,7 @@ Inductive ty (Delta Gamma : list type) : term -> type -> Prop :=
     TY Delta;Gamma |- TAbs A s : All A B
 | T_TApp A B A' s B' :
     TY Delta;Gamma |- s : All A B ->
-    SUB Delta |- A' <: A -> B' = B.[A' .: Var] ->
+    SUB Delta |- A' <: A -> B' = B.[A'/] ->
     TY Delta;Gamma |- TApp s A' : B'
 | T_Sub A B s :
     TY Delta;Gamma |- s : A   ->   SUB Delta |- A <: B   ->
@@ -248,8 +247,8 @@ where "'TY' Delta ; Gamma |- s : A" := (ty Delta Gamma s A).
 Reserved Notation "'EV' s => t"
   (at level 68, s at level 80, no associativity, format "'EV'   s  =>  t").
 Inductive eval : term -> term -> Prop :=
-| E_AppAbs A s t : EV App (Abs A s) t => s.[t .: Var]
-| E_TAppTAbs A s B : EV TApp (TAbs A s) B => s.|[B .: Var]
+| E_AppAbs A s t : EV App (Abs A s) t => s.[t/]
+| E_TAppTAbs A s B : EV TApp (TAbs A s) B => s.|[B/]
 | E_AppFun s s' t :
      EV s => s' ->
      EV App s t => App s' t
@@ -270,19 +269,19 @@ Lemma ty_weak  xi zeta Delta1 Delta2 Gamma1 Gamma2 s A :
 Proof.
    intros H. autorevert H. induction H; intros; simpl.
    - econstructor; now eauto.
-   - autosubst. econstructor.
+   - asimpl. econstructor.
      + apply IHty; eauto. intros x C H_C.
        destruct x; simpl in *; subst; eauto.
      + eauto using wf_weak.
-   - autosubst. econstructor; autosubst; eauto; apply IHty1; eauto.
-   - autosubst. econstructor. apply IHty.
+   - asimpl; econstructor; simpl; eauto; apply IHty1; eauto.
+   - asimpl. econstructor. apply IHty.
      + intros. now eapply up_atnd; eauto.
      + intros. eapply up_mmap_atn; eauto.
      + eauto using wf_weak.
-   - autosubst. econstructor.
+   - econstructor.
      + simpl in IHty. apply IHty; eauto.
      + eauto using sub_weak.
-     + subst. now autosubst.
+     + subst. autosubst.
    - eauto using ty, sub_weak.
 Qed.
 
@@ -317,8 +316,8 @@ Proof.
   intros.
   cutrewrite (s = s.|[ren id]).
   cutrewrite (A = A.[ren id]).
-  eapply ty_weak; eauto; intros; autosubst; now eauto.
-  now autosubst. now autosubst.
+  eapply ty_weak; eauto; intros; asimpl; now eauto.
+  autosubst. autosubst.
 Qed.
 
 Lemma ty_weak_ter1 Delta Gamma s s' A B :
@@ -348,13 +347,13 @@ Lemma wf_subst Delta1 Delta2 A sigma :
   (forall x B, atnd Delta1 x B -> wf_ty Delta2 (sigma x)) ->
   wf_ty Delta2 A.[sigma].
 Proof.
-  intros H. autorevert A. induction A; eauto; intros; autosubst.
+  intros H. autorevert A. induction A; eauto; intros; asimpl.
   - ainv; eauto.
   - ainv; eauto.
   - split. ainv; eauto. ainv. eapply IHA0. eassumption.
     intros [|]; intros.
     + simpl. eauto using @atnd.
-    + ainv. eapply wf_weak; eauto using @atnd.
+    + ainv. asimpl. eapply wf_weak; eauto using @atnd.
 Qed.
 
 Lemma sub_subst Delta1 Delta2 A B sigma:
@@ -363,15 +362,15 @@ Lemma sub_subst Delta1 Delta2 A B sigma:
   SUB Delta2 |- A.[sigma] <: B.[sigma].
 Proof.
   intros H. autorevert H.
-  induction H; intros; simpl; try econstructor; autosubst;
+  induction H; intros; simpl; try econstructor; asimpl;
   eauto using sub, wf_subst, sub_wf_1.
   - inv H. eauto using sub_refl, wf_subst, sub_wf_1.
   - eauto using sub_trans.
   - apply IHsub2. intros. inv H3.
     + econstructor. eauto using @atnd.
-      autosubst. apply sub_refl.
-      eapply wf_weak1; eauto using sub_wf_1. now autosubst.
-    + autosubst. eapply sub_weak1; try reflexivity; eauto. now autosubst.
+      asimpl. apply sub_refl.
+      eapply wf_weak1; eauto using sub_wf_1. autosubst.
+    + asimpl. eapply sub_weak1; try reflexivity; eauto. autosubst.
 Qed.
 
 Lemma ty_subst Delta1 Delta2 Gamma1 Gamma2 s A sigma tau:
@@ -381,18 +380,18 @@ Lemma ty_subst Delta1 Delta2 Gamma1 Gamma2 s A sigma tau:
   TY Delta2;Gamma2 |- s.|[sigma].[tau] : A.[sigma].
 Proof.
   intros H.
-  autorevert H. induction H; intros; autosubst.
+  autorevert H. induction H; intros; asimpl.
   - now eauto.
   - econstructor.
     + apply IHty; eauto.
-      intros ? ? H_get. destruct x; simpl in *; subst;
+      intros ? ? H_get. destruct x; asimpl in *; subst;
       eauto using ty_weak_ter1. now constructor.
     + eauto using wf_subst, sub_wf_1.
   - econstructor; eauto.
   - econstructor. apply IHty.
-    + intros ? ? H_get. inv H_get; autosubst.
+    + intros ? ? H_get. inv H_get; asimpl.
       * econstructor. constructor; eauto.
-        autosubst. apply sub_refl. eauto using wf_weak1, wf_subst, sub_wf_1.
+        asimpl. apply sub_refl. eauto using wf_weak1, wf_subst, sub_wf_1.
       * eapply sub_weak; eauto using @atnd. now autosubst.
     + intros.
       apply mmap_atn in H3. ainv.
@@ -409,9 +408,9 @@ Corollary ty_subst_term Delta Gamma1 Gamma2 s A sigma:
   TY Delta;Gamma2 |- s.[sigma] : A.
 Proof.
   intros.
-  cutrewrite(s = s.|[Var]);[idtac|now autosubst].
-  cutrewrite (A = A.[Var]);[idtac|now autosubst].
-  eapply ty_subst; eauto; intros; autosubst; eauto using sub, sub_refl.
+  cutrewrite(s = s.|[ids]);[idtac|autosubst].
+  cutrewrite (A = A.[ids]);[idtac|autosubst].
+  eapply ty_subst; eauto; intros; asimpl; eauto using sub, sub_refl.
 Qed.
 
 Lemma can_form_arr {s A B}:
@@ -480,10 +479,10 @@ Proof.
     + pose proof (ty_inv_abs H0 H1) as [? [B' [? ?]]].
       eapply ty_subst_term; eauto using ty.
       intros [|] ? ?; simpl in *; subst; eauto using ty.
-  - cutrewrite (s.|[B .: Var] = s.|[B .: Var].[Var]);[idtac|now autosubst].
+  - cutrewrite (s.|[B/] = s.|[B/].[ids]);[idtac|autosubst].
     inv H_ty; [idtac | pose proof (ty_inv_tabs H1 H2) as [? [B' [? ?]]]];
     (eapply ty_subst; eauto using ty; [
-        now intros ? ? H_atnd; inv H_atnd; autosubst; eauto using sub, sub_refl
+        now intros ? ? H_atnd; inv H_atnd; asimpl; eauto using sub, sub_refl
       | now intros [|] ? H_atn; simpl in *; subst; apply mmap_atn in H_atn;
-        destruct H_atn as [? [? ?]]; subst; autosubst; eauto using ty ]).
+        destruct H_atn as [? [? ?]]; subst; asimpl; eauto using ty ]).
 Qed.
