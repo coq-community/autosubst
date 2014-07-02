@@ -28,7 +28,7 @@ clean:
 dist:
 	git archive -o autosubst-HEAD.tar.gz HEAD
 
-doc: all
+doc: all manual.pdf
 	- mkdir -p $(DOC)
 	coqdoc $(COQDOCFLAGS) -R theories Autosubst $(THEORIES) $(EXAMPLES)
 	cp $(EXTRA_DIR)resources/* $(DOC)
@@ -37,3 +37,7 @@ install:
 	$(MAKE) -C theories install
 
 .PHONY: all clean dist doc install
+
+%.pdf:
+	make -f TexMakefile $@
+

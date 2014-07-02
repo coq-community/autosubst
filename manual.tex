@@ -47,6 +47,7 @@
 
 % References
 
+\bibliographystyle{plain}
 \newcommand{\sref}[1]{{\tiny[#1]}}
 
 % Lambda-terms
@@ -119,7 +120,7 @@
    keywordstyle=\bfseries\color{blue}
   }
 \lstset{language=Coq}
-\lstset{columns=fullflexible,keepspaces}
+\lstset{columns=fullflexible, keepspaces}
 
 \begin{document}
 
@@ -215,8 +216,8 @@ Inductive step : term -> term -> Prop :=
 \end{lstlisting}
 The most interesting rule is \lst$Step_Beta$, which expresses beta reduction using the stream-cons operator. Stream-cons \lst$(a .: f) : nat -> X$ for \lst$a : X$ and \lst$f : nat -> X$ satisfies the equations
 \begin{align*}
-  \lst$(a .: f) 0$ &= \lst$a$ \\
-  \lst$(a .: f) (S n)$ &= \lst$f n$
+  \text{\lst$(a .: f) 0$} &= \text{\lst$a$} \\
+  \text{\lst$(a .: f) (S n)$} &= \text{\lst$f n$}
 \end{align*}
 So \lst$s.[t .: ids]$ is \lst$s$ where the index \lst$0$ is replaced by \lst$t$ and all other indices are reduced by one.
 Also note that the rule \lst$Step_Beta$ contains a superfluous equation to make it applicable in more situations.
@@ -288,7 +289,7 @@ Proof.
 Qed.      
 \end{lstlisting}
 
-\section{Manual}
+\section{Reference Manual}
 \label{sec:manual}
 
 \subsection{Defining the Syntax}
@@ -322,8 +323,8 @@ Inductive term :=
 \subsection{Generating the Operations}
 \label{sec:gener-oper}
 
-To use \Autosubst, you have to derive the substitution operations for the used term types and the corresponding lemmas.
-This is done with instance declarations for the corresponding typeclass instances and the tactic \lst$derive$, which tries to build such an instance using the hint database \lst$derive$. The operations are summarized in \autoref{tab:derived-ops} and the corresponding lemmas in \autoref{tab:derived-lemmas}.
+To use \Autosubst, you have to generate the substitution operations for the used term types and the corresponding lemmas.
+This is done with instance declarations for the corresponding typeclass instances and the tactic \lst$derive$, which is defined as \lst$trivial with derive$ and we have collected a tactic for every typeclass in the hint database \lst$derive$. The operations are summarized in \autoref{tab:derived-ops} and the corresponding lemmas in \autoref{tab:derived-lemmas}.
 \begin{table}
   \centering
   \begin{tabular}{l l l l}
@@ -430,12 +431,69 @@ We summarize the dependencies between the type class instances in \autoref{tab:d
   \label{tab:decl-order}
 \end{table}
 
+\subsection{Defined Primitives}
+\label{sec:pred-oper}
 
-\subsection{The \lst$autosubst$ Tactic}
+\Autosubst defines a number of primitives, some of which depend on the derived primitives.
+They are important not only because they are useful in statements, but more importantly because our custom tactics incorporate facts about them. They are summarized in \autoref{tab:defined-ops}.
+
+\begin{table}
+  \centering
+  \lstset{boxpos=t, aboveskip=0em, belowskip=0em}
+  \begin{tabular}{l l r}
+  Notation         & Definition                                       & Type                                   \\\hline\noalign{\vspace{0.5em}}
+  
+  \lst$f >>> g$    & \lst$fun x => g(f x)$                            & \stackr{\lst$forall A B C : Type, (A -> B) ->$}{\stackr{\lst$(B -> C) ->$}{\lst$A -> C$}} \\\noalign{\vspace{-1em}}
+  \begin{lstlisting}
+a .: f
+  \end{lstlisting}
+&\begin{lstlisting}
+fun x => 
+  match x with 
+  | 0 => a 
+  | S x' => f x' 
+  end    
+\end{lstlisting}
+&
+\begin{lstlisting}
+forall X : Type,         X ->
+           (var -> X) -> 
+                var -> X
+\end{lstlisting}  \\
+  \lst$sigma >> tau$& \lst$sigma >>> subst tau$    & 
+\stackr{\lst$(var -> term) ->$}{\stackr{\lst$(var -> term) ->$}{\lst$var -> term$}}     \\
+\lst$sigma >>| theta$& \lst$sigma >>> hsubst theta$ & 
+\stackr{\lst$(var -> term1) ->$}{\stackr{\lst$(var -> term2) ->$}{\lst$var -> term1$}} \\
+\lst$ren xi$ & \lst$xi >>> ids$ & \stackr{\lst$(var -> var) ->$}{\lst$var -> term$} \\
+\lst$(+ n)$ & \lst$fun x => n + x$ & \stackr{\lst$var ->$}{\lst$var -> var$}
+\end{tabular}
+  \caption{Defined Primitives of \Autosubst}
+  \label{tab:defined-ops}
+\end{table}
+
+\subsection{The Automation Tactics}
 \label{sec:lstautosubst-tactic}
+
+Autosubst defines two automation tactics: \lst$asimpl$ and \lst$autosubst$.
+Both of them normalize the goal using a convergent rewriting system.
+But while the interface and behavior of \lst$asimpl$ mimics \lst$simpl$, the closing tactic \lst$autosubst$ first normalizes an equational claim and then tries to prove it.
+The rewriting system is an extension of the $\sigma$-calculus by Abadi et. al.  \cite{DBLP:journals/jfp/AbadiCCL91}.
+Our goal is to solve all equations that hold without assumptions and are built using only our primitives, application and variables. At the moment, we hope to achieve this if \lst$(+ n)$ is only used with a constant \lst$n$. We consider ever real-world example of an unsolvable such equation a bug and invite you to submit it.
+
+
+
+The normalization is done by interleaving the rewriting system with calls to \lst$simpl$ to incorporate the definitions of the derived operations. 
+
+
+\section{Internals}
+\label{sec:internals}
+
+In the following, we describe technical challenges and how we solved them in Coq.
 
 \section{Best Practices}
 \label{sec:best-practices}
+
+
 
 \subsection{Adding Primitives to \lst$autosubst$}
 \label{sec:adding-prim}
@@ -465,5 +523,7 @@ This automatically adds some limited support. To get full support, you can add t
 {These tactics sometimes perform aggressive reductions to match the goal that are not reachable with \lst$simpl$. You should try to call \lst$asimpl$ \emph{before} you call \lst$constructor$ or \lst$apply$ to make sure that no further reductions are needed.
 }
 
+
+\bibliography{bib}
 
 \end{document}
