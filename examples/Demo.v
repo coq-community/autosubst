@@ -102,3 +102,60 @@ Proof.
   induction 1; intros; autosubst; constructor; trivial. subst. autosubst.
 Qed.
 
+(** * Simply Typed Lamda Calculus *)
+
+
+(** We define syntax for simple types. *)
+Inductive type :=
+| Base
+| Arr (A B : type).
+
+(** For simplicity, the typing relation uses infinite contexts, that is, substitutions 
+    Thus we can reuse the primitives and tactics for substitutions.
+*)
+Inductive ty (Gamma : var -> type) : term -> type -> Prop :=
+| Ty_Var x A :     Gamma x = A -> 
+                   ty Gamma (Var x) A
+| Ty_Lam s A B :   ty (A .: Gamma) s B -> 
+                   ty Gamma (Lam s) (Arr A B)
+| Ty_App s t A B : ty Gamma s (Arr A B) -> ty Gamma t A -> 
+                   ty Gamma (App s t) B.
+
+(** This lemma is a generalization of the usual weakening lemma and a specialization
+    of [ty_subst], which we will prove next.
+*)
+Lemma ty_ren Gamma s A: 
+  ty Gamma s A -> forall Delta xi, 
+  Gamma = (xi >> Delta) -> 
+  ty Delta s.[ren xi] A.
+Proof.
+  induction 1; intros; subst; autosubst; econstructor; eauto. 
+  - eapply IHty. autosubst.
+Qed.
+
+(** By generalizing \lst@ty_ren@ to substitutions, we obtain that we preserve typing 
+    if we replace variables by terms of the same type.
+*)
+Lemma ty_subst Gamma s A: 
+  ty Gamma s A -> forall sigma Delta,
+  (forall x, ty Delta (sigma x) (Gamma x)) ->
+  ty Delta s.[sigma] A.
+Proof.
+  induction 1; intros; subst; autosubst; eauto using ty. 
+  - econstructor. eapply IHty.
+    intros [|]; simpl; eauto using ty, ty_ren.
+Qed.
+
+(** To show type preservation of the simply typed lambda calculus, we use [ty_subst] to
+    justify the typing of the result of the beta reduction.
+*)
+Lemma ty_pres Gamma s A : 
+  ty Gamma s A -> forall s', 
+  step s s' -> 
+  ty Gamma s' A.
+Proof.
+  induction 1; intros s' H_step; autosubst;
+  inversion H_step; ainv; eauto using ty.
+  - eapply ty_subst; try eassumption.
+    intros [|]; simpl; eauto using ty.
+Qed.
