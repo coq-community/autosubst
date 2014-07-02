@@ -1,5 +1,5 @@
 Require Import Omega List Program.Equality.
-Require Import Lib.
+Require Import Autosubst.Basics.
 
 Class Size (A : Type) := size : A -> nat.
 

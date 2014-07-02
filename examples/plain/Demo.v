@@ -20,16 +20,17 @@ Require Import Autosubst.
       instead of [term]. The notation [{bind T}] is convertible to [T]. *)
 
 Inductive term :=
-| TVar (x : var)
-| App  (s t : term)
-| Lam  (s : {bind term}).
+| Var (x : var)
+| App (s t : term)
+| Lam (s : {bind term}).
 
 (** Now we can automatically derive the substitution operations and lemmas.
     This is done by generating instances for the following typeclasses:
 
-    - [VarConstr term] provides the generic variable constructor Var for term.
-      It is always equivalent to the single constructor having an argument of
-      type [var]. In this example, [Var] is convertible to [TVar].
+    - [Ids term] provides the generic identity substitution ids for term.
+      It is always equivalent to the variable constructor of term, i.e.
+      to the unique constructor having a single argument of type [var].
+      In this example, [ids] is convertible to [Var].
     - [Rename term] provides the renaming operation on term.
     - [Subst term] provides the substitution operation on term and needs a
       [Rename] instance in the presence of binders.
@@ -37,7 +38,7 @@ Inductive term :=
 
     Each instance is inferred automatically by using the [derive] tactic. *)
 
-Instance VarConstr_term : VarConstr term. derive. Defined.
+Instance Ids_term : Ids term. derive. Defined.
 Instance Rename_term : Rename term. derive. Defined.
 Instance Subst_term : Subst term. derive. Defined.
 Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
@@ -75,7 +76,7 @@ Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
 
 Inductive step : term -> term -> Prop :=
 | step_beta (s1 s2 t : term) :
-    s2 = s1.[beta t] -> step (App (Lam s1) t) s2
+    s1.[t/] = s2 -> step (App (Lam s1) t) s2
 | step_appL (s1 s2 t : term) :
     step s1 s2 -> step (App s1 t) (App s2 t)
 | step_appR (s t1 t2 : term) :
@@ -99,6 +100,8 @@ Inductive step : term -> term -> Prop :=
 Lemma substitutivity s1 s2 :
   step s1 s2 -> forall sigma, step s1.[sigma] s2.[sigma].
 Proof.
-  induction 1; intros; autosubst; constructor; trivial. subst. autosubst.
+  induction 1; constructor; subst; autosubst.
+Restart.
+  induction 1; intros; simpl; eauto using step; subst.
+  constructor. asimpl. reflexivity.
 Qed.
-

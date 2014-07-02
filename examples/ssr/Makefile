@@ -1,8 +1,8 @@
 COQMAKEFILE := Makefile.coq
 COQMAKE := +$(MAKE) -f $(COQMAKEFILE)
 
-LIB := .
-VS := $(wildcard Autosubst/*.v)
+LIB := ../../theories
+VS := $(wildcard *.v)
 
 all: $(COQMAKEFILE)
 	+$(MAKE) -f $(COQMAKEFILE) all
@@ -10,11 +10,8 @@ all: $(COQMAKEFILE)
 $(COQMAKEFILE): Makefile $(VS)
 	coq_makefile -R $(LIB) Autosubst $(VS) -o $(COQMAKEFILE)
 
-install: $(COQMAKEFILE)
-	$(COQMAKE) install
-
 clean:
 	-$(COQMAKE) clean
 	rm -f $(COQMAKEFILE)
 
-.PHONY: all install clean
+.PHONY: all clean
