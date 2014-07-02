@@ -3,3 +3,4 @@
 *.v.d
 *.coq
 doc/*
+.DS_Store
