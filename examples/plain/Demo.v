@@ -129,10 +129,10 @@ Inductive ty (Gamma : var -> type) : term -> type -> Prop :=
 *)
 Lemma ty_ren Gamma s A: 
   ty Gamma s A -> forall Delta xi, 
-  Gamma = (xi >> Delta) -> 
+  Gamma = (xi >>> Delta) -> 
   ty Delta s.[ren xi] A.
 Proof.
-  induction 1; intros; subst; autosubst; econstructor; eauto. 
+  induction 1; intros; subst; asimpl; econstructor; eauto. 
   - eapply IHty. autosubst.
 Qed.
 
@@ -144,9 +144,9 @@ Lemma ty_subst Gamma s A:
   (forall x, ty Delta (sigma x) (Gamma x)) ->
   ty Delta s.[sigma] A.
 Proof.
-  induction 1; intros; subst; autosubst; eauto using ty. 
+  induction 1; intros; subst; asimpl; eauto using ty. 
   - econstructor. eapply IHty.
-    intros [|]; simpl; eauto using ty, ty_ren.
+    intros [|] *; asimpl; eauto using ty, ty_ren.
 Qed.
 
 (** To show type preservation of the simply typed lambda calculus, we use [ty_subst] to
@@ -157,7 +157,7 @@ Lemma ty_pres Gamma s A :
   step s s' -> 
   ty Gamma s' A.
 Proof.
-  induction 1; intros s' H_step; autosubst;
+  induction 1; intros s' H_step; asimpl;
   inversion H_step; ainv; eauto using ty.
   - eapply ty_subst; try eassumption.
     intros [|]; simpl; eauto using ty.
