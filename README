@@ -26,8 +26,15 @@ To install the library on your system, type
 
     sudo make install
 
+To build the examples that do not need ssreflect, type
 
-To build the documentation, type
+    make examples-plain
+
+the examples that depend on ssreflect are built with
+
+    make examples-ssr
+
+To build the documentation (including all examples), type
 
     make doc
 

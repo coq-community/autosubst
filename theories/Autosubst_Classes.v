@@ -1,5 +1,5 @@
 (** Type classes and notations for substitutions. *)
-Require Import Basics MMap.
+Require Import Autosubst_Basics Autosubst_MMap.
 
 (**
   [_bind] is used to annotate the position of binders in inductive

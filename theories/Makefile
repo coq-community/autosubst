@@ -2,7 +2,7 @@ COQMAKEFILE := Makefile.coq
 COQMAKE := +$(MAKE) -f $(COQMAKEFILE)
 
 LIB := .
-VS := $(wildcard Autosubst/*.v)
+VS := $(wildcard *.v)
 
 all: $(COQMAKEFILE)
 	+$(MAKE) -f $(COQMAKEFILE) all

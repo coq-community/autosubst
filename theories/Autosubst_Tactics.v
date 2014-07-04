@@ -1,5 +1,5 @@
 (** The main automation tactics. *)
-Require Import Basics MMap Classes.
+Require Import Autosubst_Basics Autosubst_MMap Autosubst_Classes.
 
 (** Derived substitution lemmas. *)
 

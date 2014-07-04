@@ -1,5 +1,5 @@
 (** Tactics to generate substitution operations and show the basic lemmas. *)
-Require Import Basics MMap Classes Tactics Lemmas.
+Require Import Autosubst_Basics Autosubst_MMap Autosubst_Classes Autosubst_Tactics Autosubst_Lemmas.
 
 Ltac app_var := match goal with [ |- var] => assumption end.
 

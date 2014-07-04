@@ -1,5 +1,5 @@
 (** Some useful lemmas about substitutions. *)
-Require Import Basics MMap Classes Tactics.
+Require Import Autosubst_Basics Autosubst_MMap Autosubst_Classes Autosubst_Tactics.
 
 Section SubstLemmas.
 

@@ -8,7 +8,7 @@
   the codomain of a function. For additional inductive types, there is
   a derive tactic to generate new mmap instances.
 *)
-Require Import Basics.
+Require Import Autosubst_Basics.
 
 Class MMap (A B: Type) := mmap : (A -> A) -> B -> B.
 Arguments mmap {A B _} f !s /.

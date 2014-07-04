@@ -2,7 +2,7 @@
   Default instances for mmap.
   For ssreflect, you might want to use the library versions instead.
 *)
-Require Import Basics MMap.
+Require Import Autosubst_Basics Autosubst_MMap.
 
 Require List.
 

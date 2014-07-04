@@ -1,4 +1,4 @@
-Require Import Omega MMap List Program.Equality.
+Require Import Omega List Program.Equality.
 Require Import Autosubst.
 
 Fixpoint atn {X} l n (x : X) := 
