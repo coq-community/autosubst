@@ -165,3 +165,7 @@ Class HSubstHSubstInd (inner1 inner2 outer : Type)
 
   hsubst_hsubst_ind (sigma : var -> inner1) (tau : var -> inner2) (s : outer) :
     s.|[sigma].|[tau] = s.|[tau].|[sigma].
+
+(* Local Variables: *)
+(* coq-load-path: (("." "Autosubst")) *)
+(* End: *)

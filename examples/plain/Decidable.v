@@ -1,3 +1,4 @@
+(** * Notation for decidable propositions *)
 Require Import Arith.
 
 Definition dec (X : Prop) : Type := {X} + {~ X}.

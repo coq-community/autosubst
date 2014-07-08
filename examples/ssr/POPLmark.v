@@ -1,15 +1,18 @@
-(** * POPLmark Part 1
+(** * POPLmark Part 1a + 2a
 
     The #<a href="http://www.seas.upenn.edu/~plclub/poplmark/">POPLmark</a>#
     challenge is a set of benchmark problems to evaluate approaches to the
-    formalization of syntactic theories.  We solve parts 1a and 2a, that is,
-    progress and preservation of System F with subtyping.  *)
+    formalization of syntactic theories. We solve parts 1a and 2a, that is,
+    progress and preservation of System F with subtyping.
 
-Require Import Autosubst.
+    The formalization in this file does not follow the paper proofs as closely,
+    and in particular does not contain well-formedness assumptions.
+ *)
+
 Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
-Require Import Context.
+Require Import AutosubstSsr Context.
 
-(** * Syntax *)
+(** **** Syntax *)
 
 Inductive type : Type :=
 | TyVar (x : var)
@@ -24,7 +27,7 @@ Inductive term :=
 | TAbs (A : type) (s : {bind type in term})
 | TApp (s : term) (A : type).
 
-(** * Substitutions *)
+(** **** Substitutions *)
 
 Instance Ids_type : Ids type. derive. Defined.
 Instance Rename_type : Rename type. derive. Defined.
@@ -38,9 +41,9 @@ Instance HSubstLemmas_term : HSubstLemmas type term. derive. Qed.
 Instance SubstHSubstComp_type_term : SubstHSubstComp type term. derive. Qed.
 Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
 
-(** * Subtyping *)
-Notation "Gamma `_ x" := (dget Gamma x).
+(** **** Subtyping *)
 
+Notation "Gamma `_ x" := (dget Gamma x).
 Notation "Gamma ``_ x" := (get Gamma x) (at level 3, x at level 2,
   left associativity, format "Gamma ``_ x").
 
@@ -56,7 +59,7 @@ Inductive sub (Gamma : list type) : type -> type -> Prop :=
 | sub_fun A1 A2 B1 B2 :
     SUB Gamma |- B1 <: A1 -> SUB Gamma |- A2 <: B2 ->
     SUB Gamma |- Arr A1 A2 <: Arr B1 B2
-                            | sub_all A1 A2 B1 B2 :
+| sub_all A1 A2 B1 B2 :
     SUB Gamma |- B1 <: A1 -> SUB (B1 :: Gamma) |- A2 <: B2 ->
     SUB Gamma |- All A1 A2 <: All B1 B2
 where "'SUB' Gamma |- A <: B" := (sub Gamma A B).
@@ -83,11 +86,13 @@ Lemma sub_weak Gamma A B C :
   SUB Gamma |- A <: B -> SUB (C :: Gamma) |- A.[ren (+1)] <: B.[ren (+1)].
 Proof. exact: sub_ren. Qed.
 
-Definition transitivity_at (B : type) :=
-  forall Gamma A C xi, SUB Gamma |- A <: B.[ren xi] -> SUB Gamma |- B.[ren xi] <: C -> SUB Gamma |- A <: C.
+Definition transitivity_at (B : type) := forall Gamma A C xi,
+  SUB Gamma |- A <: B.[ren xi] -> SUB Gamma |- B.[ren xi] <: C ->
+  SUB Gamma |- A <: C.
 
 Lemma transitivity_proj Gamma A B C :
-  transitivity_at B -> SUB Gamma |- A <: B -> SUB Gamma |- B <: C -> SUB Gamma |- A <: C.
+  transitivity_at B ->
+  SUB Gamma |- A <: B -> SUB Gamma |- B <: C -> SUB Gamma |- A <: C.
 Proof. move=> /(_ Gamma A C id). autosubst. Qed.
 Hint Resolve transitivity_proj.
 
@@ -97,7 +102,8 @@ Proof. move=> h Gamma A C zeta. asimpl. exact: h. Qed.
 Lemma sub_narrow_t Gamma Delta A B :
   (forall x, x < size Gamma -> x < size Delta) ->
   (forall x, x < size Gamma -> SUB Delta |- Delta`_x <: Gamma`_x) ->
-  (forall x, x < size Gamma -> Delta`_x = Gamma`_x \/ transitivity_at (Gamma`_x)) ->
+  (forall x, x < size Gamma ->
+    Delta`_x = Gamma`_x \/ transitivity_at (Gamma`_x)) ->
   SUB Gamma |- A <: B -> SUB Delta |- A <: B.
 Proof with eauto using sub.
   move=> h1 h2 h3 ty. elim: ty Delta h1 h2 h3 => {Gamma A B} /=...
@@ -111,10 +117,11 @@ Qed.
 Definition is_var (A : type) : bool := if A is TyVar _ then true else false.
 
 Lemma sub_trans_snoc Gamma B C :
-  (forall A, ~~is_var A -> SUB Gamma |- A <: B -> SUB Gamma |- B <: C -> SUB Gamma |- A <: C) ->
+  (forall A, ~~is_var A ->
+    SUB Gamma |- A <: B -> SUB Gamma |- B <: C -> SUB Gamma |- A <: C) ->
   forall A, SUB Gamma |- A <: B -> SUB Gamma |- B <: C -> SUB Gamma |- A <: C.
 Proof with eauto using sub.
-  move=> h A ty. elim: ty C h => {Gamma A B}... move=> Gamma A C h1 h2. inv h2...
+  move=> h A ty. elim: ty C h =>{Gamma A B}... move=> Gamma A C h1 h2. inv h2...
 Qed.
 
 Lemma sub_trans_t B : transitivity_at B.
@@ -146,32 +153,14 @@ Lemma sub_subst Gamma Delta A B sigma :
   (forall x, x < size Gamma -> SUB Delta |- sigma x <: (Gamma`_x).[sigma]) ->
   SUB Gamma |- A <: B -> SUB Delta |- A.[sigma] <: B.[sigma].
 Proof with eauto using sub.
-  move=> h ty. elim: ty Delta sigma h => {Gamma A B}...
-  - move=> Gamma x A lt _ ih Delta sigma h /=. apply: sub_trans (h _ lt) _. exact: ih.
-  - move=> Gamma A1 A2 B1 B2 _ ih1 _ ih2 Delta sigma h /=. apply: sub_all...
+  move=> h ty. elim: ty Delta sigma h => {Gamma A B} Gamma...
+  - move=> x A lt _ ih Delta sigma h /=. apply: sub_trans (h _ lt) _. exact: ih.
+  - move=> A1 A2 B1 B2 _ ih1 _ ih2 Delta sigma h /=. apply: sub_all...
     apply: ih2 => -[_|x /h/sub_weak]. apply: sub_var_trans => //. autosubst.
     autosubst.
 Qed.
 
-(* Typing *)
-
-Require Import MMap.
-
-Section MMapInstances.
-
-Variable (A B : Type).
-Variable (MMap_A_B : MMap A B).
-Variable (MMapLemmas_A_B : MMapLemmas A B).
-Variable (MMapExt_A_B : MMapExt A B).
-
-Global Instance mmap_seq : MMap A (seq B). intro f. exact (map (mmap f)). Defined.
-Global Instance mmapLemmas_seq : MMapLemmas A (seq B).
-constructor. move=> x. by rewrite /mmap/mmap_seq mmap_idX map_id.
-move=> x f g. rewrite /mmap/mmap_seq -map_comp. f_equal.
-f_ext => y /=. apply mmap_comp. Qed.
-Global Instance mmapExt_seq : MMapExt A (seq B). derive. Defined.
-
-End MMapInstances.
+(** **** Typing *)
 
 Reserved Notation "'TY' Delta ; Gamma |- A : B"
   (at level 68, A at level 99, no associativity,
@@ -226,6 +215,8 @@ Lemma ty_etapp Delta Gamma A B C D s :
   TY Delta;Gamma |- TApp s C : D.
 Proof. move->. exact: ty_tapp. Qed.
 
+(** **** Preservation *)
+
 Lemma ty_ren Delta Gamma1 Gamma2 s A xi :
   (forall x, x < size Gamma1 -> xi x < size Gamma2) ->
   (forall x, x < size Gamma1 -> Gamma2``_(xi x) = Gamma1``_x) ->
@@ -246,7 +237,7 @@ Proof. exact: ty_ren. Qed.
 
 Lemma ty_hsubst Delta1 Delta2 Gamma s A sigma :
   (forall x, x < size Delta1 -> SUB Delta2 |- sigma x <: (Delta1`_x).[sigma]) ->
-  TY Delta1;Gamma |- s : A -> TY Delta2;Gamma..[sigma] |- s.|[sigma] : A.[sigma].
+  TY Delta1;Gamma |- s : A -> TY Delta2;Gamma..[sigma] |- s.|[sigma] :A.[sigma].
 Proof with eauto using ty.
   move=> h ty. elim: ty Delta2 sigma h => {Delta1 Gamma s A}/=...
   - move=> Delta1 Gamma x lt Delta2 sigma h. apply: ty_evar. by rewrite get_map.
@@ -302,8 +293,7 @@ Proof.
 Qed.
 
 Lemma ty_betaT Delta Gamma s A B C :
-  SUB Delta |- C <: A ->
-  TY A :: Delta;Gamma..[ren (+1)] |- s : B ->
+  SUB Delta |- C <: A -> TY A :: Delta;Gamma..[ren (+1)] |- s : B ->
   TY Delta;Gamma |- s.|[C/] : B.[C/].
 Proof.
   move=> subt ty.
@@ -356,6 +346,8 @@ Proof with eauto using ty.
     + apply: ty_tapp sub. exact: ih.
 Qed.
 
+(** **** Progress *)
+
 Definition is_abs s := if s is Abs _ _ then true else false.
 Definition is_tabs s := if s is TAbs _ _ then true else false.
 
@@ -404,3 +396,7 @@ Qed.
 Theorem ev_progress s A:
   TY nil;nil |- s : A -> value s \/ exists t,  EV s => t.
 Proof. move=> ty. exact: ev_progress' ty _. Qed.
+
+(* Local Variables: *)
+(* coq-load-path: (("." "Ssr")) *)
+(* End: *)

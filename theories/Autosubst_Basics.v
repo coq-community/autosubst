@@ -283,3 +283,7 @@ Proof. reflexivity. Qed.
 
 Lemma equal_f {X Y} {f g : X -> Y} a : f = g -> f a = g a.
 Proof. intros. now subst. Qed.
+
+(* Local Variables: *)
+(* coq-load-path: (("." "Autosubst")) *)
+(* End: *)

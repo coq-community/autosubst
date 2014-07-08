@@ -1,5 +1,6 @@
-Require Import Autosubst.
+(** * Strong Normalization of System F *)
 Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+Require Import AutosubstSsr ARS Context.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -78,20 +79,7 @@ Proof. move=> h. apply (step_substf theta ids) in h. by asimpl in h. Qed.
 
 (** **** Many-Step Reduction *)
 
-Inductive red (s : term) : term -> Prop :=
-| redR : red s s
-| redS t u : red s t -> step t u -> red s u.
-Hint Resolve redR.
-
-Lemma red_trans y x z : red x y -> red y z -> red x z.
-Proof. move=> A. elim=> //={z} y' z _. exact: redS. Qed.
-
-Lemma red_hom h :
-  (forall x y, step x y -> step (h x) (h y)) ->
-  (forall x y, red x y -> red (h x) (h y)).
-Proof.
-  move=> A x y. elim=> [|y' z _ B /A]; eauto using red.
-Qed.
+Definition red := star step.
 
 Definition sred sigma tau :=
   forall x : var, red (sigma x) (tau x).
@@ -99,25 +87,25 @@ Definition sred sigma tau :=
 Lemma red_app s1 s2 t1 t2 :
   red s1 s2 -> red t1 t2 -> red (App s1 t1) (App s2 t2).
 Proof.
-  move=> A B. apply: (@red_trans (App s2 t1)).
-  - apply: (@red_hom (App^~ t1)) A => x y. exact: step_appL.
-  - apply: red_hom B => x y. exact: step_appR.
+  move=> A B. apply: (star_trans (App s2 t1)).
+  - apply: (star_hom (App^~ t1)) A => x y. exact: step_appL.
+  - apply: star_hom B => x y. exact: step_appR.
 Qed.
 
 Lemma red_abs A s1 s2 : red s1 s2 -> red (Abs A s1) (Abs A s2).
-Proof. apply: red_hom => x y. exact: step_abs. Qed.
+Proof. apply: star_hom => x y. exact: step_abs. Qed.
 
 Lemma red_tapp A s1 s2 : red s1 s2 -> red (TApp s1 A) (TApp s2 A).
-Proof. apply: (@red_hom (TApp^~A)) => x y. exact: step_tapp. Qed.
+Proof. apply: (star_hom (TApp^~A)) => x y. exact: step_tapp. Qed.
 
 Lemma red_tabs s1 s2 : red s1 s2 -> red (TAbs s1) (TAbs s2).
-Proof. apply: red_hom => x y. exact: step_tabs. Qed.
+Proof. apply: star_hom => x y. exact: step_tabs. Qed.
 
 Lemma red_subst sigma s t : red s t -> red s.[sigma] t.[sigma].
-Proof. apply: red_hom => x y. exact: step_subst. Qed.
+Proof. apply: star_hom => x y. exact: step_subst. Qed.
 
 Lemma red_hsubst theta s t : red s t -> red s.|[theta] t.|[theta].
-Proof. apply: red_hom => x y. exact: step_hsubst. Qed.
+Proof. apply: star_hom => x y. exact: step_hsubst. Qed.
 
 Lemma sred_up sigma tau : sred sigma tau -> sred (up sigma) (up tau).
 Proof. move=> A [|n] //=. asimpl. apply/red_subst/A. Qed.
@@ -135,13 +123,12 @@ Proof.
 Qed.
 
 Lemma red_beta s t1 t2 : step t1 t2 -> red s.[t1/] s.[t2/].
-Proof. move=> h. apply: red_compat => -[]; eauto using red. Qed.
+Proof. move=> h. apply: red_compat => -[|n]/=; [exact: star1|exact: starR]. Qed.
 
 (** **** Syntactic typing *)
 
 Definition ctx := seq type.
-Local Notation "Gamma `_ i" := (nth (ids 0) Gamma i).
-Definition raise (Gamma : ctx) := [seq A.[ren (+1)] | A <- Gamma].
+Local Notation "Gamma `_ i" := (get Gamma i).
 
 Inductive has_type (Gamma : ctx) : term -> type -> Prop :=
 | ty_var (x : var) :
@@ -154,7 +141,7 @@ Inductive has_type (Gamma : ctx) : term -> type -> Prop :=
     has_type Gamma t A ->
     has_type Gamma (App s t) B
 | ty_tabs (A : type) (s : term) :
-    has_type (raise Gamma) s A ->
+    has_type Gamma..[ren (+1)] s A ->
     has_type Gamma (TAbs s) (All A)
 | ty_tapp (A B : type) (s : term) :
     has_type Gamma s (All A) ->
@@ -162,24 +149,13 @@ Inductive has_type (Gamma : ctx) : term -> type -> Prop :=
 
 (* Strong Normalization *)
 
-Inductive sn x : Prop :=
-| SNI : (forall y, step x y -> sn y) -> sn x.
-
-Lemma sn_preimage h x :
-  (forall x y, step x y -> step (h x) (h y)) -> sn (h x) -> sn x.
-Proof.
-  move eqn:(h x) => v A B. elim: B h x A eqn => {v} v _ ih h x A eqn.
-  apply: SNI => y /A. rewrite eqn => /ih; eauto.
-Qed.
+Notation sn := (sn step).
 
 Lemma sn_closed t s : sn (App s t) -> sn s.
 Proof. apply: (sn_preimage (h := App^~t)) => x y. exact: step_appL. Qed.
 
 Lemma sn_tclosed A s : sn (TApp s A) -> sn s.
 Proof. apply: (sn_preimage (h := TApp^~A)) => x y. exact: step_tapp. Qed.
-
-Lemma sn_preservation s t : sn s -> step s t -> sn t.
-Proof. by move=> [f] /f. Qed.
 
 Lemma sn_subst sigma s : sn s.[sigma] -> sn s.
 Proof. apply: sn_preimage => x y. exact: step_subst. Qed.
@@ -219,7 +195,7 @@ Definition admissible (rho : nat -> cand) :=
 (* Facts about reducible sets. *)
 
 Lemma reducible_sn : reducible sn.
-Proof. constructor; eauto using sn. by move=> s t [f] /f. Qed.
+Proof. constructor; eauto using ARS.sn. by move=> s t [f] /f. Qed.
 Hint Resolve reducible_sn.
 
 Lemma reducible_var P x : reducible P -> P (TeVar x).
@@ -339,7 +315,7 @@ Proof with eauto using L_sn, ad_cons.
     rho theta sigma ad el; asimpl...
   - move=> t h. apply: beta_expansion... asimpl. apply: ih... by case.
   - move=> P B h. apply: inst_expansion... asimpl. apply: ih... move=> x.
-    rewrite size_map => lt. rewrite (nth_map (ids 0)) // L_weaken...
+    rewrite size_map => lt. rewrite get_map // L_weaken...
   - rewrite L_subst. specialize (ih _ theta sigma ad el (L B rho) B.[theta]).
     have/ih: reducible (L B rho). exact: L_reducible. apply L_ext. by case.
 Qed.
@@ -355,3 +331,7 @@ Qed.
 
 Corollary strong_normalization E s T : has_type E s T -> sn s.
 Proof. move=>/type_L/(_ rho_id)/L_sn. apply. exact: rho_id. Qed.
+
+(* Local Variables: *)
+(* coq-load-path: (("." "Ssr")) *)
+(* End: *)

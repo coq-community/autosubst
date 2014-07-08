@@ -1,7 +1,7 @@
 (** * Normalization of Call-By-Value System F *)
 
-Require Import Autosubst.
 Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+Require Import AutosubstSsr Context.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -44,9 +44,9 @@ Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
 
 Inductive eval : term -> term -> Prop :=
 | eval_beta (A : type) (s t u1 u2 v : term) :
-    eval s (Abs A u1) -> eval t u2 -> eval (u1.[u2/]) v -> eval (App s t) v
+    eval s (Abs A u1) -> eval t u2 -> eval u1.[u2/] v -> eval (App s t) v
 | eval_tbeta (B : type) (s A v : term) :
-    eval s (TAbs A) -> eval (A.|[B/]) v -> eval (TApp s B) v
+    eval s (TAbs A) -> eval A.|[B/] v -> eval (TApp s B) v
 | eval_abs (A : type) (s : term) :
     eval (Abs A s) (Abs A s)
 | eval_tabs (A : term) :
@@ -56,8 +56,7 @@ Hint Resolve eval_abs eval_tabs.
 (** **** Syntactic typing *)
 
 Definition ctx := seq type.
-Local Notation "Gamma `_ i" := (nth (ids 0) Gamma i).
-Definition raise (Gamma : ctx) := [seq A.[ren (+1)] | A <- Gamma].
+Local Notation "Gamma `_ i" := (get Gamma i).
 
 Inductive has_type (Gamma : ctx) : term -> type -> Prop :=
 | ty_var (x : var) :
@@ -70,7 +69,7 @@ Inductive has_type (Gamma : ctx) : term -> type -> Prop :=
     has_type Gamma t A ->
     has_type Gamma (App s t) B
 | ty_tabs (A : type) (s : term) :
-    has_type (raise Gamma) s A ->
+    has_type Gamma..[ren (+1)] s A ->
     has_type Gamma (TAbs s) (All A)
 | ty_tapp (A B : type) (s : term) :
     has_type Gamma s (All A) ->
@@ -163,7 +162,7 @@ Proof.
     case: (ih1 _ ih2) => {ih1} w ev3 ih1. exists w => //.
     exact: eval_beta ev1 ev2 ev3.
   - apply: V_to_E. eexists=> [//=|P B]. asimpl. apply: ih => x /=.
-    rewrite size_map => wf. rewrite (nth_map (ids 0)) //. apply/E_ren. exact: l.
+    rewrite size_map => wf. rewrite get_map //. apply/E_ren. exact: l.
   - move: (ih delta _ _ l) => [v ev1 {ih} /=[s' eq ih]]; subst v.
     specialize (ih (V B rho) B.[delta]). move: ih => [v ev2 ih]. exists v.
     exact: eval_tbeta ev1 ev2. apply/V_subst. apply: eq_V ih => -[|x] //=.
@@ -193,32 +192,6 @@ Proof.
   by move=> [s {t} _ []].
 Qed.
 
-(** * Substitutivity of small step reduction. *)
-
-Inductive step : term -> term -> Prop :=
-| step_beta (A : type) (s s' t : term) :
-    s' = s.[t/] -> step (App (Abs A s) t) (s')
-| step_tbeta (B : type) s s' :
-    s' = s.|[B/] -> step (TApp (TAbs s) B) s'
-| step_app1 s s' t :
-    step s s' -> step (App s t) (App s' t)
-| step_app2 s t t' :
-    step t t' -> step (App s t) (App s t')
-| step_abs (A : type) (s t: term) : step s t ->
-    step (Abs A s) (Abs A t).
-
-Lemma substitutivity s t :
-  step s t -> forall sigma tau, step s.|[tau].[sigma] t.|[tau].[sigma].
-Proof.
-  induction 1; constructor; subst; autosubst.
-Restart.
-  induction 1; asimpl; constructor; subst; trivial.
-  - autosubst.
-  - autosubst.
-Qed.
-
-Lemma substitutivity' s t :
-  step s t -> forall sigma tau, step s.[tau].|[sigma] t.[tau].|[sigma].
-Proof.
-  elim=> /=; constructor; subst; autosubst.
-Qed.
+(* Local Variables: *)
+(* coq-load-path: (("." "Ssr")) *)
+(* End: *)
