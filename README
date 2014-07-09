@@ -18,12 +18,9 @@ Requirements
 Installation
 ------------
 
-To build the library as well as the examples, type
-
-    make
-
 To install the library on your system, type
 
+    make
     sudo make install
 
 To build the examples that do not need ssreflect, type
