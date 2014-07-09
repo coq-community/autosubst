@@ -185,7 +185,7 @@ We can now use the pre-defined generic notations to call the just created substi
 The notation \lst$s.[sigma]$ stands for \lst$subst sigma s$. 
 The notation \lst$sigma >> tau$ stands for \lst$sigma >>> subst tau$, where \lst$>>>$ is function composition, i.e., \lst$(f >>> g) x = g(f(x))$.
 
-Next, we derive the corresponding substitution lemmas by generating an instance of the \lst$SubstLemmas$ type class.
+Next, we generate the corresponding substitution lemmas by deriving an instance of the \lst$SubstLemmas$ type class.
 \begin{figure}
 \begin{lstlisting}
 subst_comp s sigma tau : s.[sigma].[tau] = s.[sigma >> tau]
@@ -257,7 +257,7 @@ Lemma ty_ren Gamma s A: ty Gamma s A  -> forall Delta xi,
                     Gamma = (xi >>> Delta)  ->
                     ty Delta s.[ren xi] A.
 Proof.
-  induction 1; intros; subst; autosubst; econstructor; eauto. 
+  induction 1; intros; subst; asimpl; econstructor; eauto. 
   - eapply IHty. autosubst.
 Qed.
 \end{lstlisting}
@@ -269,9 +269,9 @@ Lemma ty_subst Gamma s A: ty Gamma s A  -> forall sigma Delta,
                       (forall x, ty Delta (sigma x) (Gamma x))  ->
                       ty Delta s.[sigma] A.
 Proof.
-  induction 1; intros; subst; autosubst; eauto using ty. 
+  induction 1; intros; subst; asimpl; eauto using ty. 
   - econstructor. eapply IHty.
-    intros [|]; simpl; eauto using ty, ty_ren.
+    intros [|] *; asimpl; eauto using ty, ty_ren.
 Qed.
 \end{lstlisting}
 
@@ -282,7 +282,7 @@ Lemma ty_pres Gamma s A : ty Gamma s A  -> forall s',
                       step s s'  -> 
                       ty Gamma s' A.
 Proof.
-  induction 1; intros s' H_step; autosubst;
+  induction 1; intros s' H_step; asimpl;
   inversion H_step; ainv; eauto using ty.
   - eapply ty_subst; try eassumption.
     intros [|]; simpl; eauto using ty.
@@ -323,7 +323,7 @@ Inductive term :=
 \subsection{Generating the Operations}
 \label{sec:gener-oper}
 
-To use \Autosubst, you have to generate the substitution operations for the used term types and the corresponding lemmas.
+We need to generate the substitution operations for the used term types and the corresponding lemmas.
 This is done with instance declarations for the corresponding typeclass instances and the tactic \lst$derive$, which is defined as \lst$trivial with derive$ and we have collected a tactic for every typeclass in the hint database \lst$derive$. The operations are summarized in \autoref{tab:derived-ops} and the corresponding lemmas in \autoref{tab:derived-lemmas}.
 \begin{table}
   \centering
@@ -335,7 +335,7 @@ This is done with instance declarations for the corresponding typeclass instance
   \lst$Subst term$         & \lst$s.[sigma]$  & \lst$subst sigma s$  & \stackr{\lst$(var -> term) ->$}{\lst$term -> term$}    \\
   \lst$HSubst term1 term2$ & \lst$s.|[sigma]$ & \lst$hsubst sigma s$ & \stackr{\lst$(var -> term1) ->$}{\lst$term2 -> term2$} 
 \end{tabular}
-  \caption{Operations that can be derived with \Autosubst}
+  \caption{Operations that can be generated with \Autosubst}
   \label{tab:derived-ops}
 \end{table}
 \begin{table}
@@ -351,7 +351,7 @@ This is done with instance declarations for the corresponding typeclass instance
            \hbox{\strut \lst$s.|[sigma].|[tau] = s.|[sigma >>> tau]$}} \\
     \lst$SubstHSubstComp term1 term2$ & \lst$s.[sigma].|[tau] = s.|[tau].[sigma >>| tau]$
   \end{tabular}
-  \caption{Lemmas that can be derived with \Autosubst}
+  \caption{Lemmas that can be generated with \Autosubst}
   \label{tab:derived-lemmas}
 \end{table}
 
@@ -395,7 +395,10 @@ We summarize the dependencies between the type class instances in \autoref{tab:d
         \lst$Rename term$,
       }
       \hbox{\strut
-        \lst$HSubst term' term$ if \lst$term$ contains \lst${bind term' in term}$
+        \lst$HSubst term' term$
+      }
+      \hbox{\strut
+         \quad if \lst$term$ contains \lst${bind term' in term}$
       }
     } \\
 
@@ -404,10 +407,16 @@ We summarize the dependencies between the type class instances in \autoref{tab:d
         \lst$Subst term1$,
       }
       \hbox{\strut
-        \lst$HSubst term3 term4$ if \lst$term2$ contains \lst${bind term3 in term4}$,
+        \lst$HSubst term3 term4$
       }
       \hbox{\strut
-        \lst$HSubst term1 term3$ if \lst$term2$ contains \lst$term3$
+         \quad if \lst$term2$ contains \lst${bind term3 in term4}$,
+      }
+      \hbox{\strut
+        \lst$HSubst term1 term3$
+      }
+      \hbox{\strut
+         \quad if \lst$term2$ contains \lst$term3$
       }
     } \\
     
@@ -416,10 +425,13 @@ We summarize the dependencies between the type class instances in \autoref{tab:d
         \lst$Subst term$,
       }
       \hbox{\strut
-        \lst$HSubstLemmas term1 term2$ and \lst$SubstHSubstComp term1 term2$
+        \lst$HSubstLemmas term1 term2$
       }
       \hbox{\strut
-        if \lst$Subst term$ requires \lst$HSubst term1 term2$
+         and \lst$SubstHSubstComp term1 term2$
+      }
+      \hbox{\strut
+       \quad if \lst$Subst term$ requires \lst$HSubst term1 term2$
     }} \\
 
     
@@ -431,10 +443,10 @@ We summarize the dependencies between the type class instances in \autoref{tab:d
   \label{tab:decl-order}
 \end{table}
 
-\subsection{Defined Primitives}
+\subsection{Defined Operations}
 \label{sec:pred-oper}
 
-\Autosubst defines a number of primitives, some of which depend on the derived primitives.
+\Autosubst defines a number of operations, some of which depend on the generated operations.
 They are important not only because they are useful in statements, but more importantly because our custom tactics incorporate facts about them. They are summarized in \autoref{tab:defined-ops}.
 
 \begin{table}
@@ -477,7 +489,7 @@ forall X : Type,         X ->
 Autosubst defines two automation tactics: \lst$asimpl$ and \lst$autosubst$.
 Both of them normalize the goal using a convergent rewriting system.
 But while the interface and behavior of \lst$asimpl$ mimics \lst$simpl$, the closing tactic \lst$autosubst$ first normalizes an equational claim and then tries to prove it.
-The rewriting system is an extension of the $\sigma$-calculus by Abadi et. al.  \cite{DBLP:journals/jfp/AbadiCCL91}.
+The rewriting system is an extension of the $\sigma$-calculus by Abadi et. al. \cite{abadi1991}.
 Our goal is to solve all equations that hold without assumptions and are built using only our primitives, application and variables. At the moment, we hope to achieve this if \lst$(+ n)$ is only used with a constant \lst$n$. We consider ever real-world example of an unsolvable such equation a bug and invite you to submit it.
 
 
@@ -489,6 +501,16 @@ The normalization is done by interleaving the rewriting system with calls to \ls
 \label{sec:internals}
 
 In the following, we describe technical challenges and how we solved them in Coq.
+
+\subsection{Reducible Recursive Type Class Instances}
+\label{sec:reduc-recurs-inst}
+
+We need the substitution operation to reduce and simplify because there is no other way how our automation tactics could learn about the behavior of substitution on custom term types. However, this is challenging since the substitution operations we derive are instances of a type class. We needed a number of tricks to make this work smoothly.
+\begin{itemize}
+\item We use singleton type classes. So a type class instance is just a definition of the recursive procedure and the type class function reduces to its instance argument. This is important because 
+\end{itemize}
+
+The first important trick is to make \lst$Subst$ a singleton type class. Thus they are invoked with \lst$subst sigma s$.
 
 \section{Best Practices}
 \label{sec:best-practices}
