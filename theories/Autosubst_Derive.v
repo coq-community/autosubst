@@ -424,3 +424,7 @@ Ltac derive_SubstHSubstComp :=
   try apply mmap_ext; intros; apply ih
   end.
 Hint Extern 0 (SubstHSubstComp _ _) => derive_SubstHSubstComp : derive.
+
+(* Local Variables: *)
+(* coq-load-path: (("." "Autosubst")) *)
+(* End: *)

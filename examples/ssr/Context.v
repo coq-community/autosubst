@@ -1,6 +1,8 @@
-(* Support for dependent contexts with the right reduction behaviour. *)
-Require Import Autosubst.
+(** * Context
+
+    Support for dependent contexts with the right reduction behaviour. *)
 Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+Require Import AutosubstSsr.
 
 Definition get {T} `{Ids T} (Gamma : seq T) (n : var) : T :=
   nth (ids 0) Gamma n.
@@ -18,13 +20,6 @@ Lemma get_map {T} `{Ids T} (f : T -> T) Gamma n :
   n < size Gamma -> get (map f Gamma) n = f (get Gamma n).
 Proof. exact: nth_map. Qed.
 
-Definition equivariant {T1 T2} `{Ids T1} `{Ids T2} `{Subst T1} `{Subst T2}
-  (f : T1 -> T2) := forall (x : T1) (xi : var -> var), (f x).[ren xi] = f x.[ren xi].
-
-Lemma dget_map {T} `{Ids T} `{Subst T} (f : T -> T) Gamma n :
-  equivariant f -> n < size Gamma -> dget (map f Gamma) n = f (dget Gamma n).
-Proof.
-  elim: n Gamma => [|n ih] [|A Gamma] //= ev lt. by rewrite ih.
-Qed.
-
-
+(* Local Variables: *)
+(* coq-load-path: (("." "Ssr")) *)
+(* End: *)

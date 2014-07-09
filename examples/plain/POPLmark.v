@@ -128,7 +128,8 @@ Lemma sub_weak1 Delta A A' B B' C :
   SUB (C :: Delta) |- A' <: B'.
 Proof.  intros. eapply sub_weak; eauto using @atnd. Qed.
 
-Lemma sub_wf {Delta A B} : SUB Delta |- A <: B -> wf_ty Delta A /\ wf_ty Delta B.
+Lemma sub_wf {Delta A B} :
+  SUB Delta |- A <: B -> wf_ty Delta A /\ wf_ty Delta B.
 Proof.
   intros H. induction H; ainv; simpl; eauto using wf_weak'.
 Qed.
@@ -486,3 +487,7 @@ Proof.
       | now intros [|] ? H_atn; simpl in *; subst; apply mmap_atn in H_atn;
         destruct H_atn as [? [? ?]]; subst; asimpl; eauto using ty ]).
 Qed.
+
+(* Local Variables: *)
+(* coq-load-path: (("." "Plain")) *)
+(* End: *)

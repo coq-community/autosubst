@@ -40,7 +40,8 @@ dist:
 
 doc: all
 	- mkdir -p $(DOC)
-	coqdoc $(COQDOCFLAGS) -R theories Autosubst $(THEORIES) $(EXAMPLES_PLAIN) $(EXAMPLES_SSR)
+	coqdoc $(COQDOCFLAGS) -R theories Autosubst -R examples/plain Plain \
+	  -R examples/ssr Ssr $(THEORIES) $(EXAMPLES_PLAIN) $(EXAMPLES_SSR)
 	cp $(EXTRA_DIR)resources/* $(DOC)
 
 install:

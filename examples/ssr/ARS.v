@@ -18,6 +18,8 @@ Notation "e1 <=>2 e2" := (e1 <=2 e2 /\ e2 <=2 e1)
 Definition Pred (T : Type) := T -> Prop.
 Definition Rel  (T : Type) := T -> Pred T.
 
+(** **** Reflexive, Transitive(, Symmetric) closure *)
+
 Section Definitions.
 
 Variables (T : Type) (e : Rel T).
@@ -155,6 +157,8 @@ Proof.
   move=> C. apply: conv_trans B _. exact: conv_sym.
 Qed.
 
+(** **** Commutation Properties *)
+
 Section Commutation.
 Variable T : Type.
 
@@ -171,6 +175,8 @@ Corollary diamond_confluent (e : Rel T) : diamond e -> confluent e.
 Proof. exact: com_lift. Qed.
 
 End Commutation.
+
+(** **** Weak and Strong Normalization *)
 
 Section Termination.
 Variables (T : Type) (e : Rel T).
@@ -203,6 +209,8 @@ Lemma cr_conv_normal x y : conv e x y -> normal x -> normal y -> x = y.
 Proof. by move=> /cr[z A B] /(normal_star A)->/(normal_star B)->. Qed.
 
 End Termination.
+
+(** **** Cofinal and Normalizing Strategies *)
 
 Section CoFinal.
 Variables (T : Type) (e : Rel T) (rho : T -> T).
@@ -301,3 +309,7 @@ Proof.
 Qed.
 
 End ComputationN.
+
+(* Local Variables: *)
+(* coq-load-path: (("." "Ssr")) *)
+(* End: *)

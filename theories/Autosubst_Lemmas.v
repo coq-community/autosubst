@@ -55,3 +55,6 @@ Qed.
 
 End SubstLemmas.
 
+(* Local Variables: *)
+(* coq-load-path: (("." "Autosubst")) *)
+(* End: *)

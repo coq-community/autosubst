@@ -230,3 +230,7 @@ Ltac asimplH H :=
 
 Tactic Notation "asimpl" "in" ident(H) := asimplH H.
 Tactic Notation "asimpl" "in" "*" := (in_all asimplH); asimpl.
+
+(* Local Variables: *)
+(* coq-load-path: (("." "Autosubst")) *)
+(* End: *)

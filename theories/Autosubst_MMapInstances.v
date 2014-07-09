@@ -41,3 +41,7 @@ Proof.
 Defined.
 
 End MMapInstances.
+
+(* Local Variables: *)
+(* coq-load-path: (("." "Autosubst")) *)
+(* End: *)

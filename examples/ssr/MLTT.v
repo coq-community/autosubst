@@ -3,7 +3,7 @@
     Type preservation and confluence. *)
 
 Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
-Require Import Autosubst ARS Context.
+Require Import AutosubstSsr ARS Context.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -542,3 +542,6 @@ Proof.
     apply: ty_sub tp1 ih1 _. exact: ih2.
 Qed.
 
+(* Local Variables: *)
+(* coq-load-path: (("." "Ssr")) *)
+(* End: *)
