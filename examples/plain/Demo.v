@@ -129,7 +129,7 @@ Inductive ty (Gamma : var -> type) : term -> type -> Prop :=
 *)
 Lemma ty_ren Gamma s A: 
   ty Gamma s A -> forall Delta xi, 
-  Gamma = (xi >>> Delta) -> 
+  Gamma = xi >>> Delta -> 
   ty Delta s.[ren xi] A.
 Proof.
   induction 1; intros; subst; asimpl; econstructor; eauto. 
