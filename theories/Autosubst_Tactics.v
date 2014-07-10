@@ -190,7 +190,7 @@ Ltac autosubst :=
   simpl; trivial; autosubst_unfold; solve [repeat first
   [ solve [trivial]
   | progress (
-      simpl; unfold _bind; fsimpl; autorewrite with mmap;
+      simpl; unfold _bind; fsimpl; autorewrite with autosubst;
       rewrite ?id_scompX, ?id_scompR, ?subst_idX, ?subst_compX,
               ?subst_compR, ?id_subst, ?subst_id, ?subst_compI,
               ?id_hsubstX, ?id_hsubstR, ?hsubst_idX, ?scomp_hcompX,
@@ -205,7 +205,7 @@ Ltac autosubst :=
 Ltac asimpl :=
   simpl; autosubst_unfold; repeat first
   [ progress (
-      simpl; unfold _bind; fsimpl; autorewrite with mmap;
+      simpl; unfold _bind; fsimpl; autorewrite with autosubst;
       rewrite ?id_scompX, ?id_scompR, ?subst_idX, ?subst_compX,
               ?subst_compR, ?id_subst, ?subst_id, ?subst_compI,
               ?id_hsubstX, ?id_hsubstR, ?hsubst_idX, ?scomp_hcompX,
@@ -218,7 +218,7 @@ Ltac asimpl :=
 Ltac asimplH H :=
   simpl in H; autosubst_unfoldH H; repeat first
   [ progress (
-      simpl in H; unfold _bind in H; fsimpl in H; autorewrite with mmap in H;
+      simpl in H; unfold _bind in H; fsimpl in H; autorewrite with autosubst in H;
       rewrite ?id_scompX, ?id_scompR, ?subst_idX, ?subst_compX,
               ?subst_compR, ?id_subst, ?subst_id, ?subst_compI,
               ?id_hsubstX, ?id_hsubstR, ?hsubst_idX, ?scomp_hcompX,
