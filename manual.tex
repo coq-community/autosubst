@@ -422,6 +422,9 @@ We summarize the dependencies between the type class instances in \autoref{tab:d
     
     \lst$SubstLemmas term$ & \vtop{
       \hbox{\strut
+        \lst$Ids term$,
+      }
+      \hbox{\strut
         \lst$Subst term$,
       }
       \hbox{\strut
@@ -435,8 +438,14 @@ We summarize the dependencies between the type class instances in \autoref{tab:d
     }} \\
 
     
-    \lst$HSubstLemmas term1 term2$ & 
-    \lst$HSubst term1 term2$,\quad \lst$SubstLemmas term1$
+    \lst$HSubstLemmas term1 term2$ &
+    \vtop{
+      \hbox{\strut
+        \lst$HSubst term1 term2$,
+      }\hbox{\strut
+        \lst$SubstLemmas term1$
+      }
+    } 
 
   \end{tabular}
   \caption{Required Declaration Order of the Typeclass Instances}
@@ -487,6 +496,13 @@ forall X : Type,         X ->
 \label{sec:lstautosubst-tactic}
 
 Autosubst defines two automation tactics: \lst$asimpl$ and \lst$autosubst$.
+
+\faq{\lst$asimpl$}{Normalizes the claim.}
+\faq{\lst$asimpl in H$}{Normalizes the hypothesis \lst$H$.}
+\faq{\lst$asimpl in *$}{Normalizes the claim and all hypothesis.}
+\faq{\lst$autosubst$}{Normalizes the claim and tries to solve the resulting equation.}
+\vspace{\topsep}
+
 Both of them normalize the goal using a convergent rewriting system.
 But while the interface and behavior of \lst$asimpl$ mimics \lst$simpl$, the closing tactic \lst$autosubst$ first normalizes an equational claim and then tries to prove it.
 The rewriting system is an extension of the $\sigma$-calculus by Abadi et. al. \cite{abadi1991}.
@@ -507,10 +523,18 @@ In the following, we describe technical challenges and how we solved them in Coq
 
 We need the substitution operation to reduce and simplify because there is no other way how our automation tactics could learn about the behavior of substitution on custom term types. However, this is challenging since the substitution operations we derive are instances of a type class. We needed a number of tricks to make this work smoothly.
 \begin{itemize}
-\item We use singleton type classes. So a type class instance is just a definition of the recursive procedure and the type class function reduces to its instance argument. This is important because 
+\item We use singleton type classes. So a type class instance is just a definition of the recursive procedure and the type class function reduces to its instance argument. This is important for two reasons. 
+First, the guardedness checker does not unfold the record projections used for non-singleton type classes.
+Second, when \lst$simpl$ reduces a definition bound to a \lst$fix$, it replaces all occurrences of this fix with the name of the definition afterwards. This also just works for singleton type classes.
+\item All recursive calls are formulated using the function of the type class with the procedure name bound in the \lst$fix$-term serving as the implicit instance argument.
+\item The Coq unification algorithm can perform unfoldings that are impossible with \lst$simpl$. This can lead to implicit instance arguments being unfolded. In turn, the type class inference can no longer infer instances depending on the unfolded instance. Apart from using \lst$simpl$ before using tactics that trigger unification like \lst$apply$ or \lst$constructor$, the only way to circumvent this is to revert the unfolding of instances. We automatically do this in all automation tactics by reinferring implicit instance arguments using \lst$exact _$.
+
 \end{itemize}
 
-The first important trick is to make \lst$Subst$ a singleton type class. Thus they are invoked with \lst$subst sigma s$.
+\subsection{Generating the Operations Using Ltac}
+\label{sec:gener-ltac}
+
+
 
 \section{Best Practices}
 \label{sec:best-practices}
@@ -530,6 +554,7 @@ subst_interp : (var -> value) -> (var -> term) -> var -> value
 \end{lstlisting}
 then you should define
 \begin{lstlisting}
+
 Notation subst_interp rho sigma := sigma >> interp rho.
 \end{lstlisting}
 This automatically adds some limited support. To get full support, you can add the required lemmas to the autorewrite database \lst$autosubst$, which is used by the tactic \lst$autosubst$.
