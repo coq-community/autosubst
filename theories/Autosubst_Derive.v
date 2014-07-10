@@ -65,6 +65,7 @@ Ltac has_var s :=
 
 Ltac derive_Subst :=
   match goal with [ |- Subst ?term ] =>
+    require_instance (Rename term);
     hnf; fix inst 2; change _ with (Subst term) in inst;
     intros sigma s; change (annot term s); destruct s;
     match goal with
@@ -105,6 +106,7 @@ Hint Extern 0 (Subst _) => derive_Subst : derive.
 
 Ltac derive_HSubst :=
   match goal with [ |- HSubst ?inner ?outer ] =>
+    require_instance (Subst inner);
     hnf; fix inst 2; change _ with (HSubst inner outer) in inst;
     intros sigma s; change (annot outer s); destruct s;
     match goal with

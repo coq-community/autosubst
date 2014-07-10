@@ -21,8 +21,11 @@ Tactic Notation "in_all" tactic(T) :=
 (** Shorthand for functional extensionality. *)
 Ltac f_ext := apply functional_extensionality.
 
-(** Wrapper for deriving typeclass instances. *)
+(** Wrapper for deriving type class instances. *)
 Ltac derive := trivial with derive; fail.
+
+(** Assert that type class instance exists.*)
+Ltac require_instance s := try (first[assert s;[exact _|idtac] | fail 10 "The instance" s "is missing"]; fail).
 
 (**
   General automation tactics.
