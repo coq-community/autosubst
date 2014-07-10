@@ -38,11 +38,12 @@ clean:
 dist:
 	git archive -o autosubst-HEAD.tar.gz HEAD
 
-doc: all
+doc: all manual.pdf
 	- mkdir -p $(DOC)
 	coqdoc $(COQDOCFLAGS) -R theories Autosubst -R examples/plain Plain \
 	  -R examples/ssr Ssr $(THEORIES) $(EXAMPLES_PLAIN) $(EXAMPLES_SSR)
 	cp $(EXTRA_DIR)resources/* $(DOC)
+	cp manual.pdf $(DOC)
 
 install:
 	$(MAKE) -C theories install
