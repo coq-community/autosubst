@@ -11,11 +11,13 @@ body{
     -moz-text-size-adjust: none;
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
+
+    font-size: 15px;
 }
 
 #page, #toc {
     font-family:  "Open Sans", sans-serif;
-    line-height: 1.65;
+    line-height: 1.4;
     color: #444;
     background-color: white;
     display:block;
@@ -61,6 +63,8 @@ body{
     display: block;
     padding: 16px;
     padding-bottom: 5em;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 #main a {
