@@ -17,10 +17,10 @@ ifneq "$(COQBIN)" ""
         COQBIN := $(COQBIN)/
 endif
 
-all: lib examples-plain examples-ssr
-
 lib:
 	$(MAKE) -C theories
+
+all: lib examples-plain examples-ssr
 
 examples-plain:
 	$(MAKE) -C examples/plain
