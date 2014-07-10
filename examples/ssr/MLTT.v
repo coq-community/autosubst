@@ -374,8 +374,8 @@ Lemma ty_prod_wf Gamma A B :
   [ Gamma |- A ] -> [ A :: Gamma |- B ] -> [ Gamma |- Prod A B ].
 Proof.
   move=> [n tp1] [m tp2]. exists (maxn n m). apply: ty_prod.
-  - apply: ty_sub tp1 => //. apply: sub_sort. exact: leq_maxl.
-  - apply: ty_sub tp2 => //. apply: sub_sort. exact: leq_maxr.
+  - eapply (ty_sub (A := Sort n)); eauto. eapply sub_sort. exact: leq_maxl.
+  - eapply (ty_sub (A := Sort m)); eauto. apply: sub_sort. exact: leq_maxr.
 Qed.
 
 (* Substitution Lemma *)
@@ -475,7 +475,7 @@ Proof.
   move e:(Prod A B) => s tp. elim: tp A B e n => //{Gamma s u}
     [Gamma A B n tp1 _ tp2 _ A' B' [->->]
     |Gamma n s A B sub1 _ _ tp ih A' B' e] m sub2.
-  - split. exact: ty_sub tp1. exact: ty_sub tp2.
+  - eauto using ty_sub.
   - subst. apply: ih => //. exact: sub_trans sub1 sub2.
 Qed.
 

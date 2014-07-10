@@ -247,9 +247,9 @@ Proof with eauto using ty.
     apply. move=> [_|x/h/sub_weak] /=. apply: sub_var_trans => //. autosubst.
     autosubst.
   - move=> Delta1 Gamma A B C s _ ih sub Delta2 sigma h. asimpl.
-    apply: ty_etapp. Focus 2. by eapply ih. autosubst. exact: sub_subst sub.
+    eapply ty_etapp. Focus 2. by eapply ih. autosubst. exact: sub_subst sub.
   - move=> Delta1 Gamma A B s _ ih sub Delta2 sigma h.
-    apply: ty_sub. by eapply ih. exact: sub_subst sub.
+    eapply ty_sub. by eapply ih. exact: sub_subst sub.
 Qed.
 
 Lemma ty_tweak Delta Gamma s A B :
