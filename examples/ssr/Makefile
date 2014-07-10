@@ -10,7 +10,7 @@ all: $(COQMAKEFILE)
 $(COQMAKEFILE): Makefile $(VS)
 	coq_makefile -R $(LIB) Autosubst $(VS) -R . Ssr -o $(COQMAKEFILE)
 
-clean:
+clean: $(COQMAKEFILE)
 	-$(COQMAKE) clean
 	rm -f $(COQMAKEFILE)
 

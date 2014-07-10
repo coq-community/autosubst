@@ -13,7 +13,7 @@ $(COQMAKEFILE): Makefile $(VS)
 install: $(COQMAKEFILE)
 	$(COQMAKE) install
 
-clean:
+clean: $(COQMAKEFILE)
 	-$(COQMAKE) clean
 	rm -f $(COQMAKEFILE)
 
