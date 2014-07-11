@@ -212,9 +212,10 @@ div:empty{ display: none;}
 .code span:before {
     color: #2874AE;
     background-color: #F2FAFF;
-    content: "\21AA";
+    content: "\21B3";
     position: absolute;
-    left: 0.1em;
+    left: 3px;
+    font-size: 80%;
     z-index: 1;
 }
 

@@ -25,7 +25,11 @@ Ltac f_ext := apply functional_extensionality.
 Ltac derive := trivial with derive; fail.
 
 (** Assert that type class instance exists.*)
-Ltac require_instance s := try (first[assert s;[exact _|idtac] | fail 10 "The instance" s "is missing"]; fail).
+Ltac require_instance s := 
+  try (first[
+              assert s;[exact _|idtac] 
+            | fail 10 "The instance" s "is missing"
+            ]; fail).
 
 (**
   General automation tactics.
