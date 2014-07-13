@@ -21,7 +21,7 @@ Lemma id_scompX sigma : ids >>> subst sigma = sigma.
 Proof. f_ext. apply id_subst. Qed.
 
 Lemma id_scompR {A} sigma (f : _ -> A) :
-  ids >>> subst sigma >>> f = sigma >>> f.
+  ids >>> (subst sigma >>> f) = sigma >>> f.
 Proof. now rewrite <- compA, id_scompX. Qed.
 
 Lemma subst_idX : subst ids = id.
@@ -36,7 +36,7 @@ Lemma subst_compX sigma tau :
 Proof. f_ext. apply subst_comp. Qed.
 
 Lemma subst_compR {A} sigma tau (f : _ -> A) :
-  subst sigma >>> subst tau >>> f = subst (sigma >>> subst tau) >>> f.
+  subst sigma >>> (subst tau >>> f) = subst (sigma >>> subst tau) >>> f.
 Proof. now rewrite <- subst_compX. Qed.
 
 Lemma fold_ren_cons (x : var) (xi : var -> var) :
@@ -65,7 +65,7 @@ Lemma id_hsubstX (sigma : var -> inner) : ids >>> hsubst sigma = ids.
 Proof. f_ext. apply id_hsubst. Qed.
 
 Lemma id_hsubstR {A} (f : _ -> A) (sigma : var -> inner) :
-  ids >>> hsubst sigma >>> f = ids >>> f.
+  ids >>> (hsubst sigma >>> f) = ids >>> f.
 Proof. now rewrite <- compA, id_hsubstX. Qed.
 
 Lemma hsubst_idX : hsubst ids = id.
@@ -80,7 +80,7 @@ Lemma hsubst_compX sigma tau :
 Proof. f_ext. apply hsubst_comp. Qed.
 
 Lemma hsubst_compR {A} sigma tau (f : _ -> A) :
-  hsubst sigma >>> hsubst tau >>> f = hsubst (sigma >>> subst tau) >>> f.
+  hsubst sigma >>> (hsubst tau >>> f) = hsubst (sigma >>> subst tau) >>> f.
 Proof. now rewrite <- hsubst_compX. Qed.
 
 Lemma scomp_hcompI sigma theta s :
@@ -92,8 +92,8 @@ Lemma scomp_hcompX sigma theta :
 Proof. f_ext. apply subst_hsubst_comp. Qed.
 
 Lemma scomp_hcompR {A} sigma theta (f : _ -> A) :
-  subst sigma >>> hsubst theta >>> f=
-  hsubst theta >>> subst (sigma >>> hsubst theta) >>> f.
+  subst sigma >>> (hsubst theta >>> f) =
+  hsubst theta >>> (subst (sigma >>> hsubst theta) >>> f).
 Proof. now rewrite <- compA, scomp_hcompX. Qed.
 
 End LemmasForHSubst.
@@ -148,8 +148,8 @@ Ltac fold_ren :=
          change (xi >>> (@ids T _ >>> g)) with (@ren T _ xi >>> g)
     | [|- context[?xi >>> @ren ?T _ ?zeta]] =>
          change (xi >>> @ren T _ zeta) with (@ren T _ (xi >>> zeta))
-    | [|- context[?xi >>> @ren ?T _ ?zeta >>> ?g]] =>
-         change (xi >>> @ren T _ zeta >>> g) with
+    | [|- context[?xi >>> (@ren ?T _ ?zeta >>> ?g)]] =>
+         change (xi >>> (@ren T _ zeta >>> g)) with
                 (@ren T _ (xi >>> zeta) >>> g)
     | _ => rewrite fold_ren_cons
   end.
@@ -162,8 +162,8 @@ Ltac fold_renH H :=
          change (xi >>> (@ids T _ >>> g)) with (@ren T _ xi >>> g) in H
     | context[?xi >>> @ren ?T _ ?zeta] =>
          change (xi >>> @ren T _ zeta) with (@ren T _ (xi >>> zeta)) in H
-    | context[?xi >>> @ren ?T _ ?zeta >>> ?g] =>
-         change (xi >>> @ren T _ zeta >>> g) with
+    | context[?xi >>> (@ren ?T _ ?zeta >>> ?g)] =>
+         change (xi >>> (@ren T _ zeta >>> g)) with
                 (@ren T _ (xi >>> zeta) >>> g) in H
     | _ => rewrite fold_ren_cons in H
   end.

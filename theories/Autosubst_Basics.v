@@ -1,3 +1,4 @@
+
 (**
   Functions, Notations and Tactics that are useful, but not limited to
   substitutions.
@@ -161,16 +162,22 @@ Arguments funcomp {A B C} f g x /.
 Delimit Scope subst_scope with subst.
 Open Scope subst_scope.
 
-Reserved Notation "sigma >> tau" (at level 55, right associativity).
+Reserved Notation "sigma >> tau" (at level 56, left associativity).
 Notation "f >>> g" := (funcomp f g)
-  (at level 55, right associativity) : subst_scope.
+  (at level 56, left associativity) : subst_scope.
 
 (**
   The cons operation on streams represented as functions from natural numbers
 *)
 Definition scons {X : Type} (s : X) (sigma : var -> X) (x : var) : X :=
   match x with S y => sigma y | _ => s end.
-Infix ".:" := scons (at level 55, right associativity) : subst_scope.
+Notation "s .: sigma" := (scons s sigma) (at level 55, sigma at level 56, right associativity) : subst_scope.
+
+(** A test and demonstration of the precedence rules, which effectively declare scons and 
+    funcomp at the same level, with scons being right associative and funcomp being left
+    associative *)
+Check fun (f : var -> var) (sigma : var -> list var) => 
+        nil .: nil .: f >>> f >>> nil .: nil .: f >>> f >>> nil .: nil .: sigma.
 
 (* plus with different simplification behaviour *)
 Definition lift (x y : var) : var := plus x y.
@@ -199,7 +206,7 @@ Fixpoint take {X : Type} n (sigma : nat -> X) : list X :=
 Lemma id_comp {A B} (f : A -> B) : id >>> f = f. reflexivity. Qed.
 Lemma comp_id {A B} (f : A -> B) : f >>> id = f. reflexivity. Qed.
 Lemma compA {A B C D} (f : A -> B) (g : B -> C) (h : C -> D) :
-  (f >>> g) >>> h = f >>> g >>> h.
+  (f >>> g) >>> h = f >>> (g >>> h).
 Proof. reflexivity. Qed.
 
 Section LemmasForFun.
@@ -229,7 +236,7 @@ Proof. reflexivity. Qed.
 Lemma lift_comp n m : (+n) >>> (+m) = (+m+n).
 Proof. f_ext; intros x; simpl. now rewrite plusA. Qed.
 
-Lemma lift_compR n m f : (+n) >>> (+m) >>> f = (+m+n) >>> f.
+Lemma lift_compR n m f : (+n) >>> ((+m) >>> f) = (+m+n) >>> f.
 Proof. now rewrite <- lift_comp. Qed.
 
 End LemmasForFun.
@@ -244,7 +251,7 @@ Ltac fsimpl :=
     | [|- context[id >>> ?f]] => change (id >>> f) with f
     | [|- context[?f >>> id]] => change (f >>> id) with f
     | [|- context[(?f >>> ?g) >>> ?h]] =>
-        change ((f >>> g) >>> h) with (f >>> g >>> h)
+        change ((f >>> g) >>> h) with (f >>> (g >>> h))
     | [|- context[(+0)]] => change (+0) with (@id var)
     | [|- context[0 + ?m]] => change (0 + m) with m
     | [|- context[S ?n + ?m]] => change (S n + m) with (S (n + m))
@@ -261,7 +268,7 @@ Ltac fsimplH H :=
     | context[id >>> ?f] => change (id >>> f) with f in H
     | context[?f >>> id] => change (f >>> id) with f in H
     | context[(?f >>> ?g) >>> ?h] =>
-        change ((f >>> g) >>> h) with (f >>> g >>> h) in H
+        change ((f >>> g) >>> h) with (f >>> (g >>> h)) in H
     | context[(+0)] => change (+0) with (@id var) in H
     | context[0 + ?m] => change (0 + m) with m in H
     | context[S ?n + ?m] => change (S n + m) with (S (n + m)) in H

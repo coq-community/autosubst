@@ -48,7 +48,7 @@ Definition scomp {A} `{Subst A} (f : var -> A) (g : var -> A) : var -> A
 Arguments scomp {A _} f g x /.
 
 Notation "sigma >> tau" := (scomp sigma tau)
-  (at level 55, right associativity) : subst_scope.
+  (at level 56, left associativity) : subst_scope.
 
 Notation "s .[ sigma ]" := (subst sigma s)
   (at level 2, sigma at level 200, left associativity,
@@ -77,7 +77,7 @@ Definition hcomp {A B} `{HSubst A B} (f : var -> B) (g : var -> A) : var -> B
 Arguments hcomp {A B _} f g x /.
 
 Notation "sigma >>| tau" := (hcomp sigma tau)
-  (at level 55, right associativity) : subst_scope.
+  (at level 56, left associativity) : subst_scope.
 
 Notation "s .|[ sigma ]" := (hsubst sigma s)
   (at level 2, sigma at level 200, left associativity,
