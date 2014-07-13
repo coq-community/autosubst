@@ -526,7 +526,7 @@ We need the substitution operation to reduce and simplify because there is no ot
 \item We use singleton type classes. So a type class instance is just a definition of the recursive procedure and the type class function reduces to its instance argument. This is important for two reasons. 
 First, the guardedness checker does not unfold the record projections used for non-singleton type classes.
 Second, when \lst$simpl$ reduces a definition bound to a \lst$fix$, it replaces all occurrences of this fix with the name of the definition afterwards. This also just works for singleton type classes.
-\item All recursive calls are formulated using the function of the type class with the procedure name bound in the \lst$fix$-term serving as the implicit instance argument.
+\item All recursive calls are formulated using the function of the type class with the procedure name bound in the \lst$fix$-term serving as the implicit instance argument. This way, the result of the reduction of a type class function contains again calls to this type class function.
 \item The Coq unification algorithm can perform unfoldings that are impossible with \lst$simpl$. This can lead to implicit instance arguments being unfolded. In turn, the type class inference can no longer infer instances depending on the unfolded instance. Apart from using \lst$simpl$ before using tactics that trigger unification like \lst$apply$ or \lst$constructor$, the only way to circumvent this is to revert the unfolding of instances. We automatically do this in all automation tactics by reinferring implicit instance arguments using \lst$exact _$.
 
 \end{itemize}
@@ -534,7 +534,40 @@ Second, when \lst$simpl$ reduces a definition bound to a \lst$fix$, it replaces 
 \subsection{Generating the Operations Using Ltac}
 \label{sec:gener-ltac}
 
+We generate the renaming and substitution operations using Ltac. Since these are recursive functions, we use the tactics \lst$fix$ and \lst$destruct$. Consider the substitution operation for the term language from the tutorial. Our \lst$derive$ tactic constructs the following (proof) term.
+\begin{lstlisting}
+fix inst (sigma : var -> term) (s : term) {struct s} : term :=
+  match s as t return (annot term t) with
+  | Var x => sigma x
+  | App s1 s2 => App s1.[sigma] s2.[sigma]
+  | Lam s0 => Lam s0.[up sigma]
+  end
+\end{lstlisting}
+Apart from the return annotation, which is an artifact of our approach, this looks quite clean. However, the recursive call is hidden in the implicit instance argument to \lst$subst$. We can see it if we show all implicit arguments.
+\begin{lstlisting}
+fix inst (sigma : var -> term) (s : term) {struct s} : term :=
+  match s as t return (@annot Type term term t) with
+  | Var x => sigma x
+  | App s1 s2 => App (@subst term inst sigma s1) (@subst term inst sigma s2)
+  | Lam s0 => Lam (@subst term inst (@up term Ids_term Rename_term sigma) s0)
+  end
+\end{lstlisting}
 
+To construct this term with Ltac, we start with \lst$ fix inst 2$ to generate the \lst$fix$-term. Since we want to use the recursive identifier \lst$ident$ as a typeclass instance, we make it accessible to the instance inference by changing its type with 
+\begin{lstlisting}
+change _ with (Subst term) in inst  
+\end{lstlisting}
+
+Next, we need to construct the \lst$match$, which we can do with a \lst$destruct$. But then, the subgoals do not tell us the constructor of the current \lst$match$ case.
+We get this information by annotating the goal with \lst$s$ before calling \lst$destruct$. Then this annotation contains the current constructor with all its arguments after the \lst$destruct$.
+The function \lst$annot$, which is the identity on the first argument and ignores the second, allows us to perform the annotation. So we use the script \lst$intros xi s; change (annot term s); destruct s$
+and then the claims of the subgoals are
+\begin{itemize}
+\item \lst$annot term (Var x)$
+\item \lst$annot term (App s1 s2)$
+\item \lst$annot term (Lam s0)$
+\end{itemize}
+So in effect, we have gained access to the patterns of the \lst$match$. Using a recursive, value-producing tactic, we can fold over the applied constructor like a list and change every argument depending on its type. The types of the arguments happen to contain the binding annotations in the definition of \lst$term$, so we can use an Ltac-\lst$match$ to read them and apply substitutions to the arguments accordingly. The type class inference automatically inserts the recursive call and the guardedness checker is able to unfold \lst$subst$ to see the applied recursive call.  
 
 \section{Best Practices}
 \label{sec:best-practices}
