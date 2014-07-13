@@ -170,6 +170,8 @@ Ltac fold_renH H :=
 
 Ltac fold_comp :=
   repeat match goal with
+    | [|- context[?f >>> (?g >>> ?h)]] =>
+        change (f >>> (g >>> h)) with ((f >>> g) >>> h)
     | [|- context[?sigma >>> subst ?tau]] =>
         change (sigma >>> subst tau) with (sigma >> tau)
     | [|- context[?sigma >>> hsubst ?tau]] =>
@@ -178,6 +180,8 @@ Ltac fold_comp :=
 
 Ltac fold_compH H :=
   repeat match typeof H with
+    | context[?f >>> (?g >>> ?h)] =>
+        change (f >>> (g >>> h)) with ((f >>> g) >>> h) in H
     | context[?sigma >>> subst ?tau] =>
         change (sigma >>> subst tau) with (sigma >> tau) in H
     | context[?sigma >>> hsubst ?tau] =>
