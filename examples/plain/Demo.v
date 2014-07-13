@@ -136,7 +136,7 @@ Proof.
   - eapply IHty. autosubst.
 Qed.
 
-(** By generalizing \lst@ty_ren@ to substitutions, we obtain that we preserve typing 
+(** By generalizing [ty_ren] to substitutions, we obtain that we preserve typing 
     if we replace variables by terms of the same type.
 *)
 Lemma ty_subst Gamma s A: 
