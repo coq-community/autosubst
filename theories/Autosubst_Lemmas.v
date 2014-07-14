@@ -7,9 +7,6 @@ Context {term : Type} {Ids_term : Ids term}
   {Rename_term : Rename term} {Subst_term : Subst term}
   {SubstLemmas_term : SubstLemmas term}.
 
-Lemma upE sigma : up sigma = ids 0 .: sigma >> ren (+1).
-Proof. autosubst. Qed.
-
 Lemma up_id : up ids = ids.
 Proof. autosubst. Qed.
 

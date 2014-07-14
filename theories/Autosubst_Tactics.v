@@ -43,6 +43,9 @@ Lemma fold_ren_cons (x : var) (xi : var -> var) :
   ids x .: ren xi = ren (x .: xi).
 Proof. unfold ren. now rewrite scons_comp. Qed.
 
+Lemma upE sigma : up sigma = ids 0 .: sigma >> ren (+1).
+Proof. apply upX. Qed.
+
 End LemmasForSubst.
 
 (** Derived substitution lemmas for heterogeneous substitutions. *)
@@ -217,7 +220,7 @@ Ltac asimpl :=
               ?hsubst_id, ?id_hsubst, ?hsubst_compI, ?scomp_hcompI
     )
   | fold_id];
-  fold_ren; rewrite <- ?upX; fold_comp.
+  fold_ren; fold_comp; rewrite <- ?upE.
 
 Ltac asimplH H :=
   simpl in H; autosubst_unfoldH H; repeat first
@@ -230,7 +233,7 @@ Ltac asimplH H :=
               ?hsubst_id, ?id_hsubst, ?hsubst_compI, ?scomp_hcompI in H
     )
   | fold_id in H];
-  fold_renH H; rewrite <- ?upX in H; fold_compH H.
+  fold_renH H; fold_compH H; rewrite <- ?upE in H.
 
 Tactic Notation "asimpl" "in" ident(H) := asimplH H.
 Tactic Notation "asimpl" "in" "*" := (in_all asimplH); asimpl.
