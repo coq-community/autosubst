@@ -345,10 +345,10 @@ This is done with instance declarations for the corresponding typeclass instance
     
     \lst$SubstLemmas term$ & 
     \vtop{\hbox{\strut \lst$rename xi s = s.[ren xi]$,\quad \lst$s.[Var] = s$,}
-          \hbox{\strut\lst$(Var x).[sigma] = sigma x$,\quad \lst$s.[sigma].[tau] = s.[sigma >>> tau]$}} \\
+          \hbox{\strut\lst$(Var x).[sigma] = sigma x$,\quad \lst$s.[sigma].[tau] = s.[sigma >> tau]$}} \\
      \lst$HSubstLemmas term1 term2$ &
      \vtop{\hbox{\strut\lst$s.|[Var] = s$,\quad \lst$(Var x).|[sigma] = Var x$,}
-           \hbox{\strut \lst$s.|[sigma].|[tau] = s.|[sigma >>> tau]$}} \\
+           \hbox{\strut \lst$s.|[sigma].|[tau] = s.|[sigma >> tau]$}} \\
     \lst$SubstHSubstComp term1 term2$ & \lst$s.[sigma].|[tau] = s.|[tau].[sigma >>| tau]$
   \end{tabular}
   \caption{Lemmas that can be generated with \Autosubst}
@@ -574,21 +574,21 @@ So in effect, we have gained access to the patterns of the \lst$match$. Using a 
 
 
 
-\subsection{Adding Primitives to \lst$autosubst$}
-\label{sec:adding-prim}
+\subsection{Extending the Automation}
+\label{sec:ext-auto}
 
-If you want to add a new primitive and add support in \lst$autosubst$, you should do the following.
+If you want to extend the automation to support equations for a new function, you should do the following.
 
-First, try to define the primitive using function composition or other existing primitives.
-If this is possible, then you should define it using the notation mechanism to enable \lst$autosubst$ to simplify the function composition.
+First, try to define the new function using function composition or other existing supported functions.
+If this is possible, then you should define it using the notation mechanism to prevent the supported functions from being hidden behind a defined name. Otherwise, you have to extend the built-in tactics \lst$autosubst_unfold$ and \lst$fold_comp$ to perform the unfolding and folding respectively.
+
 For example, if you want to lift a semantic interpretation to substitutions 
 \begin{lstlisting}
 subst_interp : (var -> value) -> (var -> term) -> var -> value  
 \end{lstlisting}
 then you should define
 \begin{lstlisting}
-
-Notation subst_interp rho sigma := sigma >> interp rho.
+Notation subst_interp rho sigma := sigma >>> interp rho.
 \end{lstlisting}
 This automatically adds some limited support. To get full support, you can add the required lemmas to the autorewrite database \lst$autosubst$, which is used by the tactic \lst$autosubst$.
 
