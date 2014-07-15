@@ -62,6 +62,24 @@ Arguments MMap_refl _ _ f /.
 
 Lemma mmap_id_instE {A} f : @mmap _ _ (@MMap_refl A) f = f. reflexivity. Qed.
 
+
+(** Constant Instance: mmap f x just ignores f and leaves x unchanged.
+    This instance has low priority so that it is just used if there is
+    no alternative.
+ *)
+
+Section MMapConst.
+Context {A B: Type}.
+Global Instance MMap_const : MMap A B | 100 := fun _ => id.
+Global Instance MMapLemmas_const : MMapLemmas A A. now constructor. Qed.
+Global Instance MMapExt_const : MMapExt A A. hnf. tauto. Defined.
+End MMapConst.
+
+Arguments MMap_const _ _ f x /.
+
+Lemma mmap_const_instE {A B} f x : @mmap _ _ (@MMap_const A B) f x = x. reflexivity. Qed.
+
+
 (** Simplify mmap expressions *)
 
 Ltac mmap_typeclass_normalize :=
@@ -76,11 +94,11 @@ Ltac mmap_typeclass_normalizeH H :=
      let s := constr:(@mmap A B _ f) in progress change (@mmap A B _ f) with s
   end.
 
-Hint Rewrite @mmap_id_instE : mmap.
+Hint Rewrite @mmap_id_instE @mmap_const_instE : mmap.
 Hint Rewrite @mmap_id @mmap_comp @mmap_idX @mmap_compX @mmap_compR
   using exact _ : mmap.
 
-Hint Rewrite @mmap_id_instE : autosubst.
+Hint Rewrite @mmap_id_instE @mmap_const_instE : autosubst.
 Hint Rewrite @mmap_id @mmap_comp @mmap_idX @mmap_compX @mmap_compR
   using exact _ : autosubst.
 
