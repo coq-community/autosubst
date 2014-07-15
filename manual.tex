@@ -129,7 +129,7 @@
 \maketitle
 
 \begin{abstract}
-  Formalizing syntactic theories with variable binders is not easy. We present Autosubst, a library for the Coq proof assistant to automate this process. Given an inductive definition of syntactic objects in de Bruijn representation augmented with binding annotations, Autosubst synthesizes the parallel substitution operation and automatically proves the basic lemmas about substitutions. Our core contribution is an automation tactic that solves equations involving terms and substitutions. This makes the usage of substitution lemmas unnecessary. The tactic is based on our current work on a decision procedure for the equational theory of an extension of the sigma-calculus by Abadi et. al. The library is completely written in Coq and uses Ltac to synthesize the substitution operation.
+  Formalizing syntactic theories with variable binders is not easy. We present Autosubst, a library for the Coq proof assistant to automate this process. Given an inductive definition of syntactic objects in de Bruijn representation augmented with binding annotations, Autosubst synthesizes the parallel substitution operation and automatically proves the basic lemmas about substitutions. Our core contribution is an automation tactic that computes a normal form for Coq expressions containing substitutions. This allows to solve equations between such terms. This makes the usage of substitution lemmas unnecessary. The tactic is based on our current work on a decision procedure for the equational theory of an extension of the sigma-calculus by Abadi et. al. The library is completely written in Coq and uses Ltac to synthesize the substitution operation.
 \end{abstract}
 
 \section{Tutorial}
@@ -140,7 +140,7 @@ We start by importing the \Autosubst library.
 Require Import Autosubst.
 \end{lstlisting}
 
-Using de~Bruijn Syntax in Coq, the untyped lambda calculus is usually defined as shown Figure~\ref{fig:naive-ulc-term-def}.
+Using de~Bruijn Syntax in Coq, the untyped lambda calculus is usually defined as shown \autoref{fig:naive-ulc-term-def}.
 \begin{figure}
 \begin{minipage}{0.45\textwidth}
   \centering
@@ -166,14 +166,14 @@ Inductive term : Type :=
 \end{minipage}
 \end{figure}
 Using \Autosubst, we can automatically generate the substitution operation.
-To do so, we annotate the positions of binders in the term type, since de Bruijn indices are interpreted differently if occuring below a binder. The annotated definition is shown in Figure~\ref{fig:autosubst-ulc-term-def}.
+To do so, we annotate the positions of binders in the term type, since de~Bruijn indices are interpreted differently if occuring below a binder. The annotated definition is shown in \autoref{fig:autosubst-ulc-term-def}.
 We write \lst${bind term}$ instead of \lst$term$ for the argument type of a constructor to indicate that this constructor serves as a binder for the argument. 
 The type \lst${bind term}$ is definitionally equal to \lst$term$ and just serves as a tag interpreted while generating the substitution operation.
 We also need to tag the constructor that builds variables. We do so by specifying the type of its single argument as \lst$var$, which is definitionally equal to \lst$nat$.
 
 Using this definition of term, we can generate the substitution operation \lst@subst@ by declaring an instance of the \lst$Subst$ type class using our custom tactic \lst$derive$. This is comparable to the usage of deriving-clauses in Haskell.
-We also need to define instances for the two auxiliary type classes \lst$Ids$ and \lst$Rename$, defining the generic functions \lst$ids$ and \lst$rename$. 
-The function \lst$rename$ is only needed for technical reasons\footnote{The function rename applies a renaming \lst@var -> var@ to a term. While it is possible to give a direct structurally recursive definition of \lst@rename@, we need \lst@rename@ to give a structurally recursive definition of \lst@subst@. By unfolding \lst@subst@, it is possible to stumble upon an occurrence of \lst@rename@. We try to prevent this by eagerly replacing \lst@rename xi@ with \lst@subst (ren xi)@ in our custom tactics.} and is mostly hidden from the interface.
+We also need to define instances for the two auxiliary type classes \lst$Ids$ and \lst$Rename$, which define the functions \lst$ids$ and \lst$rename$. 
+The function \lst$rename$ is only needed for technical reasons\footnote{The function rename applies a renaming \lst@var -> var@ to a term. Since it is possible to give a direct structurally recursive definition of \lst@rename@, we use \lst@rename@ to give a structurally recursive definition of \lst@subst@. By simplifying \lst@subst@ and afterwards unfolding \lst@up@, it is possible to stumble upon an occurrence of \lst@rename@. We try to prevent this by eagerly replacing \lst@rename xi@ with \lst@subst (ren xi)@ in our automation and simplification tactics.} and is mostly hidden from the interface.
 The function \lst$ids$ is the identity substitution, which is identical to the variable constructor.
 \begin{lstlisting}
 Instance Ids_type : Ids type. derive. Defined.
@@ -183,7 +183,7 @@ Instance Subst_type : Subst type. derive. Defined.
 
 We can now use the pre-defined generic notations to call the just created substitution operation for \lst$term$. Given substitutions \lst$sigma$ and \lst$tau$, that is, values of type \lst$var -> term$, we can now write \lst$s.[sigma]$ for the application of \lst$sigma$ to  the term \lst$s$ and \lst$sigma >> tau$ for the composition of \lst$sigma$ and \lst$tau$. 
 The notation \lst$s.[sigma]$ stands for \lst$subst sigma s$. 
-The notation \lst$sigma >> tau$ stands for \lst$sigma >>> subst tau$, where \lst$>>>$ is function composition, i.e., \lst$(f >>> g) x = g(f(x))$.
+The notation \lst$sigma >> tau$ is equal to \lst$sigma >>> subst tau$, where \lst$>>>$ is function composition, i.e., \lst$(f >>> g) x = g(f(x))$.
 
 Next, we generate the corresponding substitution lemmas by deriving an instance of the \lst$SubstLemmas$ type class.
 \begin{figure}
@@ -198,39 +198,60 @@ rename_subst xi s : rename xi s = s.[ren xi]
 \end{figure}
 It contains the lemmas depiced in \autoref{fig:SubstLemmas}.
 The lemma \lst$subst_comp$ states that instead of applying two substitutions in sequence, you can apply the composition of the two. This property is essential and surprisingly difficult to show if done manually. 
-The lemma \lst$rename_subst$ is needed to eliminate occurrences of the renaming function \lst$rename$. Renaming can be expressed with ordinary substitutions using the function \lst$ren$ which lifts a function on variables \lst$var -> var$ to a substitution \lst$var -> term$. It satisfies \lst$ren xi = xi >>> ids$.
+The lemma \lst$rename_subst$ is needed to eliminate occurrences of the renaming function \lst$rename$. Renaming can be expressed with ordinary substitutions using the function \lst$ren$ which lifts a function on variables \lst$var -> var$ to a substitution \lst$var -> term$. It is defined as \lst$ren xi := xi >>> ids$.
 \begin{lstlisting}
-Instance SubstLemmas_type : SubstLemmas type. gen_SubstLemmas. Qed.
+Instance SubstLemmas_type : SubstLemmas type. derive. Qed.
 \end{lstlisting}
 
 
 This was all the boilerplate code needed to start using the library.
-We can define the reduction relation for our untyped lambda terms as follows.
+Let us explore the behavior of substitution on some examples.
+All variables are replaced by the respective value of the substitution. The term \lst$(Var x).[sigma]$ simplifies to \lst$sigma x$.
+Substitution is extended to application homomorphically. 
+The term \lst$(App s t).[sigma]$ simplifies to \lst$App s.[sigma] t.[sigma]$.
+When going below a binder, the substitution is changed accordingly. 
+The term \lst$(Lam s).[sigma]$ simplifies to \lst$Lam s.[up sigma]$. 
+The substitution \lst$up sigma$ is equal to \lst$Var 0 .: (sigma >> ren (+1))$ where \lst$(+1)$ is the renaming increasing every variable by one and \lst$.:$ is the stream-cons operator.
+For \lst$a : X$ and \lst$f : var -> X$, the expression \lst$a .: f$ has type \lst$var -> X$ and satisfies the following equations.
+\begin{align*}
+  \text{\lst$(a .: f) 0$} &= \text{\lst$a$} \\
+  \text{\lst$(a .: f) (S n)$} &= \text{\lst$f n$}
+\end{align*}
+So \lst$up sigma$ leaves \lst$0$ unchanged and for a variable \lst$S x$, it yields \lst$(sigma x).[ren(+1)]$ to account for the fact that below the binder, the free variables are shifted by 1.
+
+\subsection*{Substitutivity}
+\label{sec:substitutivity}
+
+Let us start to use the term language.
+We can define the reduction relation of the untyped lambda calculus as follows.
 \begin{lstlisting}
 Inductive step : term -> term -> Prop :=
 | Step_Beta s s' t : s' = s.[t .: ids] -> step (App (Lam s) t) s'
 | Step_App1 s s' t: step s s' -> step (App s t) (App s' t)
 | Step_App2 s t t': step t t' -> step (App s t) (App s t')
-| Step_Lam s s' : step s s' -> step (Lam s) (Lam s')
-.
+| Step_Lam s s' : step s s' -> step (Lam s) (Lam s').
 \end{lstlisting}
-The most interesting rule is \lst$Step_Beta$, which expresses beta reduction using the stream-cons operator. Stream-cons \lst$(a .: f) : nat -> X$ for \lst$a : X$ and \lst$f : nat -> X$ satisfies the equations
-\begin{align*}
-  \text{\lst$(a .: f) 0$} &= \text{\lst$a$} \\
-  \text{\lst$(a .: f) (S n)$} &= \text{\lst$f n$}
-\end{align*}
-So \lst$s.[t .: ids]$ is \lst$s$ where the index \lst$0$ is replaced by \lst$t$ and all other indices are reduced by one.
+The most interesting rule is \lst$Step_Beta$, which expresses beta reduction using the stream-cons operator.
+That is, the term \lst$s.[t .: ids]$ is \lst$s$ where the index \lst$0$ is replaced by \lst$t$ and all other indices are reduced by one.
 Also note that the rule \lst$Step_Beta$ contains a superfluous equation to make it applicable in more situations.
 
 
 Now let us show a property of the reduction relation, the fact that it is closed under substitutions.
 \begin{lstlisting}
 Lemma step_subst s s' : step s s' -> forall sigma, step s.[sigma] s'.[sigma].
-Proof. induction 1; constructor; subst; autosubst. Qed.
+Proof. induction 1; constructor; subst; now asimpl. Qed.
 \end{lstlisting}
-The automation tactic \lst$autosubst$ solves equations by normalizing them using a powerful rewriting system. 
+The tactic \lst$asimpl$ simplifies expressions containing substitutions using a powerful rewriting system. This suffices to make all the subgoals trivial. The equational subgoal 
+\begin{center}
+\lst$s1.[up sigma].[t.[sigma] .: ids] = s1.[t .: ids].[sigma]$
+\end{center}
+created by the application of the constructor \lst$Step_Beta$ gives a good impression of the power of \lst$asimpl$. Both sides of the equation are simplified to \lst$s1.[t.[sigma] .: sigma]$.
 
-We conclude this section with a detailed proof of type preservation for simply typed lambda calculus.
+\subsection*{Type Preservation}
+\label{sec:preservation}
+
+We conclude the tutorial with a proof of type preservation for the simply typed lambda calculus. This example shows how to prove structural properties of a typing relation.
+
 First, we need simple types. We define a base type \lst$Base$ and an arrow type \lst$Arr A B$ for functions from \lst$A$ to \lst$B$.
 \begin{lstlisting}
 Inductive type :=
@@ -247,11 +268,11 @@ Inductive ty (Gamma : var -> type) : term -> type -> Prop :=
 | Ty_App s t A B : ty Gamma s (Arr A B) -> ty Gamma t A -> 
                    ty Gamma (App s t) B.
 \end{lstlisting}
-We use infinite contexts. This allows us to encode contexts as functions of type \lst$var -> type$, which coincides with substitutions. Thus we can reuse the primitives and tactics of \Autosubst for the contexts.
+We use infinite contexts. This allows us to encode contexts as functions of type \lst$var -> type$, which coincides with the type of substitutions. Thus we can reuse the operations and tactics of \Autosubst for contexts.
 
 Usually, a type preservation proof starts with a weakening lemma for the typing relation, which states that you can add a binding to the context. 
 In de~Bruijn formalizations, it is usually stated with an operation that adds a single binding at an arbitrary position in the context.
-Using parallel substitutions, we can generalize this to all contexts that can be obtained by reinterpreting the indices. This subsumes weakening, contraction and exchange.
+Using parallel substitutions, we can generalize this to all contexts that can be obtained by reinterpreting the indices. This avoids ugly shiftings in the lemma statement. Moreover, this single lemma subsumes weakening, contraction and exchange.
 \begin{lstlisting}
 Lemma ty_ren Gamma s A: ty Gamma s A  -> forall Delta xi, 
                     Gamma = (xi >>> Delta)  ->
@@ -261,9 +282,20 @@ Proof.
   - eapply IHty. autosubst.
 Qed.
 \end{lstlisting}
-The last application of \lst@autosubst@ solves a nontrivial equation between contexts built with \lst@.:@ and \lst@>>>@.
+For case of typing a lambda expression, the application of \lst@autosubst@ solves the following equation between contexts.
+\begin{center}
+  \lst$ A .: xi >>> Delta = (0 .: xi >>> (+1)) >>> A .: Delta$
+\end{center}
+This also happens to be a good example for the somewhat complex but efficient precedence of \lst$.:$ and the composition operators. Altough both have the same\footnote{Technically, this is not directly possible with the Coq notation mechanism. However, you can achieve the same effect by giving \lst$.:$ a lower precedence level (that is, higher precedence) and its right argument the same level as the composition operators. It would be simpler to give everything right associativity, but this does not work for heterogeneous substitutions.} precedence level, the composition operators are left-associative while \lst$.:$ is right associative. So the given equation is equivalent to the following.
+\begin{center}
+  \lst$ A .: (xi >>> Delta) = (0 .: (xi >>> (+1))) >>> (A .: Delta)$
+\end{center}
+Unfortunately, Coq 8.4 contains a bug such that the right-hand side is printed without parentheses, although this would be parsed as the ill-typed term 
+\begin{center}
+  \lst$0 .: ((xi >>> (+1)) >>> (A .: Delta))$.
+\end{center}
 
-By generalizing \lst@ty_ren@ to substitutions, we obtain that we preserve typing if we replace variables by terms of the same type. Note that the proof uses \lst@ty_ren@, so it follows the structure of the definition of substitution.
+By generalizing \lst@ty_ren@ to substitutions, we obtain that we preserve typing if we replace variables by terms of the same type.
 \begin{lstlisting}
 Lemma ty_subst Gamma s A: ty Gamma s A  -> forall sigma Delta,
                       (forall x, ty Delta (sigma x) (Gamma x))  ->
@@ -271,9 +303,14 @@ Lemma ty_subst Gamma s A: ty Gamma s A  -> forall sigma Delta,
 Proof.
   induction 1; intros; subst; asimpl; eauto using ty. 
   - econstructor. eapply IHty.
-    intros [|] *; asimpl; eauto using ty, ty_ren.
+    intros [|]; asimpl; eauto using ty, ty_ren.
 Qed.
 \end{lstlisting}
+Again, the only non-trivial subgoal is the typing of a lambda expression. Applying the inductive hypothesis yields the following subgoal.
+\begin{center}
+  \lst$forall x : var, ty (scons A Delta) (up sigma x) (scons A Gamma x)$
+\end{center}
+We solve it by destructing \lst$x$ with \lst$intros [|]$ and simplifying the resulting terms with \lst$asimpl$, which makes them match \lst$Ty_Var$ and \lst$ty_ren$, respectively.
 
 To show type preservation of the simply typed lambda calculus, we use \lst@ty_subst@ to justify the typing of the result of the beta reduction.
 The tactic \lst$ainv$ performs \lst$inversion$ on all hypothesis where this does not produce more than one subgoal.
@@ -288,6 +325,9 @@ Proof.
     intros [|]; simpl; eauto using ty.
 Qed.      
 \end{lstlisting}
+Again, we need to destruct the universally quantified variable in the premise of \lst$ty_subst$.
+
+This tutorial only covered the basic aspects of \Autosubst. For examples of how to use \Autosubst for many-sorted syntax with heterogeneous substitutions or with dependent contexts, please refer to the case studies distributed with \Autosubst.
 
 \section{Reference Manual}
 \label{sec:manual}
@@ -461,11 +501,14 @@ They are important not only because they are useful in statements, but more impo
 \begin{table}
   \centering
   \lstset{boxpos=t, aboveskip=0em, belowskip=0em}
-  \begin{tabular}{l l r}
-  Notation         & Definition                                       & Type                                   \\\hline\noalign{\vspace{0.5em}}
+  \begin{tabular}{l l l r}
+  Name & Notation         & Definition                                       & Type                                   \\\hline\noalign{\vspace{0.5em}}
   
-  \lst$f >>> g$    & \lst$fun x => g(f x)$                            & \stackr{\lst$forall A B C : Type, (A -> B) ->$}{\stackr{\lst$(B -> C) ->$}{\lst$A -> C$}} \\\noalign{\vspace{-1em}}
+  \lst$funcomp$ & \lst$f >>> g$    & \lst$fun x => g(f x)$                            & \stackr{\lst$forall A B C : Type, (A -> B) ->$}{\stackr{\lst$(B -> C) ->$}{\lst$A -> C$}} \\\noalign{\vspace{-1em}}
   \begin{lstlisting}
+scons
+  \end{lstlisting}
+ & \begin{lstlisting}
 a .: f
   \end{lstlisting}
 &\begin{lstlisting}
@@ -481,12 +524,13 @@ forall X : Type,         X ->
            (var -> X) -> 
                 var -> X
 \end{lstlisting}  \\
-  \lst$sigma >> tau$& \lst$sigma >>> subst tau$    & 
+  \lst$scomp$ & \lst$sigma >> tau$& \lst$sigma >>> subst tau$    & 
 \stackr{\lst$(var -> term) ->$}{\stackr{\lst$(var -> term) ->$}{\lst$var -> term$}}     \\
-\lst$sigma >>| theta$& \lst$sigma >>> hsubst theta$ & 
+\lst$hcomp$ & \lst$sigma >>| theta$& \lst$sigma >>> hsubst theta$ & 
 \stackr{\lst$(var -> term1) ->$}{\stackr{\lst$(var -> term2) ->$}{\lst$var -> term1$}} \\
-\lst$ren xi$ & \lst$xi >>> ids$ & \stackr{\lst$(var -> var) ->$}{\lst$var -> term$} \\
-\lst$(+ n)$ & \lst$fun x => n + x$ & \stackr{\lst$var ->$}{\lst$var -> var$}
+\lst$ren$ & \lst$ren xi$ & \lst$xi >>> ids$ & \stackr{\lst$(var -> var) ->$}{\lst$var -> term$} \\
+\lst$lift$ & \lst$(+ n)$ & \lst$fun x => n + x$ & \stackr{\lst$var ->$}{\lst$var -> var$} \\
+\lst$up$ & \lst$up sigma$ & \lst$ids 0 .: sigma >> ren(+1)$ &  \stackr{\lst$(var -> term) ->$}{\lst$var -> term$} 
 \end{tabular}
   \caption{Defined Primitives of \Autosubst}
   \label{tab:defined-ops}
@@ -506,7 +550,7 @@ Autosubst defines two automation tactics: \lst$asimpl$ and \lst$autosubst$.
 Both of them normalize the goal using a convergent rewriting system.
 But while the interface and behavior of \lst$asimpl$ mimics \lst$simpl$, the closing tactic \lst$autosubst$ first normalizes an equational claim and then tries to prove it.
 The rewriting system is an extension of the $\sigma$-calculus by Abadi et. al. \cite{abadi1991}.
-Our goal is to solve all equations that hold without assumptions and are built using only our primitives, application and variables. At the moment, we hope to achieve this if \lst$(+ n)$ is only used with a constant \lst$n$. We consider ever real-world example of an unsolvable such equation a bug and invite you to submit it.
+Our goal is to solve all equations that hold without assumptions and are built using only our primitives, application and variables. At the moment, we hope to achieve this if \lst$(+n)$ is only used with a constant \lst$n$. We consider ever real-world example of an unsolvable such equation a bug and invite you to submit it.
 
 
 
@@ -517,6 +561,20 @@ The normalization is done by interleaving the rewriting system with calls to \ls
 \label{sec:internals}
 
 In the following, we describe technical challenges and how we solved them in Coq.
+
+\subsection{Normalizing Substitutions}
+\label{sec:norm-subst}
+
+To simplify terms containing substitutions, we use a rewriting system based on the convergent $\sigma$-calculus by Abadi et. al. \cite{abadi1991}. We extended it to variables for renamings, heterogeneous substitutions and to lifts \lst$(+n)$ that add an arbitrary natural number \lst$n$ instead of just 1. To keep the rewriting system small, we base it on function composition and a stream-cons that works on arbitrary streams. So first, we replace
+\begin{itemize}
+\item \lst$sigma >> tau$ with \lst$sigma >>> subst tau$
+\item \lst$sigma >>| tau$ with \lst$sigma >>> hsubst tau$
+\item \lst$ren xi$ with \lst$xi >>> ids$
+\item \lst$up sigma$ with \lst$ids 0 .: sigma >>> subst ((+1) >>> ids)$.
+\end{itemize}
+and will undo these unfoldings in the end.
+Also, we make function composition right associative, which we also undo in the end.
+These tricks allow us to reason about \lst$(+n)$, \lst$.:$ and \lst$>>>$ separately from the proper substitution operations.
 
 \subsection{Reducible Recursive Type Class Instances}
 \label{sec:reduc-recurs-inst}
@@ -590,7 +648,7 @@ then you should define
 \begin{lstlisting}
 Notation subst_interp rho sigma := sigma >>> interp rho.
 \end{lstlisting}
-This automatically adds some limited support. To get full support, you can add the required lemmas to the autorewrite database \lst$autosubst$, which is used by the tactic \lst$autosubst$.
+This automatically adds some limited support. To get full support, you can add the required lemmas to the autorewrite database \lst$autosubst$, which is used by the tactics \lst$asimpl$ and \lst$autosubst$.
 
 
 \bibliography{bib}
