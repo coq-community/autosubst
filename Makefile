@@ -28,17 +28,19 @@ examples-plain:
 examples-ssr:
 	$(MAKE) -C examples/ssr
 
-clean:
+clean-doc:
+	$(MAKE) -f TexMakefile clean
+	rm -rf $(DOC)
+
+clean: clean-doc
 	$(MAKE) -C theories clean
 	$(MAKE) -C "examples/plain" clean
 	$(MAKE) -C "examples/ssr" clean
-	$(MAKE) -f TexMakefile clean
-	rm -rf $(DOC)
 
 dist:
 	git archive -o autosubst-HEAD.tar.gz HEAD
 
-doc: all manual.pdf
+doc: clean-doc all manual.pdf
 	- mkdir -p $(DOC)
 	coqdoc $(COQDOCFLAGS) -R theories Autosubst -R examples/plain Plain \
 	  -R examples/ssr Ssr $(THEORIES) $(EXAMPLES_PLAIN) $(EXAMPLES_SSR)
@@ -51,4 +53,4 @@ install:
 %.pdf:
 	$(MAKE) -f TexMakefile $@
 
-.PHONY: all clean dist doc examples-plain examples-ssr install lib
+.PHONY: all clean clean-doc dist doc examples-plain examples-ssr install lib
