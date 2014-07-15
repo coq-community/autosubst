@@ -53,6 +53,12 @@ Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
     [nat -> nat] to substitutions). Use [autosubst] to simplify terms containing
     substitutions. *)
 
+Eval simpl in fun sigma => (Var 3).[sigma].
+Eval simpl in fun sigma s t => (App s t).[sigma].
+Eval simpl in fun sigma s => (Lam s).[sigma].
+Goal forall sigma, (Lam (App (Var 0) (Var 3))).[sigma] = Lam (App (Var 0) (sigma 2).[ren(+1)]).
+intros. asimpl. reflexivity. Qed.
+
 (** ** Reduction and substitutivity
 
     The single-step reduction relation is defined by the following inference
@@ -146,7 +152,7 @@ Lemma ty_subst Gamma s A:
 Proof.
   induction 1; intros; subst; asimpl; eauto using ty. 
   - econstructor. eapply IHty.
-    intros [|] *; asimpl; eauto using ty, ty_ren.
+    intros [|]; asimpl; eauto using ty, ty_ren.
 Qed.
 
 (** To show type preservation of the simply typed lambda calculus, we use [ty_subst] to
