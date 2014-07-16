@@ -146,7 +146,7 @@ Using de~Bruijn Syntax in Coq, the untyped lambda calculus is usually defined as
   \centering
 \begin{lstlisting}
 Inductive term : Type :=
-  | TVar (x : nat)
+  | Var (x : nat)
   | App (s t : term)
   | Lam (s : term).
 \end{lstlisting}
@@ -368,12 +368,12 @@ This is done with instance declarations for the corresponding typeclass instance
 \begin{table}
   \centering
   \begin{tabular}{l l l l}
-  Typeclass                & Notation         & Definition           & Type                                   \\\hline\noalign{\vspace{0.5em}}
-                             
-  \lst$VarConstr term$     &                  & \lst$Var x$          & \lst$var -> term$                      \\
-  \lst$Rename term$        &                  & \lst$rename xi s$    & \stackr{\lst$(var -> var) ->$}{\lst$term -> term$}     \\
-  \lst$Subst term$         & \lst$s.[sigma]$  & \lst$subst sigma s$  & \stackr{\lst$(var -> term) ->$}{\lst$term -> term$}    \\
-  \lst$HSubst term1 term2$ & \lst$s.|[sigma]$ & \lst$hsubst sigma s$ & \stackr{\lst$(var -> term1) ->$}{\lst$term2 -> term2$} 
+  Typeclass                & Function             & Notation         & Type                                   \\\hline\noalign{\vspace{0.5em}}
+                                                                     
+  \lst$Ids term$           & \lst$ids x$          &                  & \lst$var -> term$                      \\
+  \lst$Rename term$        & \lst$rename xi s$    &                  & \stackr{\lst$(var -> var) ->$}{\lst$term -> term$}     \\
+  \lst$Subst term$         & \lst$subst sigma s$  & \lst$s.[sigma]$  & \stackr{\lst$(var -> term) ->$}{\lst$term -> term$}    \\
+  \lst$HSubst term1 term2$ & \lst$hsubst sigma s$ & \lst$s.|[sigma]$ & \stackr{\lst$(var -> term1) ->$}{\lst$term2 -> term2$} 
 \end{tabular}
   \caption{Operations that can be generated with \Autosubst}
   \label{tab:derived-ops}
@@ -384,10 +384,10 @@ This is done with instance declarations for the corresponding typeclass instance
     Typeclass & Contained Lemmas \\\hline\noalign{\vspace{0.5em}}
     
     \lst$SubstLemmas term$ & 
-    \vtop{\hbox{\strut \lst$rename xi s = s.[ren xi]$,\quad \lst$s.[Var] = s$,}
-          \hbox{\strut\lst$(Var x).[sigma] = sigma x$,\quad \lst$s.[sigma].[tau] = s.[sigma >> tau]$}} \\
+    \vtop{\hbox{\strut \lst$rename xi s = s.[ren xi]$,\quad \lst$s.[ids] = s$,}
+          \hbox{\strut\lst$(ids x).[sigma] = sigma x$,\quad \lst$s.[sigma].[tau] = s.[sigma >> tau]$}} \\
      \lst$HSubstLemmas term1 term2$ &
-     \vtop{\hbox{\strut\lst$s.|[Var] = s$,\quad \lst$(Var x).|[sigma] = Var x$,}
+     \vtop{\hbox{\strut\lst$s.|[ids] = s$,\quad \lst$(ids x).|[sigma] = ids x$,}
            \hbox{\strut \lst$s.|[sigma].|[tau] = s.|[sigma >> tau]$}} \\
     \lst$SubstHSubstComp term1 term2$ & \lst$s.[sigma].|[tau] = s.|[tau].[sigma >>| tau]$
   \end{tabular}
@@ -399,7 +399,7 @@ For example, the syntax of System F needs the declarations shown in \autoref{fig
 \begin{figure}
   \centering
 \begin{lstlisting}
-Instance VarConstr_type : VarConstr type. derive. Defined.
+Instance Ids_type : Ids type. derive. Defined.
 Instance Rename_type : Rename type. derive. Defined.
 Instance Subst_type : Subst type. derive. Defined.
 
@@ -407,7 +407,7 @@ Instance SubstLemmas_type : SubstLemmas type. derive. Qed.
 
 Instance HSubst_term : HSubst type term. derive. Defined.
 
-Instance VarConstr_term : VarConstr term. derive. Defined.
+Instance Ids_term : Ids term. derive. Defined.
 Instance Rename_term : Rename term. derive. Defined.
 Instance Subst_term : Subst term. derive. Defined.
 
@@ -426,7 +426,7 @@ We summarize the dependencies between the type class instances in \autoref{tab:d
   \begin{tabular}{l l}
     Typeclass & Required Prior Declarations \\\hline\noalign{\vspace{0.5em}}
 
-    \lst$VarConstr term$ & none \\
+    \lst$Ids term$ & none \\
 
     \lst$Rename term$ & none \\
 

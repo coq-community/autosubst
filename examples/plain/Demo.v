@@ -1,7 +1,6 @@
 (** * Autosubst Tutorial
 
-    In this tutorial we will use Autosubst to formalize the reduction relation
-    of the untyped lambda calculus and show substitutivity. *)
+    In this tutorial we will use Autosubst to formalize the simply typed lambda calculus and show substitutivity and type preservation of the reduction relation. *)
 
 Require Import Autosubst.
 
@@ -27,7 +26,7 @@ Inductive term :=
 (** Now we can automatically derive the substitution operations and lemmas.
     This is done by generating instances for the following typeclasses:
 
-    - [Ids term] provides the generic identity substitution ids for term.
+    - [Ids term] provides the generic identity substitution [ids] for term.
       It is always equivalent to the variable constructor of term, i.e.
       to the unique constructor having a single argument of type [var].
       In this example, [ids] is convertible to [Var].
@@ -50,58 +49,80 @@ Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
       substitution [fun x => (sigma x).[tau]].
 
     Additionally there is a generic cast [ren] from renamings (functions of type
-    [nat -> nat] to substitutions). Use [autosubst] to simplify terms containing
-    substitutions. *)
+    [nat -> nat] to substitutions).
 
-Eval simpl in fun sigma => (Var 3).[sigma].
-Eval simpl in fun sigma s t => (App s t).[sigma].
-Eval simpl in fun sigma s => (Lam s).[sigma].
-Goal forall sigma, (Lam (App (Var 0) (Var 3))).[sigma] = Lam (App (Var 0) (sigma 2).[ren(+1)]).
+Let us test the simplification behavior of [s.[sigma]].
+*)
+
+Eval simpl in fun sigma x => (Var x).[sigma]. 
+(* simplifies to [sigma x]*)
+
+Eval simpl in fun sigma s t => (App s t).[sigma]. 
+(* simplifies to [App s.[sigma] t.[sigma]]*)
+
+Eval simpl in fun sigma s => (Lam s).[sigma]. 
+(* simplifies to [Lam s.[up sigma]]*)
+
+
+(** The operator [up] adapts a substitution when going below a binder.
+    It does not simplify with [simpl], but we can use our tactic [asimpl]
+    to perform the simplification.
+
+*)
+Goal forall sigma, 
+  (Lam (App (Var 0) (Var 3))).[sigma] = Lam (App (Var 0) (sigma 2).[ren(+1)]).
 intros. asimpl. reflexivity. Qed.
 
 (** ** Reduction and substitutivity
 
     The single-step reduction relation is defined by the following inference
     rules
-    #\[ \cfrac{}{(\lambda s)\, t \rhd s.[t\cdot \text{id}]} \quad
+    #\[ \cfrac{}{(\lambda s)\, t \rhd s.[t {\,.:\,} \text{ids}]} \quad
         \cfrac{s_1 \rhd s_2}{s_1 \, t \rhd s_2 \, t} \quad 
         \cfrac{t_1 \rhd t_2}{s \, t_1 \rhd s \, t_2} \quad
         \cfrac{s_1 \rhd s_2}{\lambda s_1 \rhd \lambda s_2} \quad
     \]#
 
-    The Coq notation for stream cons is [.:] and the identity substitution is
-    [Var]. Additionally, we define the abbreviation [ beta t = t .: Var ].
+    We write [ids] for the identity substitution and [s .: sigma] for the stream-cons 
+    operation. Note that substitutions being functions from natural numbers to 
+    terms can be seen as streams of terms. 
+    Stream-cons satisfies the following equations.
+    #<div class="block">#
+    [(s .: sigma) 0 = s]
+    #<br/>#
+    [(s .: sigma) (S x) = sigma x]
+    #</div>#
+    
+    Note that [s.[t .: ids]] replaces [0] in [s] by [t] and decreases all other
+    variables by one. So this just expresses the usual definition of beta-reduction.
+    We use the abbreviation [s.[t/]] for [s.[t .: ids]].
 
     The definition below is an almost verbatim copy of the inference rules. The
-    one difference is in the beta rule. Instead of using [s.[beta t]]
+    one difference is in the beta rule. Instead of using [s.[t/]]
     directly, we add an equation to the premise.
-
-    This makes the constructor applicable even if the substitution on [s] is
-    not of to the special form [beta t]. The resulting equation can then be
-    solved using [autosubst]. *)
+    This makes the constructor applicable even if the reduced term does not
+    syntactically match [s1.[t/]]. *)
 
 Inductive step : term -> term -> Prop :=
-| step_beta (s1 s2 t : term) :
+| Step_beta (s1 s2 t : term) :
     s1.[t/] = s2 -> step (App (Lam s1) t) s2
-| step_appL (s1 s2 t : term) :
+| Step_appL (s1 s2 t : term) :
     step s1 s2 -> step (App s1 t) (App s2 t)
-| step_appR (s t1 t2 : term) :
+| Step_appR (s t1 t2 : term) :
     step t1 t2 -> step (App s t1) (App s t2)
-| step_lam  (s1 s2 : term) :
+| Step_lam  (s1 s2 : term) :
     step s1 s2 -> step (Lam s1) (Lam s2).
 
 (** The proof of substitutivity proceeds by induction on the reduction relation.
-    In every case we use [autosubst] to simplify the substitution operation and
-    apply a constructor. Apart from [step_beta] every case is trivial and solved
-    by the tactic of the same name.
-
-    In the case of beta reduction we have to show the equation
+    In every case we apply the respective constructor of [step].
+    Apart from [Step_beta], every case is trivial.
+    For [Step_beta], we have to show the equation
     #<div class="block">#
-    [s1.[t .: Var].[sigma] = s1.[up sigma].[t.[sigma] .: Var]].
+    [s1.[t/].[sigma] = s1.[up sigma].[t.[sigma]/]].
     #</div>#
 
     This goal can be solved using [autosubst], since both sides of the equation
-    are equivalent to the normal form [s1.[t.[sigma] .: sigma]]. *)    
+    are simplified to [s1.[t.[sigma] .: sigma]] using [asimpl]. *)    
 
 Lemma substitutivity s1 s2 :
   step s1 s2 -> forall sigma, step s1.[sigma] s2.[sigma].
@@ -112,9 +133,9 @@ Restart.
   constructor. asimpl. reflexivity.
 Qed.
 
+(** ** Type Preservation *)
 
-
-(** We define syntax for simple types. *)
+(** We define the syntax for simple types. *)
 Inductive type :=
 | Base
 | Arr (A B : type).
