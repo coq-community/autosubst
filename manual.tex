@@ -176,9 +176,9 @@ We also need to define instances for the two auxiliary type classes \lst$Ids$ an
 The function \lst$rename$ is only needed for technical reasons\footnote{The function rename applies a renaming \lst@var -> var@ to a term. Since it is possible to give a direct structurally recursive definition of \lst@rename@, we use \lst@rename@ to give a structurally recursive definition of \lst@subst@. By simplifying \lst@subst@ and afterwards unfolding \lst@up@, it is possible to stumble upon an occurrence of \lst@rename@. We try to prevent this by eagerly replacing \lst@rename xi@ with \lst@subst (ren xi)@ in our automation and simplification tactics.} and is mostly hidden from the interface.
 The function \lst$ids$ is the identity substitution, which is identical to the variable constructor.
 \begin{lstlisting}
-Instance Ids_type : Ids type. derive. Defined.
-Instance Rename_type : Rename type. derive. Defined.
-Instance Subst_type : Subst type. derive. Defined.
+Instance Ids_term : Ids term. derive. Defined.
+Instance Rename_term : Rename term. derive. Defined.
+Instance Subst_term : Subst term. derive. Defined.
 \end{lstlisting}
 
 We can now use the pre-defined generic notations to call the just created substitution operation for \lst$term$. Given substitutions \lst$sigma$ and \lst$tau$, that is, values of type \lst$var -> term$, we can now write \lst$s.[sigma]$ for the application of \lst$sigma$ to  the term \lst$s$ and \lst$sigma >> tau$ for the composition of \lst$sigma$ and \lst$tau$. 
@@ -200,7 +200,7 @@ It contains the lemmas depiced in \autoref{fig:SubstLemmas}.
 The lemma \lst$subst_comp$ states that instead of applying two substitutions in sequence, you can apply the composition of the two. This property is essential and surprisingly difficult to show if done manually. 
 The lemma \lst$rename_subst$ is needed to eliminate occurrences of the renaming function \lst$rename$. Renaming can be expressed with ordinary substitutions using the function \lst$ren$ which lifts a function on variables \lst$var -> var$ to a substitution \lst$var -> term$. It is defined as \lst$ren xi := xi >>> ids$.
 \begin{lstlisting}
-Instance SubstLemmas_type : SubstLemmas type. derive. Qed.
+Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
 \end{lstlisting}
 
 
