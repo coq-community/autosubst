@@ -1,6 +1,5 @@
-(** * Martin-Löf Type Theory
-
-    Type preservation and confluence. *)
+(** * Predicative CC omega: Type Preservation and Confluence
+ *)
 
 Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
 Require Import AutosubstSsr ARS Context.
