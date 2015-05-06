@@ -285,15 +285,17 @@ Tactic Notation "fsimpl" "in" "*" := (in_all fsimplH); fsimpl.
 
 (** Misc Lemmas *)
 
-(* FIXME: Move to POPLmark.v *)
-Lemma conj' (A B : Prop) : A -> (A -> B) -> A /\ B.
-Proof. tauto. Qed.
-
 Lemma iterate_S {A} (f : A -> A) n a : iterate f (S n) a = f (iterate f n a).
 Proof. reflexivity. Qed.
 
 Lemma iterate_0 {A} (f : A -> A) a : iterate f 0 a = a.
 Proof. reflexivity. Qed.
+
+Lemma iterate_Sr {A} (f : A -> A) n a : iterate f (S n) a = iterate f n (f a).
+Proof.
+  revert a; induction n. reflexivity. intros a.
+  rewrite !iterate_S, <- IHn. reflexivity.
+Qed.
 
 Lemma equal_f {X Y} {f g : X -> Y} a : f = g -> f a = g a.
 Proof. intros. now subst. Qed.
