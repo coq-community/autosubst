@@ -46,6 +46,49 @@ Proof. unfold ren. now rewrite scons_comp. Qed.
 Lemma upE sigma : up sigma = ids 0 .: sigma >> ren (+1).
 Proof. apply upX. Qed.
 
+(* unfold upn *)
+
+Lemma upnSX n sigma :
+  upn (S n) sigma = ids 0 .: upn n sigma >>> subst (ren (+1)).
+Proof.
+  unfold iterate; now rewrite upX.
+Qed.
+
+Lemma upnSE n sigma :
+  upn (S n) sigma = ids 0 .: upn n sigma >> ren (+1).
+Proof.
+  now rewrite upnSX.
+Qed.
+
+Lemma upn0 sigma : upn 0 sigma = sigma.
+Proof. reflexivity. Qed.
+
+(* fold up *)
+
+Lemma fold_up k sigma :
+  ids k .: sigma >> ren (+S k) = up sigma >> ren (+k).
+Proof.
+  unfold scomp, ren. rewrite upX; fsimpl; rewrite id_subst, subst_compX; simpl; fsimpl.
+  unfold ren. fsimpl. rewrite id_scompX. now fsimpl.
+Qed.
+
+Lemma fold_up0 sigma :
+  sigma >> ren (+0) = sigma.
+Proof.
+  unfold scomp, ren. fsimpl. now rewrite subst_idX.
+Qed.
+
+(* combine up *)
+
+Lemma fold_up_up sigma : up (up sigma) = upn 2 sigma.
+Proof. reflexivity. Qed.
+
+Lemma fold_up_upn n sigma : up (upn n sigma) = upn (S n) sigma.
+Proof. reflexivity. Qed.
+
+Lemma fold_upn_up n sigma : upn n (up sigma) = upn (S n) sigma.
+Proof. now rewrite iterate_Sr. Qed.
+
 End LemmasForSubst.
 
 (** Derived substitution lemmas for heterogeneous substitutions. *)
@@ -133,12 +176,24 @@ Ltac autosubst_typeclass_normalizeH H :=
     let s := constr:(hsubst sigma) in progress change (hsubst sigma) with s in H
   end.
 
+Ltac autosubst_unfold_up :=
+  rewrite ?upX, ?upnSX;
+  repeat match goal with
+  | [|- context[upn 0 ?sigma]] => change (upn 0 sigma) with sigma
+  end.
+
+Ltac autosubst_unfold_upH H :=
+  rewrite ?upX, ?upnSX in H;
+  repeat match typeof H with
+  | context[upn 0 ?sigma] => change (upn 0 sigma) with sigma
+  end.
+
 Ltac autosubst_unfold :=
-  autosubst_typeclass_normalize;
+  autosubst_typeclass_normalize; autosubst_unfold_up;
   rewrite ?rename_substX, ?upX; unfold ren, scomp, hcomp.
 
 Ltac autosubst_unfoldH H :=
-  autosubst_typeclass_normalizeH H;
+  autosubst_typeclass_normalizeH H; autosubst_unfold_upH H;
   rewrite ?rename_substX, ?upX in H; unfold ren, scomp, hcomp in H.
 
 (** Simplify results. *)
@@ -191,13 +246,32 @@ Ltac fold_compH H :=
         change (sigma >>> hsubst tau) with (sigma >>| tau) in H
   end.
 
+Ltac fold_up := rewrite ?fold_up, ?fold_up0;
+  repeat match goal with
+    | [|- context[up (up ?sigma)]] =>
+      change (up (up sigma)) with (upn 2 sigma)
+    | [|- context[up (upn ?n ?sigma)]] =>
+      change (up (upn n sigma)) with (upn (S n) sigma)
+    | _ => rewrite fold_upn_up
+  end.
+
+Ltac fold_upH H := rewrite ?fold_up, ?fold_up0 in H;
+  repeat match typeof H with
+    | context[up (up ?sigma)] =>
+      change (up (up sigma)) with (upn 2 sigma) in H
+    | context[up (upn ?n ?sigma)] =>
+      change (up (upn n sigma)) with (upn (S n) sigma) in H
+    | _ => rewrite fold_upn_up in H
+  end.
+
 (** Solve & Simplify goals involving substitutions. *)
 
 Ltac autosubst :=
   simpl; trivial; autosubst_unfold; solve [repeat first
   [ solve [trivial]
   | progress (
-      simpl; unfold _bind; fsimpl; autorewrite with autosubst;
+      simpl; unfold _bind, ren, scomp, hcomp; fsimpl; autosubst_unfold_up;
+      autorewrite with autosubst;
       rewrite ?id_scompX, ?id_scompR, ?subst_idX, ?subst_compX,
               ?subst_compR, ?id_subst, ?subst_id, ?subst_compI,
               ?id_hsubstX, ?id_hsubstR, ?hsubst_idX, ?scomp_hcompX,
@@ -212,7 +286,8 @@ Ltac autosubst :=
 Ltac asimpl :=
   simpl; autosubst_unfold; repeat first
   [ progress (
-      simpl; unfold _bind; fsimpl; autorewrite with autosubst;
+      simpl; unfold _bind, ren, scomp, hcomp; fsimpl; autosubst_unfold_up;
+      autorewrite with autosubst;
       rewrite ?id_scompX, ?id_scompR, ?subst_idX, ?subst_compX,
               ?subst_compR, ?id_subst, ?subst_id, ?subst_compI,
               ?id_hsubstX, ?id_hsubstR, ?hsubst_idX, ?scomp_hcompX,
@@ -220,12 +295,13 @@ Ltac asimpl :=
               ?hsubst_id, ?id_hsubst, ?hsubst_compI, ?scomp_hcompI
     )
   | fold_id];
-  fold_ren; fold_comp; rewrite <- ?upE.
+  fold_ren; fold_comp; fold_up.
 
 Ltac asimplH H :=
   simpl in H; autosubst_unfoldH H; repeat first
   [ progress (
-      simpl in H; unfold _bind in H; fsimpl in H; autorewrite with autosubst in H;
+      simpl in H; unfold _bind, ren, scomp, hcomp in H; fsimpl in H;
+      autosubst_unfold_upH H; autorewrite with autosubst in H;
       rewrite ?id_scompX, ?id_scompR, ?subst_idX, ?subst_compX,
               ?subst_compR, ?id_subst, ?subst_id, ?subst_compI,
               ?id_hsubstX, ?id_hsubstR, ?hsubst_idX, ?scomp_hcompX,
@@ -233,7 +309,7 @@ Ltac asimplH H :=
               ?hsubst_id, ?id_hsubst, ?hsubst_compI, ?scomp_hcompI in H
     )
   | fold_id in H];
-  fold_renH H; fold_compH H; rewrite <- ?upE in H.
+  fold_renH H; fold_compH H; fold_upH H.
 
 Tactic Notation "asimpl" "in" ident(H) := asimplH H.
 Tactic Notation "asimpl" "in" "*" := (in_all asimplH); asimpl.
