@@ -120,9 +120,8 @@ Inductive step : term -> term -> Prop :=
     #<div class="block">#
     [s1.[t/].[sigma] = s1.[up sigma].[t.[sigma]/]].
     #</div>#
-
-    This goal can be solved using [autosubst], since both sides of the equation
-    are simplified to [s1.[t.[sigma] .: sigma]] using [asimpl]. *)    
+    Since both sides of the equation are simplified to [s1.[t.[sigma] .: sigma]] using
+    [asimpl], this goal can be solved using [autosubst]. *)    
 
 Lemma substitutivity s1 s2 :
   step s1 s2 -> forall sigma, step s1.[sigma] s2.[sigma].

@@ -190,11 +190,11 @@ Ltac autosubst_unfold_upH H :=
 
 Ltac autosubst_unfold :=
   autosubst_typeclass_normalize; autosubst_unfold_up;
-  rewrite ?rename_substX, ?upX; unfold ren, scomp, hcomp.
+  rewrite ?rename_substX; unfold ren, scomp, hcomp, upren.
 
 Ltac autosubst_unfoldH H :=
   autosubst_typeclass_normalizeH H; autosubst_unfold_upH H;
-  rewrite ?rename_substX, ?upX in H; unfold ren, scomp, hcomp in H.
+  rewrite ?rename_substX in H; unfold ren, scomp, hcomp, upren in H.
 
 (** Simplify results. *)
 
