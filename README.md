@@ -2,7 +2,7 @@
 
 Autosubst is a Coq library for parallel de Bruijn substitutions
 
-(https://www.ps.uni-saarland.de/autosubst)
+https://www.ps.uni-saarland.de/autosubst
 
 
 
@@ -42,7 +42,7 @@ You can use the file doc/toc.html to browse the documentation.
 
 ## Bug Reports
 
-Please submit bugs reports on (https://github.com/tebbi/autosubst/issues)
+Please submit bugs reports on https://github.com/tebbi/autosubst/issues
 
 
 
