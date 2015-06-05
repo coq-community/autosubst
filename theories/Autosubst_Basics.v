@@ -22,6 +22,21 @@ Tactic Notation "in_all" tactic(T) :=
 (** Shorthand for functional extensionality. *)
 Ltac f_ext := apply functional_extensionality.
 
+
+(** 
+  A variant of the Coq [fold] tactic that works with open terms. 
+  For example, [repeat open_fold (f _).] tries to undo [unfold f] for 
+  a defined function [f] with a single argument. 
+*)
+Tactic Notation "open_fold" open_constr(s) :=
+  let s' := (eval red in s) in
+  replace s' with s by reflexivity.
+
+Tactic Notation "open_fold" open_constr(s) "in" hyp(H) :=
+  let s' := (eval red in s) in
+  replace s' with s  in H by reflexivity.
+
+
 (** Wrapper for deriving type class instances. *)
 Ltac derive := trivial with derive; fail.
 

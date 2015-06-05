@@ -85,7 +85,7 @@ Proof.
     simpl in H.
     rewrite plus_0_r in H. intuition autosubst.
   - asimpl. simpl in *.
-    rewrite NPeano.Nat.add_succ_r in *.
+    rewrite plusnS in *.
     inv H.
     edestruct IHDelta as [B' [? ?]]; eauto. exists B'. subst.
     intuition autosubst.
@@ -130,5 +130,5 @@ Qed.
 End SubstInstance.
 
 (* Local Variables: *)
-(* coq-load-path: (("." "Plain")) *)
+(* coq-load-path: (("." "Plain") ("../../theories" "Autosubst")) *)
 (* End: *)

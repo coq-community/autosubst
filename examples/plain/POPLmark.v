@@ -489,5 +489,5 @@ Proof.
 Qed.
 
 (* Local Variables: *)
-(* coq-load-path: (("." "Plain")) *)
+(* coq-load-path: (("." "Plain") ("../../theories" "Autosubst")) *)
 (* End: *)

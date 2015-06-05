@@ -220,7 +220,7 @@ Ltac asimpl :=
               ?hsubst_id, ?id_hsubst, ?hsubst_compI, ?scomp_hcompI
     )
   | fold_id];
-  fold_ren; fold_comp; rewrite <- ?upE.
+  fold_ren; fold_comp; repeat open_fold (upren _); rewrite <- ?upE.
 
 Ltac asimplH H :=
   simpl in H; autosubst_unfoldH H; repeat first
@@ -233,7 +233,7 @@ Ltac asimplH H :=
               ?hsubst_id, ?id_hsubst, ?hsubst_compI, ?scomp_hcompI in H
     )
   | fold_id in H];
-  fold_renH H; fold_compH H; rewrite <- ?upE in H.
+  fold_renH H; fold_compH H; repeat open_fold (upren _) in H; rewrite <- ?upE in H.
 
 Tactic Notation "asimpl" "in" ident(H) := asimplH H.
 Tactic Notation "asimpl" "in" "*" := (in_all asimplH); asimpl.

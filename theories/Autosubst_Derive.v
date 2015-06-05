@@ -3,12 +3,12 @@ Require Import Autosubst_Basics Autosubst_MMap Autosubst_Classes Autosubst_Tacti
 
 Ltac app_var := match goal with [ |- var] => assumption end.
 
-Ltac derive_Ids := intro; solve
-  [ constructor 1;  [app_var] | constructor 2;  [app_var]
-  | constructor 3;  [app_var] | constructor 4;  [app_var]
-  | constructor 5;  [app_var] | constructor 6;  [app_var]
-  | constructor 7;  [app_var] | constructor 8;  [app_var]
-  | constructor 9;  [app_var] | constructor 10; [app_var]
+Ltac derive_Ids := intro;  solve
+  [ constructor 1; [app_var] | constructor 2; [app_var]
+  | constructor 3; [app_var] | constructor 4; [app_var]
+  | constructor 5; [app_var] | constructor 6; [app_var]
+  | constructor 7; [app_var] | constructor 8; [app_var]
+  | constructor 9; [app_var] | constructor 10; [app_var]
   | constructor 11; [app_var] | constructor 12; [app_var]
   | constructor 13; [app_var] | constructor 14; [app_var]
   | constructor 15; [app_var] | constructor 16; [app_var]
