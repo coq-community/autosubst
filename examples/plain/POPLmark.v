@@ -141,6 +141,9 @@ Proof. apply sub_wf. Qed.
 Lemma sub_wf_2 Delta A B : SUB Delta |- A <: B -> wf_ty Delta B.
 Proof. apply sub_wf. Qed.
 
+Lemma conj' (A B : Prop) : A -> (A -> B) -> A /\ B.
+Proof. tauto. Qed.
+
 Lemma sub_trans' n :
   (forall Delta A B C, n = size B ->
      SUB Delta |- A <: B -> SUB Delta |- B <: C -> SUB Delta |- A <: C) /\

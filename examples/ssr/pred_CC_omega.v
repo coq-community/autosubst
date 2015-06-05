@@ -142,7 +142,7 @@ Definition psstep (sigma tau : var -> term) :=
 
 Fixpoint rho (s : term) : term :=
   match s with
-    | App (Lam s) t => (rho s).[rho t .: Var]
+    | App (Lam s) t => (rho s).[rho t/]
     | App s t => App (rho s) (rho t)
     | Lam s => Lam (rho s)
     | Prod A B => Prod (rho A) (rho B)
@@ -186,7 +186,7 @@ Proof with eauto using pstep, psstep_up.
 Qed.
 
 Lemma pstep_compat_beta s1 s2 t1 t2 :
-  pstep s1 s2 -> pstep t1 t2 -> pstep s1.[t1.:Var] s2.[t2.:Var].
+  pstep s1 s2 -> pstep t1 t2 -> pstep s1.[t1/] s2.[t2/].
 Proof.
   move=> A B. by apply: pstep_compat A => -[|].
 Qed.
