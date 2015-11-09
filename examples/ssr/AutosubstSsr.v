@@ -5,7 +5,7 @@ Require Export Autosubst_Classes.
 Require Export Autosubst_Tactics.
 Require Export Autosubst_Lemmas.
 Require Export Autosubst_Derive.
-Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+Require Import Ssreflect.ssreflect Ssreflect.ssrfun Ssreflect.ssrbool Ssreflect.eqtype Ssreflect.ssrnat Ssreflect.seq.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

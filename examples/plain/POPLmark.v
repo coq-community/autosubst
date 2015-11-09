@@ -5,7 +5,7 @@
     formalization of syntactic theories.  We solve part 1, that is,
     progress and preservation of System F with subtyping.  *)
 
-Require Import Program.Equality List.
+Require Import Program.Equality List Omega.
 Require Import Autosubst Size Decidable Context.
 
 Inductive type : Type :=
@@ -90,7 +90,7 @@ Qed.
 
 Lemma wf_weak1 Delta A A' B :
   wf_ty Delta A -> A' = A.[ren(+1)] -> wf_ty (B :: Delta) A'.
-Proof. intros. subst. eauto using wf_weak, @atnd. Qed.
+Proof. intros. subst. eapply wf_weak; eauto using @atnd. Qed.
 
 Corollary wf_weak' Delta1 Delta2 A :
   wf_ty Delta1 A ->
@@ -169,7 +169,7 @@ Proof.
         constructor; eauto.
         * eapply IH; eauto; somega.
         * eapply IH; eauto; try somega.
-          refine (proj2 (IH _ _) nil _ _ _ _ _ _ _ _); eauto; somega.
+          (refine (proj2 (IH _ _) nil _ B1 _ _ _ _ _ _)); eauto; simpl; omega.
   }
   {
     intros H_trans Delta' Delta B B' A C ? H H_B'B. subst.
@@ -395,7 +395,9 @@ Proof.
   - econstructor. apply IHty.
     + intros ? ? H_get. inv H_get; asimpl.
       * econstructor. constructor; eauto.
-        asimpl. apply sub_refl. eauto using wf_weak1, wf_subst, sub_wf_1.
+        asimpl. apply sub_refl.
+        eapply wf_weak1; eauto using wf_subst, sub_wf_1.
+        autosubst.
       * eapply sub_weak; eauto using @atnd. now autosubst.
     + intros.
       apply mmap_atn in H3. ainv.
@@ -414,7 +416,9 @@ Proof.
   intros.
   cutrewrite(s = s.|[ids]);[idtac|autosubst].
   cutrewrite (A = A.[ids]);[idtac|autosubst].
-  eapply ty_subst; eauto; intros; asimpl; eauto using sub, sub_refl.
+  eapply ty_subst; eauto; intros.
+  - asimpl; eauto using sub, sub_refl.
+  - asimpl; eauto using sub, sub_refl.
 Qed.
 
 Lemma can_form_arr {s A B}:

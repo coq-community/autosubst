@@ -1,7 +1,7 @@
 (** * Abstract Reduction Systems
 
     Useful lemmas when working with small-step reduction relations. *)
-Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+Require Import Ssreflect.ssreflect Ssreflect.ssrfun Ssreflect.ssrbool Ssreflect.eqtype Ssreflect.ssrnat Ssreflect.seq.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

@@ -1,7 +1,7 @@
 (** * Context
 
     Support for dependent contexts with the right reduction behaviour. *)
-Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+Require Import Ssreflect.ssreflect Ssreflect.ssrfun Ssreflect.ssrbool Ssreflect.eqtype Ssreflect.ssrnat Ssreflect.seq.
 Require Import AutosubstSsr.
 
 Definition get {T} `{Ids T} (Gamma : seq T) (n : var) : T :=
