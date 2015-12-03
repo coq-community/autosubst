@@ -40,7 +40,7 @@ clean: clean-doc
 dist:
 	git archive -o autosubst-HEAD.tar.gz HEAD
 
-doc: clean-doc all manual.pdf
+doc: clean-doc manual.pdf
 	- mkdir -p $(DOC)
 	coqdoc $(COQDOCFLAGS) -R theories Autosubst -R examples/plain Plain \
 	  -R examples/ssr Ssr $(THEORIES) $(EXAMPLES_PLAIN) $(EXAMPLES_SSR)
