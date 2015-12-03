@@ -28,7 +28,7 @@ body{
     min-height: 100%;
 }
 
-#header { 
+#header {
     display: block;
     padding: 0;
     margin: 0;
@@ -38,8 +38,8 @@ body{
     font-weight: bold;
 }
 
-#header h1 { 
-    padding: 0; 
+#header h1 {
+    padding: 0;
     margin: 0;
 }
 
@@ -93,7 +93,8 @@ a .id {
     cursor: inherit;
 }
 
-a > .id[type="var"], a > .id[type="variable"] {
+a > .id[type="var"], a > .id[type="variable"],
+a > .id[title="var"], a > .id[title="variable"] {
    cursor: text;
    padding: inherit;
    margin: inherit;
@@ -103,18 +104,20 @@ a > .id[type="var"], a > .id[type="variable"] {
    padding-bottom: 5px;
 }
 
-.id[type="var"]:hover, .id[type="variable"]:hover {
+.id[type="var"]:hover, .id[type="variable"]:hover,
+.id[title="var"]:hover, .id[title="variable"]:hover {
     background-color: white;
 }
 
-.code .id[type="var"]:hover, .code .id[type="variable"]:hover {
+.code .id[type="var"]:hover, .code .id[type="variable"]:hover,
+.code .id[title="var"]:hover, .code .id[title="variable"]:hover {
     background-color: #F2FAFF;
 }
 
 
 #main a.idref:active, #main a.modref:active{
     background-color: white;
-}    
+}
 
 .libtitle {display: none}
 
@@ -238,7 +241,7 @@ div:empty{ display: none;}
 
 .code br:first-child,
 .code br:last-child {
-    display: none; 
+    display: none;
 }
 
 .idref {
@@ -271,29 +274,33 @@ tr.infrulemiddle hr {
 }
 
 
-.id { 
-    display: inline; 
+.id {
+    display: inline;
     cursor: text;
 }
 
-.id[type="constructor"], .id[type="projection"], .id[type="method"] {
+.id[type="constructor"], .id[type="projection"], .id[type="method"],
+.id[title="constructor"], .id[title="projection"], .id[title="method"]  {
     color: #A30E16;
 }
 
-.id[type="var"], .id[type="variable"] {
+.id[type="var"], .id[type="variable"],
+.id[title="var"], .id[title="variable"] {
     color: inherit;
 }
 
-.id[type="definition"], .id[type="record"], .id[type="class"],
-.id[type="instance"], .id[type="inductive"], .id[type="library"] {
+.id[type="definition"], .id[type="record"], .id[type="class"], .id[type="instance"], .id[type="inductive"], .id[type="library"],
+.id[title="definition"], .id[title="record"], .id[title="class"], .id[title="instance"], .id[title="inductive"], .id[title="library"] {
     color: #A6650F;
 }
 
-.id[type="lemma"] {
+.id[type="lemma"],
+.id[title="lemma"]{
     color: #188B0C;
 }
 
-.id[type="keyword"], .id[type="notation"], .id[type="abbreviation"] {
+.id[type="keyword"], .id[type="notation"], .id[type="abbreviation"],
+.id[title="keyword"], .id[title="notation"], .id[title="abbreviation"]{
  color : #2874AE;
 }
 
