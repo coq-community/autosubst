@@ -50,7 +50,3 @@ Proof.
 Defined.
 
 End MMapInstances.
-
-(* Local Variables: *)
-(* coq-load-path: (("." "Ssr")) *)
-(* End: *)

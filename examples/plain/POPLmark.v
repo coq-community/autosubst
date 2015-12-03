@@ -414,7 +414,7 @@ Proof.
   intros.
   cutrewrite(s = s.|[ids]);[idtac|autosubst].
   cutrewrite (A = A.[ids]);[idtac|autosubst].
-  eapply ty_subst; eauto; intros; asimpl; eauto using sub, sub_refl.
+  apply ty_subst with (Delta1 := Delta) (Gamma1 := Gamma1); eauto; intros; asimpl; eauto using sub, sub_refl.
 Qed.
 
 Lemma can_form_arr {s A B}:

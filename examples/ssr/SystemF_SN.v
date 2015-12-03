@@ -331,7 +331,3 @@ Qed.
 
 Corollary strong_normalization E s T : has_type E s T -> sn s.
 Proof. move=>/type_L/(_ rho_id)/L_sn. apply. exact: rho_id. Qed.
-
-(* Local Variables: *)
-(* coq-load-path: (("." "Ssr")) *)
-(* End: *)

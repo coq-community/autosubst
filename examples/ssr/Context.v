@@ -19,7 +19,3 @@ Arguments dget {T _ _} Gamma n.
 Lemma get_map {T} `{Ids T} (f : T -> T) Gamma n :
   n < size Gamma -> get (map f Gamma) n = f (get Gamma n).
 Proof. exact: nth_map. Qed.
-
-(* Local Variables: *)
-(* coq-load-path: (("." "Ssr")) *)
-(* End: *)

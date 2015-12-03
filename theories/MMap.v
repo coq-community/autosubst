@@ -8,7 +8,7 @@
   the codomain of a function. For additional inductive types, there is
   a derive tactic to generate new mmap instances.
 *)
-Require Import Autosubst_Basics.
+Require Import Autosubst.Basics.
 
 Class MMap (A B: Type) := mmap : (A -> A) -> B -> B.
 Arguments mmap {A B _} f !s /.
@@ -20,14 +20,14 @@ Arguments mmap {A B _} f !s /.
   argument. This is sufficient to allow the fixpoint checker to lift proofs
   over mmap.
 *)
-Class MMapExt (A B : Type) `{MMap A B} := 
+Class MMapExt (A B : Type) `{MMap A B} :=
   mmap_ext : forall f g,
     (forall t, f t = g t) -> forall s, mmap f s = mmap g s.
 Arguments mmap_ext {A B _ _ f g} H s.
 
 Class MMapLemmas (A B : Type) `{MMap A B} := {
   mmap_id x : mmap id x = x;
-  mmap_comp f g x : mmap f (mmap g x) = mmap (g >>> f) x
+  mmap_comp f g x : mmap f (mmap g x) = mmap (g >> f) x
 }.
 
 (** MMap Lemmas *)
@@ -40,11 +40,11 @@ Context {MMap_Inst : MMap A B} {MMapLemmas_Inst : MMapLemmas A B}.
 Lemma mmap_idX : mmap id = id.
 Proof. f_ext. exact mmap_id. Qed.
 
-Lemma mmap_compX f g : mmap f >>> mmap g = mmap (f >>> g).
+Lemma mmap_compX f g : mmap f >> mmap g = mmap (f >> g).
 Proof. f_ext. apply mmap_comp. Qed.
 
 Lemma mmap_compR {C} f g (h : _ -> C) :
-  mmap f >>> mmap g >>> h = mmap (f >>> g) >>> h.
+  mmap f >> mmap g >> h = mmap (f >> g) >> h.
 Proof. now rewrite <- mmap_compX. Qed.
 
 End LemmasForMMap.
@@ -104,7 +104,7 @@ Hint Rewrite @mmap_id @mmap_comp @mmap_idX @mmap_compX @mmap_compR
 
 Ltac msimpl :=
   mmap_typeclass_normalize;
-  repeat first 
+  repeat first
   [ solve [trivial]
   | progress (simpl; autorewrite with mmap)
   | fold_id].
@@ -153,7 +153,3 @@ Hint Extern 0 (MMapLemmas _ _) => derive_MMapLemmas : derive.
 Ltac derive_MMapExt :=
   intros ???; fix 1; destruct 0; simpl; f_equal; auto using mmap_ext.
 Hint Extern 0 (MMapExt _ _) => derive_MMapExt : derive.
-
-(* Local Variables: *)
-(* coq-load-path: (("." "Autosubst")) *)
-(* End: *)

@@ -2,7 +2,7 @@
   Default instances for mmap.
   For ssreflect, you might want to use the library versions instead.
 *)
-Require Import Autosubst_Basics Autosubst_MMap.
+Require Import Autosubst.Basics Autosubst.MMap.
 
 Require List.
 
@@ -41,7 +41,3 @@ Proof.
 Defined.
 
 End MMapInstances.
-
-(* Local Variables: *)
-(* coq-load-path: (("." "Autosubst")) *)
-(* End: *)

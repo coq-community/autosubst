@@ -7,6 +7,8 @@
 Require Import Coq.Program.Tactics.
 Require Import Coq.Arith.Plus List FunctionalExtensionality.
 
+Arguments eq_rect_r {A x} P H {y} H0/.
+
 (** Annotate "a" with additional information. *)
 Definition annot {A B} (a : A) (b : B) : A := a.
 
@@ -20,13 +22,13 @@ Tactic Notation "in_all" tactic(T) :=
   end; intros.
 
 (** Shorthand for functional extensionality. *)
-Ltac f_ext := apply functional_extensionality.
+Ltac f_ext := apply functional_extensionality_dep.
 
 
-(** 
-  A variant of the Coq [fold] tactic that works with open terms. 
-  For example, [repeat open_fold (f _).] tries to undo [unfold f] for 
-  a defined function [f] with a single argument. 
+(**
+  A variant of the Coq [fold] tactic that works with open terms.
+  For example, [repeat open_fold (f _).] tries to undo [unfold f] for
+  a defined function [f] with a single argument.
 *)
 Tactic Notation "open_fold" open_constr(s) :=
   let s' := (eval red in s) in
@@ -41,9 +43,9 @@ Tactic Notation "open_fold" open_constr(s) "in" hyp(H) :=
 Ltac derive := trivial with derive; fail.
 
 (** Assert that type class instance exists.*)
-Ltac require_instance s := 
+Ltac require_instance s :=
   try (first[
-              assert s;[exact _|idtac] 
+              assert s;[exact _|idtac]
             | fail 10 "The instance" s "is missing"
             ]; fail).
 
@@ -160,44 +162,55 @@ Tactic Notation "fold_id" "in" "*" := (in_all fold_idH); fold_id.
 (** A type synonym for natural numbers used as de Bruijn indices *)
 Definition var := nat.
 
-Definition iterate := fix iterate {A} (f : A -> A) n a :=
-  match n with
-    | 0 => a
-    | S n' => f(iterate f n' a)
-  end.
-Arguments iterate {A} f n a : simpl never.
-
-(** ordinary function composition ... *)
+(** ordinary function composition *)
 
 Definition funcomp {A B C : Type} (f : A -> B) (g : B -> C) x := g(f(x)).
 Arguments funcomp {A B C} f g x /.
+
+(** and dependent function composition piping the first argument ... *)
+
+Definition dfuncomp2 {A B C D} (f : forall a : A, B -> C) (g : forall a : A, C -> D a) a := funcomp (f a) (g a) .
+Arguments dfuncomp2 {A B C D} f g a / x.
 
 (** ... with reversed notation *)
 
 Delimit Scope subst_scope with subst.
 Open Scope subst_scope.
 
-Reserved Notation "sigma >> tau" (at level 56, left associativity).
-Notation "f >>> g" := (funcomp f g)
-  (at level 56, left associativity) : subst_scope.
+Notation "f >> g" := (funcomp f g)
+  (at level 56, right associativity) : subst_scope.
+Notation "f >>2 g" := (dfuncomp2 f g)
+  (at level 56, right associativity) : subst_scope.
+
 
 (**
   The cons operation on streams represented as functions from natural numbers
 *)
 Definition scons {X : Type} (s : X) (sigma : var -> X) (x : var) : X :=
   match x with S y => sigma y | _ => s end.
-Notation "s .: sigma" := (scons s sigma) (at level 55, sigma at level 56, right associativity) : subst_scope.
+Notation "s .: sigma" := (scons s sigma) (at level 56, right associativity) : subst_scope.
 
-(** A test and demonstration of the precedence rules, which effectively declare scons and 
-    funcomp at the same level, with scons being right associative and funcomp being left
-    associative *)
-Check fun (f : var -> var) (sigma : var -> list var) => 
-        nil .: nil .: f >>> f >>> nil .: nil .: f >>> f >>> nil .: nil .: sigma.
+(** A test and demonstration of the precedence rules, which declare scons and
+    funcomp at the same level and right associative *)
+Check fun (f : var -> var) (sigma : var -> list var) =>
+        nil .: nil .: f >> f >> nil .: nil .: f >> f >> nil .: nil .: sigma.
 
 (* plus with different simplification behaviour *)
 Definition lift (x y : var) : var := plus x y.
 Arguments lift x y/.
 Notation "( + x )" := (lift x) (format "( + x )").
+
+
+(** Polymorphic Dependent Vectors *)
+
+Class Vector (sort : Type) :=
+  {
+    vec : (sort -> Type) -> Type;
+    getV {T : sort -> Type} : vec T -> forall o : sort, T o;
+    newV {T : sort -> Type} : (forall o : sort, T o) -> vec T;
+    getV_newV {T : sort -> Type} (f : forall o, T o) : getV (newV f) = f
+  }.
+
 
 (*
 (*
@@ -213,15 +226,15 @@ Arguments sapp {_} !l sigma / _.
 
 (** take a prefix from a stream *)
 Fixpoint take {X : Type} n (sigma : nat -> X) : list X :=
-  match n with 0 => nil | S n' => sigma 0 :: take n' ((+1) >>> sigma) end.
+  match n with 0 => nil | S n' => sigma 0 :: take n' ((+1) >> sigma) end.
 *)
 
 (** Lemmas for working with the above primitives. *)
 
-Lemma id_comp {A B} (f : A -> B) : id >>> f = f. reflexivity. Qed.
-Lemma comp_id {A B} (f : A -> B) : f >>> id = f. reflexivity. Qed.
+Lemma id_comp {A B} (f : A -> B) : id >> f = f. reflexivity. Qed.
+Lemma comp_id {A B} (f : A -> B) : f >> id = f. reflexivity. Qed.
 Lemma compA {A B C D} (f : A -> B) (g : B -> C) (h : C -> D) :
-  (f >>> g) >>> h = f >>> (g >>> h).
+  (f >> g) >> h = f >> (g >> h).
 Proof. reflexivity. Qed.
 
 Section LemmasForFun.
@@ -229,7 +242,7 @@ Section LemmasForFun.
 Context {A B : Type}.
 Implicit Types (x : A) (f : var -> A) (g : A -> B) (n m : var).
 
-Lemma scons_comp x f g : (x .: f) >>> g = (g x) .: f >>> g.
+Lemma scons_comp x f g : (x .: f) >> g = (g x) .: f >> g.
 Proof. f_ext; now destruct 0. Qed.
 
 Lemma plusSn n m : S n + m = S (n + m). reflexivity. Qed.
@@ -238,20 +251,20 @@ Lemma plusOn n : O + n = n. reflexivity. Qed.
 Lemma plusnO n : n + O = n. symmetry. apply plus_n_O. Qed.
 Lemma plusA n m k : n + (m + k) = (n + m) + k. apply plus_assoc. Qed.
 
-Lemma scons_eta f n : f n .: (+S n) >>> f = (+n) >>> f.
+Lemma scons_eta f n : f n .: (+S n) >> f = (+n) >> f.
 Proof.
   f_ext; intros [|m]; simpl; [now rewrite plusnO|now rewrite plusnS].
 Qed.
 
 Lemma lift0 : (+0) = id. reflexivity. Qed.
 
-Lemma lift_scons x f n : (+S n) >>> (x .: f) = (+n) >>> f.
+Lemma lift_scons x f n : (+S n) >> (x .: f) = (+n) >> f.
 Proof. reflexivity. Qed.
 
-Lemma lift_comp n m : (+n) >>> (+m) = (+m+n).
+Lemma lift_comp n m : (+n) >> (+m) = (+m+n).
 Proof. f_ext; intros x; simpl. now rewrite plusA. Qed.
 
-Lemma lift_compR n m f : (+n) >>> ((+m) >>> f) = (+m+n) >>> f.
+Lemma lift_compR n m f : (+n) >> ((+m) >> f) = (+m+n) >> f.
 Proof. now rewrite <- lift_comp. Qed.
 
 End LemmasForFun.
@@ -263,16 +276,16 @@ Proof. apply (scons_eta id). Qed.
 
 Ltac fsimpl :=
   repeat match goal with
-    | [|- context[id >>> ?f]] => change (id >>> f) with f
-    | [|- context[?f >>> id]] => change (f >>> id) with f
-    | [|- context[(?f >>> ?g) >>> ?h]] =>
-        change ((f >>> g) >>> h) with (f >>> (g >>> h))
+    | [|- context[id >> ?f]] => change (id >> f) with f
+    | [|- context[?f >> id]] => change (f >> id) with f
+    | [|- context[(?f >> ?g) >> ?h]] =>
+        change ((f >> g) >> h) with (f >> (g >> h))
     | [|- context[(+0)]] => change (+0) with (@id var)
     | [|- context[0 + ?m]] => change (0 + m) with m
     | [|- context[S ?n + ?m]] => change (S n + m) with (S (n + m))
-    | [|- context[(+S ?n) >>> (?x .: ?xr)]] =>
-        change ((+S n) >>> (x .: xr)) with ((+n) >>> xr)
-    | [|- appcontext[?x .: (+ S ?n) >>> ?f]] =>
+    | [|- context[(+S ?n) >> (?x .: ?xr)]] =>
+        change ((+S n) >> (x .: xr)) with ((+n) >> xr)
+    | [|- appcontext[?x .: (+ S ?n) >> ?f]] =>
         change x with (f n); rewrite (@scons_eta _ f n)
     | _ => progress (rewrite ?scons_comp, ?plusnS, ?plusnO, ?plusA,
                              ?lift_comp, ?lift_compR, ?lift_eta)
@@ -280,16 +293,16 @@ Ltac fsimpl :=
 
 Ltac fsimplH H :=
   repeat match typeof H with
-    | context[id >>> ?f] => change (id >>> f) with f in H
-    | context[?f >>> id] => change (f >>> id) with f in H
-    | context[(?f >>> ?g) >>> ?h] =>
-        change ((f >>> g) >>> h) with (f >>> (g >>> h)) in H
+    | context[id >> ?f] => change (id >> f) with f in H
+    | context[?f >> id] => change (f >> id) with f in H
+    | context[(?f >> ?g) >> ?h] =>
+        change ((f >> g) >> h) with (f >> (g >> h)) in H
     | context[(+0)] => change (+0) with (@id var) in H
     | context[0 + ?m] => change (0 + m) with m in H
     | context[S ?n + ?m] => change (S n + m) with (S (n + m)) in H
-    | context[(+S ?n) >>> (?x .: ?xr)] =>
-        change ((+S n) >>> (x .: xr)) with ((+n) >>> xr) in H
-    | appcontext[?x .: (+ S ?n) >>> ?f] =>
+    | context[(+S ?n) >> (?x .: ?xr)] =>
+        change ((+S n) >> (x .: xr)) with ((+n) >> xr) in H
+    | appcontext[?x .: (+ S ?n) >> ?f] =>
         change x with (f n) in H; rewrite (@scons_eta _ f n) in H
     | _ => progress (rewrite ?scons_comp, ?plusnS, ?plusnO, ?plusA,
                              ?lift_comp, ?lift_compR, ?lift_eta in H)
@@ -300,21 +313,35 @@ Tactic Notation "fsimpl" "in" "*" := (in_all fsimplH); fsimpl.
 
 (** Misc Lemmas *)
 
-Lemma iterate_S {A} (f : A -> A) n a : iterate f (S n) a = f (iterate f n a).
-Proof. reflexivity. Qed.
+Section iterate.
+  Context {A} (f : A -> A).
 
-Lemma iterate_0 {A} (f : A -> A) a : iterate f 0 a = a.
-Proof. reflexivity. Qed.
+  Fixpoint iterate n a :=
+    match n with
+      | 0 => a
+      | S n' => f(iterate n' a)
+    end.
 
-Lemma iterate_Sr {A} (f : A -> A) n a : iterate f (S n) a = iterate f n (f a).
-Proof.
-  revert a; induction n. reflexivity. intros a.
-  rewrite !iterate_S, <- IHn. reflexivity.
-Qed.
+  Lemma iterate_S n : iterate (S n) = iterate n >> f.
+  Proof. f_ext. reflexivity. Qed.
+
+  Lemma iterate_0 : iterate 0 = id.
+  Proof. reflexivity. Qed.
+
+  Lemma iterate_Sr n a : iterate (S n) a = iterate n (f a).
+  Proof.
+    revert a; induction n. reflexivity. intros a.
+    rewrite !iterate_S. simpl. rewrite <- IHn. reflexivity.
+  Qed.
+
+  Lemma iterate_comm n : f >> iterate n = iterate n >> f.
+  Proof.
+    f_ext. intro. rewrite <- iterate_S. now rewrite iterate_Sr.
+  Qed.
+
+End iterate.
+Arguments iterate {A} f n a : simpl never.
+
 
 Lemma equal_f {X Y} {f g : X -> Y} a : f = g -> f a = g a.
 Proof. intros. now subst. Qed.
-
-(* Local Variables: *)
-(* coq-load-path: (("." "Autosubst")) *)
-(* End: *)

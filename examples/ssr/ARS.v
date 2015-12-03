@@ -309,7 +309,3 @@ Proof.
 Qed.
 
 End ComputationN.
-
-(* Local Variables: *)
-(* coq-load-path: (("." "Ssr")) *)
-(* End: *)

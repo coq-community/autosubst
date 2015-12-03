@@ -1,0 +1,52 @@
+(** Some useful lemmas about substitutions. *)
+Require Import Autosubst.Basics Autosubst.MMap Autosubst.Classes Autosubst.Tactics.
+
+Section SubstLemmas.
+
+Context {sort : Set} {Vector_sort : Vector sort} {term : sort -> Type} {Ids_term : Ids term}
+  {Rename_term : Rename term} {Subst_term : Subst term} {SubstLemmas_term : SubstLemmas term}.
+
+(* Lemma up_id o : up o ids = ids o. *)
+(* Proof. autosubst. Qed. *)
+
+(* Lemma up_id_n n : upn n ids = ids. *)
+(* Proof. induction n; [reflexivity|rewrite !iterate_S, IHn]. exact up_id. Qed. *)
+
+(* Lemma lift0 : ren (+0) = ids. autosubst. Qed. *)
+
+(* Lemma up_lift1 sigma : ren (+1) >> up sigma = sigma >> ren (+1). *)
+(* Proof. autosubst. Qed. *)
+
+(* Lemma up_liftn sigma n : ren (+n) >> upn n sigma = sigma >> ren (+n). *)
+(* Proof. *)
+(*   f_ext. intros x. simpl. rewrite id_subst. induction n. *)
+(*   - autosubst. *)
+(*   - rewrite !iterate_S, upE. simpl. rewrite IHn. autosubst. *)
+(* Qed. *)
+
+(* Lemma up_comp sigma tau : up sigma >> up tau = up (sigma >> tau). *)
+(* Proof. autosubst. Qed. *)
+
+(* Lemma up_comp_n sigma tau n : *)
+(*   upn n sigma >> upn n tau = upn n (sigma >> tau). *)
+(* Proof. induction n; [reflexivity|now rewrite !iterate_S, <- IHn, up_comp]. Qed. *)
+
+(* Lemma ren_uncomp A xi zeta : A.[ren (xi >>> zeta)] = A.[ren xi].[ren zeta]. *)
+(* Proof. autosubst. Qed. *)
+
+(* Lemma renS s n : s.[ren (+S n)] = s.[ren (+n)].[ren (+1)]. *)
+(* Proof. autosubst. Qed. *)
+
+(* Lemma lift_inj (A B : term) : A.[ren(+1)] = B.[ren(+1)] -> A = B. *)
+(* Proof. *)
+(*   intros H. apply (f_equal (subst (ren pred))) in H. asimpl in H. *)
+(*   unfold funcomp, lift in H. now asimpl in H. *)
+(* Qed. *)
+
+(* Lemma lift_injn (A B : term) n : A.[ren(+n)] = B.[ren(+n)] -> A = B. *)
+(* Proof. *)
+(*   induction n. autosubst. rewrite (@renS A), (@renS B). *)
+(*   intros H. apply lift_inj in H. auto. *)
+(* Qed. *)
+
+End SubstLemmas.

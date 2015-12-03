@@ -396,7 +396,3 @@ Qed.
 Theorem ev_progress s A:
   TY nil;nil |- s : A -> value s \/ exists t,  EV s => t.
 Proof. move=> ty. exact: ev_progress' ty _. Qed.
-
-(* Local Variables: *)
-(* coq-load-path: (("." "Ssr")) *)
-(* End: *)

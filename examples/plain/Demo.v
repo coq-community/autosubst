@@ -2,13 +2,14 @@
 
     In this tutorial we will use Autosubst to formalize the simply typed lambda calculus and show substitutivity and type preservation of the reduction relation. *)
 
-Require Import Autosubst.
+Require Import Autosubst.Basics Autosubst.Classes Autosubst.Sorts.
+Require Import Autosubst.Derive Autosubst.Tactics.
 
 (** ** Syntax and the substitution operation
 
     The syntax of the untyped lambda calculus is given by the following grammar.
     #\[ s, t := x \mid s \, t \mid \lambda s \]#
-    
+
     To generate the substitution operation we need an inductive type
     corresponding to the terms above with a few annotations.
 
@@ -18,7 +19,8 @@ Require Import Autosubst.
     - Subterms with additional bound variables must be of type [{bind term}]
       instead of [term]. The notation [{bind T}] is convertible to [T]. *)
 
-Inductive term :=
+
+Inductive term {o : sort1} :=
 | Var (x : var)
 | App (s t : term)
 | Lam (s : {bind term}).
@@ -37,10 +39,10 @@ Inductive term :=
 
     Each instance is inferred automatically by using the [derive] tactic. *)
 
-Instance Ids_term : Ids term. derive. Defined.
-Instance Rename_term : Rename term. derive. Defined.
-Instance Subst_term : Subst term. derive. Defined.
-Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
+Instance Ids_term : Ids (@term) := @Var.
+Instance Rename_term : Rename (@term). derive. Show Proof. Defined.
+Instance Subst_term : Subst (@term). derive. Show Proof. Defined.
+Instance SubstLemmas_term : SubstLemmas (@term). Admitted.
 
 (** At this point we can use the notations:
 
@@ -54,13 +56,13 @@ Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
 Let us test the simplification behavior of [s.[sigma]].
 *)
 
-Eval simpl in fun sigma x => (Var x).[sigma]. 
+Eval simpl in fun sigma x => (Var x).[sigma].
 (* simplifies to [sigma x]*)
 
-Eval simpl in fun sigma s t => (App s t).[sigma]. 
+Eval simpl in fun sigma s t => (App s t).[sigma].
 (* simplifies to [App s.[sigma] t.[sigma]]*)
 
-Eval simpl in fun sigma s => (Lam s).[sigma]. 
+Eval simpl in fun sigma s => (Lam s).[sigma].
 (* simplifies to [Lam s.[up sigma]]*)
 
 
@@ -69,8 +71,8 @@ Eval simpl in fun sigma s => (Lam s).[sigma].
     to perform the simplification.
 
 *)
-Goal forall sigma, 
-  (Lam (App (Var 0) (Var 3))).[sigma] = Lam (App (Var 0) (sigma 2).[ren(+1)]).
+Goal forall sigma,
+  (Lam (App (Var 0) (Var 3))).[sigma] = Lam (App (Var 0) (Var 2).[sigma].[ren (+1)]).
 intros. asimpl. reflexivity. Qed.
 
 (** ** Reduction and substitutivity
@@ -78,21 +80,21 @@ intros. asimpl. reflexivity. Qed.
     The single-step reduction relation is defined by the following inference
     rules
     #\[ \cfrac{}{(\lambda s)\, t \rhd s.[t {\,.:\,} \text{ids}]} \quad
-        \cfrac{s_1 \rhd s_2}{s_1 \, t \rhd s_2 \, t} \quad 
+        \cfrac{s_1 \rhd s_2}{s_1 \, t \rhd s_2 \, t} \quad
         \cfrac{t_1 \rhd t_2}{s \, t_1 \rhd s \, t_2} \quad
         \cfrac{s_1 \rhd s_2}{\lambda s_1 \rhd \lambda s_2} \quad
     \]#
 
-    We write [ids] for the identity substitution and [s .: sigma] for the stream-cons 
-    operation. Note that substitutions being functions from natural numbers to 
-    terms can be seen as streams of terms. 
+    We write [ids] for the identity substitution and [s .: sigma] for the stream-cons
+    operation. Note that substitutions being functions from natural numbers to
+    terms can be seen as streams of terms.
     Stream-cons satisfies the following equations.
     #<div class="block">#
     [(s .: sigma) 0 = s]
     #<br/>#
     [(s .: sigma) (S x) = sigma x]
     #</div>#
-    
+
     Note that [s.[t .: ids]] replaces [0] in [s] by [t] and decreases all other
     variables by one. So this just expresses the usual definition of beta-reduction.
     We use the abbreviation [s.[t/]] for [s.[t .: ids]].
@@ -105,7 +107,7 @@ intros. asimpl. reflexivity. Qed.
 
 Inductive step : term -> term -> Prop :=
 | Step_beta (s1 s2 t : term) :
-    s1.[t/] = s2 -> step (App (Lam s1) t) s2
+    s1.[t .: ids _] = s2 -> step (App (Lam s1) t) s2
 | Step_appL (s1 s2 t : term) :
     step s1 s2 -> step (App s1 t) (App s2 t)
 | Step_appR (s t1 t2 : term) :
@@ -121,12 +123,12 @@ Inductive step : term -> term -> Prop :=
     [s1.[t/].[sigma] = s1.[up sigma].[t.[sigma]/]].
     #</div>#
     Since both sides of the equation are simplified to [s1.[t.[sigma] .: sigma]] using
-    [asimpl], this goal can be solved using [autosubst]. *)    
+    [asimpl], this goal can be solved using [autosubst]. *)
 
 Lemma substitutivity s1 s2 :
   step s1 s2 -> forall sigma, step s1.[sigma] s2.[sigma].
 Proof.
-  induction 1; constructor; subst; autosubst.
+  induction 1; constructor; subst; now asimpl.
 Restart.
   induction 1; intros; simpl; eauto using step; subst.
   constructor. asimpl. reflexivity.
@@ -139,38 +141,38 @@ Inductive type :=
 | Base
 | Arr (A B : type).
 
-(** For simplicity, the typing relation uses infinite contexts, that is, substitutions 
+(** For simplicity, the typing relation uses infinite contexts, that is, substitutions
     Thus we can reuse the primitives and tactics for substitutions.
 *)
 Inductive ty (Gamma : var -> type) : term -> type -> Prop :=
-| Ty_Var x A :     Gamma x = A -> 
+| Ty_Var x A :     Gamma x = A ->
                    ty Gamma (Var x) A
-| Ty_Lam s A B :   ty (A .: Gamma) s B -> 
+| Ty_Lam s A B :   ty (A .: Gamma) s B ->
                    ty Gamma (Lam s) (Arr A B)
-| Ty_App s t A B : ty Gamma s (Arr A B) -> ty Gamma t A -> 
+| Ty_App s t A B : ty Gamma s (Arr A B) -> ty Gamma t A ->
                    ty Gamma (App s t) B.
 
 (** This lemma is a generalization of the usual weakening lemma and a specialization
     of [ty_subst], which we will prove next.
 *)
-Lemma ty_ren Gamma s A: 
-  ty Gamma s A -> forall Delta xi, 
-  Gamma = xi >>> Delta -> 
+Lemma ty_ren Gamma s A:
+  ty Gamma s A -> forall Delta xi,
+  Gamma = xi >> Delta ->
   ty Delta s.[ren xi] A.
 Proof.
-  induction 1; intros; subst; asimpl; econstructor; eauto. 
+  induction 1; intros; subst; asimpl; econstructor; eauto.
   - eapply IHty. autosubst.
 Qed.
 
-(** By generalizing [ty_ren] to substitutions, we obtain that we preserve typing 
+(** By generalizing [ty_ren] to substitutions, we obtain that we preserve typing
     if we replace variables by terms of the same type.
 *)
-Lemma ty_subst Gamma s A: 
+Lemma ty_subst Gamma s A:
   ty Gamma s A -> forall sigma Delta,
   (forall x, ty Delta (sigma x) (Gamma x)) ->
   ty Delta s.[sigma] A.
 Proof.
-  induction 1; intros; subst; asimpl; eauto using ty. 
+  induction 1; intros; subst; asimpl; eauto using ty.
   - econstructor. eapply IHty.
     intros [|]; asimpl; eauto using ty, ty_ren.
 Qed.
@@ -178,9 +180,9 @@ Qed.
 (** To show type preservation of the simply typed lambda calculus, we use [ty_subst] to
     justify the typing of the result of the beta reduction.
 *)
-Lemma ty_pres Gamma s A : 
-  ty Gamma s A -> forall s', 
-  step s s' -> 
+Lemma ty_pres Gamma s A :
+  ty Gamma s A -> forall s',
+  step s s' ->
   ty Gamma s' A.
 Proof.
   induction 1; intros s' H_step; asimpl;
@@ -188,3 +190,7 @@ Proof.
   - eapply ty_subst; try eassumption.
     intros [|]; simpl; eauto using ty.
 Qed.
+
+(* Local Variables: *)
+(* coq-load-path: (("." "Plain") ("../../theories" "Autosubst")) *)
+(* End: *)

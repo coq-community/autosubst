@@ -540,7 +540,3 @@ Proof.
   - move=> Gamma s A B n tp1 ih1 con tp2 ih2 wf t st.
     apply: ty_sub tp1 ih1 _. exact: ih2.
 Qed.
-
-(* Local Variables: *)
-(* coq-load-path: (("." "Ssr")) *)
-(* End: *)

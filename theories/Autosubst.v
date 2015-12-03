@@ -1,11 +1,7 @@
-Require Export Autosubst_Basics.
-Require Export Autosubst_MMap.
-Require Export Autosubst_Classes.
-Require Export Autosubst_Tactics.
-Require Export Autosubst_Lemmas.
-Require Export Autosubst_Derive.
-Require Export Autosubst_MMapInstances.
-
-(* Local Variables: *)
-(* coq-load-path: (("." "Autosubst")) *)
-(* End: *)
+Require Export Autosubst.Basics.
+Require Export Autosubst.MMap.
+Require Export Autosubst.Classes.
+Require Export Autosubst.Tactics.
+Require Export Autosubst.Lemmas.
+Require Export Autosubst.Derive.
+Require Export Autosubst.MMapInstances.
