@@ -128,7 +128,7 @@ Inductive step : term -> term -> Prop :=
 Lemma substitutivity s1 s2 :
   step s1 s2 -> forall sigma, step s1.[sigma] s2.[sigma].
 Proof.
-  induction 1; constructor; subst; now asimpl.
+  induction 1; constructor; subst; autosubst.
 Restart.
   induction 1; intros; simpl; eauto using step; subst.
   constructor. asimpl. reflexivity.
