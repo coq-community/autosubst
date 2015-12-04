@@ -1,6 +1,16 @@
+*.dvi
+
 *.vo
 *.glob
 *.v.d
 *.coq
+*.aux
+
+#*#
+**/#*#
+.#*
+**/.#*
+*~
+
 doc/*
 .DS_Store
