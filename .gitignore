@@ -4,3 +4,4 @@
 *.coq
 doc/*
 .DS_Store
+*.aux
