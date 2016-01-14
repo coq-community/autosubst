@@ -269,6 +269,7 @@ Ltac fsimpl :=
         change ((f >>> g) >>> h) with (f >>> (g >>> h))
     | [|- context[(+0)]] => change (+0) with (@id var)
     | [|- context[0 + ?m]] => change (0 + m) with m
+    | [|- appcontext[?s S]] => change (s S) with (s (+1))
     | [|- context[S ?n + ?m]] => change (S n + m) with (S (n + m))
     | [|- context[(+S ?n) >>> (?x .: ?xr)]] =>
         change ((+S n) >>> (x .: xr)) with ((+n) >>> xr)
@@ -286,6 +287,7 @@ Ltac fsimplH H :=
         change ((f >>> g) >>> h) with (f >>> (g >>> h)) in H
     | context[(+0)] => change (+0) with (@id var) in H
     | context[0 + ?m] => change (0 + m) with m in H
+    | appcontext[?s S] => change (s S) with (s (+1)) in H
     | context[S ?n + ?m] => change (S n + m) with (S (n + m)) in H
     | context[(+S ?n) >>> (?x .: ?xr)] =>
         change ((+S n) >>> (x .: xr)) with ((+n) >>> xr) in H
