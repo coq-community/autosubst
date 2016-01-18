@@ -6,7 +6,8 @@
     progress and preservation of System F with subtyping.  *)
 
 Require Import Program.Equality List Omega.
-Require Import Autosubst Size Decidable Context.
+Require Import Autosubst.Autosubst.
+Require Import Size Decidable Context.
 
 Inductive type : Type :=
 | TyVar (x : var)

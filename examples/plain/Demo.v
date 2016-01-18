@@ -2,7 +2,7 @@
 
     In this tutorial we will use Autosubst to formalize the simply typed lambda calculus and show substitutivity and type preservation of the reduction relation. *)
 
-Require Import Autosubst.
+Require Import Autosubst.Autosubst.
 
 (** ** Syntax and the substitution operation
 
@@ -188,3 +188,7 @@ Proof.
   - eapply ty_subst; try eassumption.
     intros [|]; simpl; eauto using ty.
 Qed.
+
+(* Local Variables: *)
+(* coq-load-path: (("." "Plain") ("../../theories" "Autosubst")) *)
+(* End: *)

@@ -1,6 +1,6 @@
 (** * Support for Size Induction *)
 Require Import Omega List Program.Equality.
-Require Import Autosubst_Basics.
+Require Import Autosubst.Autosubst_Basics.
 
 Class Size (A : Type) := size : A -> nat.
 
@@ -111,5 +111,5 @@ Instance size_fact_In (A : Type) (size_A : Size A) x l (x_in_l : In x l) :
 Proof. now apply size_In. Qed.
 
 (* Local Variables: *)
-(* coq-load-path: (("." "Plain")) *)
+(* coq-load-path: (("." "Plain") ("../../theories" "Autosubst")) *)
 (* End: *)

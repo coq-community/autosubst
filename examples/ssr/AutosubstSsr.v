@@ -5,7 +5,8 @@ Require Export Autosubst_Classes.
 Require Export Autosubst_Tactics.
 Require Export Autosubst_Lemmas.
 Require Export Autosubst_Derive.
-Require Import Ssreflect.ssreflect Ssreflect.ssrfun Ssreflect.ssrbool Ssreflect.eqtype Ssreflect.ssrnat Ssreflect.seq.
+Require Import mathcomp.ssreflect.ssreflect.
+From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

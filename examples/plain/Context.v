@@ -1,6 +1,6 @@
 (** * Context *)
 Require Import Omega List Program.Equality.
-Require Import Autosubst.
+Require Import Autosubst.Autosubst.
 
 Fixpoint atn {X} l n (x : X) :=
   match l with
