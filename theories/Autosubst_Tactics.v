@@ -296,6 +296,7 @@ Ltac autosubst :=
   | fold_id]].
 
 Ltac asimpl :=
+  autorewrite with autosubst;
   cbn; autosubst_unfold; repeat first
   [ progress (
       cbn; unfold _bind, ren, scomp, hcomp; fsimpl; autosubst_unfold_up;
@@ -310,6 +311,7 @@ Ltac asimpl :=
   fold_ren; fold_comp; fold_up.
 
 Ltac asimplH H :=
+  autorewrite with autosubst in H;
   cbn in H; autosubst_unfoldH H; repeat first
   [ progress (
       cbn in H; unfold _bind, ren, scomp, hcomp in H; fsimpl in H;
