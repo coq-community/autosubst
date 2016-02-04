@@ -279,10 +279,10 @@ Ltac fold_upH H := rewrite ?fold_up, ?fold_up0 in H;
 (** Solve & Simplify goals involving substitutions. *)
 
 Ltac autosubst :=
-  simpl; trivial; autosubst_unfold; solve [repeat first
+  cbn; trivial; autosubst_unfold; solve [repeat first
   [ solve [trivial]
   | progress (
-      simpl; unfold _bind, ren, scomp, hcomp; fsimpl; autosubst_unfold_up;
+      cbn; unfold _bind, ren, scomp, hcomp; fsimpl; autosubst_unfold_up;
       autorewrite with autosubst;
       rewrite ?id_scompX, ?id_scompR, ?subst_idX, ?subst_compX,
               ?subst_compR, ?id_subst, ?subst_id, ?subst_compI,
@@ -296,9 +296,9 @@ Ltac autosubst :=
   | fold_id]].
 
 Ltac asimpl :=
-  simpl; autosubst_unfold; repeat first
+  cbn; autosubst_unfold; repeat first
   [ progress (
-      simpl; unfold _bind, ren, scomp, hcomp; fsimpl; autosubst_unfold_up;
+      cbn; unfold _bind, ren, scomp, hcomp; fsimpl; autosubst_unfold_up;
       autorewrite with autosubst;
       rewrite ?id_scompX, ?id_scompR, ?subst_idX, ?subst_compX,
               ?subst_compR, ?id_subst, ?subst_id, ?subst_compI,
@@ -310,9 +310,9 @@ Ltac asimpl :=
   fold_ren; fold_comp; fold_up.
 
 Ltac asimplH H :=
-  simpl in H; autosubst_unfoldH H; repeat first
+  cbn in H; autosubst_unfoldH H; repeat first
   [ progress (
-      simpl in H; unfold _bind, ren, scomp, hcomp in H; fsimpl in H;
+      cbn in H; unfold _bind, ren, scomp, hcomp in H; fsimpl in H;
       autosubst_unfold_upH H; autorewrite with autosubst in H;
       rewrite ?id_scompX, ?id_scompR, ?subst_idX, ?subst_compX,
               ?subst_compR, ?id_subst, ?subst_id, ?subst_compI,

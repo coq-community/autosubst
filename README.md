@@ -8,7 +8,7 @@ https://www.ps.uni-saarland.de/autosubst
 
 ## Requirements
 
-- Coq 8.4 or Coq 8.5rc1
+- Coq 8.5
 - ssreflect version 1.6 for some examples
 
 
