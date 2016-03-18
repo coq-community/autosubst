@@ -12,13 +12,14 @@
   modulename = modulename.substring(modulename.lastIndexOf('.')+1);
   if (modulename === "toc") {
     modulename = "Table of Contents";
-  } 
+  }
   else if (modulename === "indexpage") {
     modulename = "Index";
   }
   document.title = modulename;
 </script>
 <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+<script type="text/javascript" src="postprocess.js"></script>
 </head>
 
 <body>
@@ -27,9 +28,8 @@
 
 <div id="header">
 <span class="modulename"> <script> document.write(document.title) </script> </span>
-<a href="./indexpage.html"> Index </a> 
+<a href="./indexpage.html"> Index </a>
 <a href="./toc.html"> Table of Contents </a>
 </div>
 
 <div id="main">
-

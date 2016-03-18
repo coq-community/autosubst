@@ -12,7 +12,7 @@ body{
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
 
-    font-size: 15px;
+    /*font-size: 15px;*/
 }
 
 #page, #toc {
@@ -85,8 +85,9 @@ body{
     font-weight: inherit;
 }
 
-#main a:hover{
+#main a:hover, [clickable]:hover{
     background-color: #D6EFFF;
+    cursor: pointer;
 }
 
 a .id {
@@ -207,11 +208,10 @@ div:empty{ display: none;}
  }
 
 .code span {
-    display: inline-block;
     padding: 0;
 }
 
-
+/*
 .code span:before {
     color: #2874AE;
     background-color: #F2FAFF;
@@ -229,7 +229,7 @@ div:empty{ display: none;}
     color: #F2FAFF;
     background-color: #F2FAFF;
     z-index: 2;
-}
+}*/
 
 .code > :first-child, .code > :nth-child(2), .code > :nth-child(3) {
     margin-top: 15px;
@@ -238,11 +238,11 @@ div:empty{ display: none;}
 .code > :last-child, .code > :nth-last-child(2), .code > :nth-last-child(3) {
     margin-bottom: 15px;
 }
-
+/*
 .code br:first-child,
 .code br:last-child {
     display: none;
-}
+}*/
 
 .idref {
     display: inline-block; /* this is important because else the added padding does not resize the parent code-block */
@@ -275,8 +275,17 @@ tr.infrulemiddle hr {
 
 
 .id {
-    display: inline;
+    /*display: inline;*/
     cursor: text;
+}
+
+.id[repl] {
+  font-size:0pt;
+}
+
+.id[repl]:before{
+  font-size:initial;
+  content: attr(repl);
 }
 
 .id[type="constructor"], .id[type="projection"], .id[type="method"],
@@ -308,6 +317,19 @@ tr.infrulemiddle hr {
   color: #808080;
 }
 
+/* folding proofs */
+
+.proof[show="false"] {
+  font-size: 0pt;
+}
+.proof[show="false"]:before {
+  font-size: initial;
+  display:inline;
+  content: "..";
+}
+.proof[show="false"] * {
+  display: none;
+}
 
 /* TOC */
 
@@ -367,7 +389,7 @@ ul.doclist {
 
 #main {
     margin-right: auto;
-    max-width: 54em;
+    max-width: 64em;
 }
 
 a:empty {
@@ -376,7 +398,7 @@ a:empty {
 
 
 /* pretty printing of constants */
-
+/*
 [pprint]{
     font-size: 0pt;
 }
@@ -384,4 +406,4 @@ a:empty {
 [pprint]:after{
     content:attr(pprint);
     font-size: initial;
-}
+}*/
