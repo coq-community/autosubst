@@ -67,7 +67,7 @@ function replNodes() {
 }
 
 function isProofStart(s){
-  return s.startsWith("Proof");
+  return s == "Proof";
 }
 
 function isProofEnd(s){
