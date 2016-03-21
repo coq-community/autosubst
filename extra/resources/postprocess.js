@@ -98,9 +98,32 @@ function foldProofs() {
   }
 }
 
+function moveLinebreaks(){
+  var elms = document.getElementsByClassName("code");
+  for (var i = 0; i < elms.length; i++) {
+    let cblock = elms[i];
+    while(cblock.firstChild && (cblock.firstChild.textContent.trim() == "" || cblock.firstChild.tagName == "br")) {
+      console.log("movingFront");
+      cblock.parentNode.insertBefore(cblock.firstChild, cblock);
+    }
+    while(cblock.lastChild && (cblock.lastChild.textContent.trim() == "" || cblock.lastChild.tagName == "br")) {
+        console.log("movingBack");
+      cblock.parentNode.insertBefore(cblock.lastChild, cblock.nextSibling);
+    }
+  }
+  elms = document.getElementsByClassName("code");
+  for (var i = 0; i < elms.length; i++) {
+    let cblock = elms[i];
+    if(!cblock.firstChild) {
+      cblock.parentNode.removeChild(cblock);
+    }
+  }
+}
+
 function postprocess(){
   replNodes();
   foldProofs();
+  moveLinebreaks();
 }
 document.addEventListener('DOMContentLoaded', postprocess);
 

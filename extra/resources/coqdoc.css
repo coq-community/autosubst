@@ -142,8 +142,8 @@ h, h1, h2, h3, h4, h5 {
     margin-bottom: 48px;
 }
 
-.section {
-    margin-top:2em;
+div + br {
+  display: none;
 }
 
 div:empty{ display: none;}
@@ -186,10 +186,9 @@ div:empty{ display: none;}
 
 .block, .code{
     display: block;
-    margin-top: 15px;
-    margin-bottom: 15px;
-    padding-left: 15px;
-    padding-right: 15px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding: 10px;
 }
 
 .block{
@@ -203,46 +202,8 @@ div:empty{ display: none;}
 .code {
     border-radius: 0.5em;
     background-color: #F2FAFF;/*#fdf6e3;*/
-    margin-bottom: 2em;
     position: relative;
  }
-
-.code span {
-    padding: 0;
-}
-
-/*
-.code span:before {
-    color: #2874AE;
-    background-color: #F2FAFF;
-    content: "\21B3";
-    position: absolute;
-    left: 0px;
-    width: 15px;
-    overflow: hidden;
-    font-size: 80%;
-    text-align: center;
-    z-index: 1;
-}
-
-.code > br + span:before, .code > br + * span:before, .code > span:first-child:before, .code > *:first-child span:before {
-    color: #F2FAFF;
-    background-color: #F2FAFF;
-    z-index: 2;
-}*/
-
-.code > :first-child, .code > :nth-child(2), .code > :nth-child(3) {
-    margin-top: 15px;
-}
-
-.code > :last-child, .code > :nth-last-child(2), .code > :nth-last-child(3) {
-    margin-bottom: 15px;
-}
-/*
-.code br:first-child,
-.code br:last-child {
-    display: none;
-}*/
 
 .idref {
     display: inline-block; /* this is important because else the added padding does not resize the parent code-block */
@@ -275,7 +236,6 @@ tr.infrulemiddle hr {
 
 
 .id {
-    /*display: inline;*/
     cursor: text;
 }
 
@@ -389,21 +349,9 @@ ul.doclist {
 
 #main {
     margin-right: auto;
-    max-width: 64em;
+    max-width: 60em;
 }
 
 a:empty {
     float: right;
 }
-
-
-/* pretty printing of constants */
-/*
-[pprint]{
-    font-size: 0pt;
-}
-
-[pprint]:after{
-    content:attr(pprint);
-    font-size: initial;
-}*/
