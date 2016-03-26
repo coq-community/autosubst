@@ -81,10 +81,8 @@ function foldProofs() {
     if(isProofStart(node.textContent)) {
       var proof = document.createElement("span");
       proof.setAttribute("class", "proof");
-      node.addEventListener("click", function(proof){return function(){
-        proof.setAttribute("show", proof.getAttribute("show") === "true" ? "false" : "true");
-      };}(proof));
-      node.setAttribute("clickable", "true");
+      var trigger = node;
+
       node = node.nextSibling;
       node.parentNode.insertBefore(proof, node);
       while(node && !isProofEnd(node.textContent)) {
@@ -93,7 +91,13 @@ function foldProofs() {
       }
       if(node) proof.appendChild(node);
 
-      proof.setAttribute("show", proof.getElementsByTagName("br").length ? "false" : "true");
+      if (proof.getElementsByTagName("br").length) {
+        node.addEventListener("click", function(proof){return function(){
+          proof.setAttribute("show", proof.getAttribute("show") === "true" ? "false" : "true");
+        };}(proof));
+        node.setAttribute("clickable", "true");
+        proof.setAttribute("show", "false");
+      }
     }
   }
 }
