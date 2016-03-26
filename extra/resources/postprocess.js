@@ -53,12 +53,12 @@ function replace(s){
 }
 
 function replNodes() {
-  let elms = document.getElementsByClassName("id");
+  var elms = document.getElementsByClassName("id");
   for (var i = 0; i < elms.length; i++) {
-    let node = elms[i];
+    var node = elms[i];
     if (["var", "variable", "keyword", "notation"].indexOf(node.getAttribute("title"))>=0){
-      let text = node.textContent;
-      let replText = replace(text);
+      var text = node.textContent;
+      var replText = replace(text);
       if(text != replText) {
         node.setAttribute("repl", replText);
       }
@@ -75,15 +75,15 @@ function isProofEnd(s){
 }
 
 function foldProofs() {
-  let elms = document.getElementsByClassName("id");
+  var elms = document.getElementsByClassName("id");
   for (var i = 0; i < elms.length; i++) {
-    let node = elms[i];
+    var node = elms[i];
     if(isProofStart(node.textContent)) {
-      let proof = document.createElement("span");
+      var proof = document.createElement("span");
       proof.setAttribute("class", "proof");
-      node.addEventListener("click", function(){
+      node.addEventListener("click", function(proof){return function(){
         proof.setAttribute("show", proof.getAttribute("show") === "true" ? "false" : "true");
-      });
+      };}(proof));
       node.setAttribute("clickable", "true");
       node = node.nextSibling;
       node.parentNode.insertBefore(proof, node);
@@ -101,7 +101,7 @@ function foldProofs() {
 function moveLinebreaks(){
   var elms = document.getElementsByClassName("code");
   for (var i = 0; i < elms.length; i++) {
-    let cblock = elms[i];
+    var cblock = elms[i];
     while(cblock.firstChild && (cblock.firstChild.textContent.trim() == "" || cblock.firstChild.tagName == "br")) {
       console.log("movingFront");
       cblock.parentNode.insertBefore(cblock.firstChild, cblock);
@@ -113,7 +113,7 @@ function moveLinebreaks(){
   }
   elms = document.getElementsByClassName("code");
   for (var i = 0; i < elms.length; i++) {
-    let cblock = elms[i];
+    var cblock = elms[i];
     if(!cblock.firstChild) {
       cblock.parentNode.removeChild(cblock);
     }
