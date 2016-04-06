@@ -83,21 +83,20 @@ function foldProofs() {
       proof.setAttribute("class", "proof");
       var trigger = node;
 
-      node = node.nextSibling;
       node.parentNode.insertBefore(proof, node);
       while(node && !isProofEnd(node.textContent)) {
         proof.appendChild(node);
         node = proof.nextSibling;
       }
-      if(node) proof.appendChild(node);
+      proof.appendChild(proof.nextSibling);
+      proof.appendChild(proof.nextSibling);
+      proof.appendChild(proof.nextSibling);
 
-      if (proof.getElementsByTagName("br").length) {
-        node.addEventListener("click", function(proof){return function(){
-          proof.setAttribute("show", proof.getAttribute("show") === "true" ? "false" : "true");
-        };}(proof));
-        node.setAttribute("clickable", "true");
-        proof.setAttribute("show", "false");
-      }
+      proof.addEventListener("click", function(proof){return function(){
+        proof.setAttribute("show", proof.getAttribute("show") === "true" ? "false" : "true");
+      };}(proof));
+      proof.setAttribute("show", "false");
+
     }
   }
 }

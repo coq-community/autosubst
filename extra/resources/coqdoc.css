@@ -239,15 +239,6 @@ tr.infrulemiddle hr {
     cursor: text;
 }
 
-.id[repl] {
-  font-size:0pt;
-}
-
-.id[repl]:before{
-  font-size:initial;
-  content: attr(repl);
-}
-
 .id[type="constructor"], .id[type="projection"], .id[type="method"],
 .id[title="constructor"], .id[title="projection"], .id[title="method"]  {
     color: #A30E16;
@@ -275,20 +266,6 @@ tr.infrulemiddle hr {
 
 .comment {
   color: #808080;
-}
-
-/* folding proofs */
-
-.proof[show="false"] {
-  font-size: 0pt;
-}
-.proof[show="false"]:before {
-  font-size: initial;
-  display:inline;
-  content: "..";
-}
-.proof[show="false"] * {
-  display: none;
 }
 
 /* TOC */
