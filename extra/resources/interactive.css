@@ -1,11 +1,17 @@
 /* replace unicode */
 
-.id[repl] {
-  font-size:0pt;
+.id[repl] .hidden {
+  max-width: 1px;
+  height: 1px;
+  font-size: 0.1px;
+  display:inline-block;
+  overflow: hidden;
 }
 
+.id[repl]{
+  position: relative;
+}
 .id[repl]:before{
-  font-size:initial;
   content: attr(repl);
 }
 
@@ -19,28 +25,16 @@
 }
 
 .proof[show="false"] {
-  /*font-size: 0pt;*/
   height: 1.2em;
   overflow:hidden;
-  display:block;
+  display:inline-block;
   opacity:0;
 }
 
-.proof[show="false"] + br {
+.proof[show="false"] + br + br {
   display:none;
 }
 
 .proof[show="false"]:hover {
   opacity:0.7;
 }
-
-.proof[show="false"]:after {
-  font-size: initial;
-  display:inline;
-  float:right;
-  content: "..";
-}
-/*
-.proof[show="false"] * {
-  display: none;
-}*/

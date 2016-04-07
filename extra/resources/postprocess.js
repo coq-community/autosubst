@@ -2,9 +2,10 @@
 
 repl = {
   "->": "→",
+  "<-": "←",
+  "<->": "↔",
   "forall": "∀",
   "exists": "∃",
-  "<->": "↔",
   "Gamma": "Γ",
   "Delta": "Δ",
   "alpha": "α",
@@ -24,7 +25,11 @@ repl = {
   "<=": "≤",
   ">=": "≥",
   ">>": "»",
-  "|-": "⊢"
+  "|-": "⊢",
+  "el": "∈",
+  "nel": "∉",
+  "<<=": "⊆",
+  "<<": "⊆"
 };
 
 var subscr = {
@@ -61,6 +66,13 @@ function replNodes() {
       var replText = replace(text);
       if(text != replText) {
         node.setAttribute("repl", replText);
+        node.setAttribute("title", text);
+        var hidden = document.createElement("span");
+        hidden.setAttribute("class", "hidden");
+        while (node.firstChild) {
+          hidden.appendChild(node.firstChild);
+        }
+        node.appendChild(hidden);
       }
     }
   }
@@ -88,7 +100,6 @@ function foldProofs() {
         proof.appendChild(node);
         node = proof.nextSibling;
       }
-      proof.appendChild(proof.nextSibling);
       proof.appendChild(proof.nextSibling);
       proof.appendChild(proof.nextSibling);
 
