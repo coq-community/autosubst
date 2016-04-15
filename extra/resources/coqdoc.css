@@ -1,73 +1,30 @@
 @import url(https://fonts.googleapis.com/css?family=Droid+Sans+Mono|Open+Sans:400,600);
 
-/* hack to disable font boosting on Android */
-html * {
-    max-height: 1000000px;
-}
-
 body{
     margin: 0;
     padding: 0;
-    -moz-text-size-adjust: none;
-    -ms-text-size-adjust: 100%;
-    -webkit-text-size-adjust: 100%;
-
-    /*font-size: 15px;*/
 }
 
 #page, #toc {
     font-family:  "Open Sans", sans-serif;
-    line-height: 1.4;
     color: #444;
     background-color: white;
     display:block;
     padding: 0;
     margin:0;
-
-    position: relative;
     min-height: 100%;
-}
-
-#header {
-    display: block;
-    padding: 0;
-    margin: 0;
-    vertical-align: middle;
-    background-color: #153969;
-    color: white;
-    font-weight: bold;
-}
-
-#header h1 {
-    padding: 0;
-    margin: 0;
-}
-
-#header > * {
-    color: white;
-    text-decoration: none;
-    margin-left: 15px;
-    margin-right: 15px;
-}
-
-#header > a {
-    float: right;
-    color : #D6EFFF;
-}
-
-#header > a:hover {
-    color: white;
 }
 
 #main {
     display: block;
     padding: 16px;
+    padding-top: 0;
     padding-bottom: 5em;
     margin-left: auto;
     margin-right: auto;
 }
 
-#main a {
+#main a > .id, #main a {
     text-decoration: none;
     border-radius: 3px;
     padding-left: 3px;
@@ -81,50 +38,19 @@ body{
 }
 
 #main .code a, #main .inlinecode a, #toc a {
-    color: inherit;
     font-weight: inherit;
 }
 
-#main a:hover, [clickable]:hover{
-    background-color: #D6EFFF;
+a[href]:hover, [clickable]:hover{
+    background-color: rgba(0,0,0,0.1);
     cursor: pointer;
-}
-
-a .id {
-    cursor: inherit;
-}
-
-a > .id[type="var"], a > .id[type="variable"],
-a > .id[title="var"], a > .id[title="variable"] {
-   cursor: text;
-   padding: inherit;
-   margin: inherit;
-   margin-top: -5px;
-   margin-bottom: -5px;
-   padding-top: 5px;
-   padding-bottom: 5px;
-}
-
-.id[type="var"]:hover, .id[type="variable"]:hover,
-.id[title="var"]:hover, .id[title="variable"]:hover {
-    background-color: white;
-}
-
-.code .id[type="var"]:hover, .code .id[type="variable"]:hover,
-.code .id[title="var"]:hover, .code .id[title="variable"]:hover {
-    background-color: #F2FAFF;
-}
-
-
-#main a.idref:active, #main a.modref:active{
-    background-color: white;
 }
 
 .libtitle {display: none}
 
 h, h1, h2, h3, h4, h5 {
     line-height: 1;
-    color: #2874AE;
+    color: black;
     text-rendering: optimizeLegibility;
     font-weight: normal;
     letter-spacing: 0.1em;
@@ -173,18 +99,20 @@ div:empty{ display: none;}
     text-align: justify;
 }
 
-
-
 .inlinecode, .code, #main pre {
-    font-family: "Droid Sans Mono", "DejaVu Sans Mono", monospace;
+    color: black;
+    font-family: /*"Droid Sans Mono", "DejaVu Sans Mono",*/ monospace;
 }
 
-.inlinecode{
-    display: inline;
-    color: #666666;
+.code > br:first-child {
+  display: none;
 }
 
-.block, .code{
+.doc + .code{
+  margin-top:0.5em;
+}
+
+.block{
     display: block;
     margin-top: 5px;
     margin-bottom: 5px;
@@ -198,17 +126,6 @@ div:empty{ display: none;}
 .block img{
     margin: 15px;
 }
-
-.code {
-    border-radius: 0.5em;
-    background-color: #F2FAFF;/*#fdf6e3;*/
-    position: relative;
- }
-
-.idref {
-    display: inline-block; /* this is important because else the added padding does not resize the parent code-block */
-}
-
 
 table.infrule {
   border: 0px;
@@ -232,11 +149,6 @@ tr.infrulemiddle hr {
     color: rgb(60%,60%,60%);
     padding-left: 1em;
     padding-bottom: 0.1em
-}
-
-
-.id {
-    cursor: text;
 }
 
 .id[type="constructor"], .id[type="projection"], .id[type="method"],

@@ -1,21 +1,37 @@
 /* replace unicode */
 
 .id[repl] .hidden {
-  max-width: 1px;
-  height: 1px;
-  font-size: 0.1px;
-  display:inline-block;
-  overflow: hidden;
+  font-size: 0;
 }
 
-.id[repl]{
-  position: relative;
-}
 .id[repl]:before{
   content: attr(repl);
 }
 
 /* folding proofs */
+
+@keyframes show-proof {
+    0% {
+      max-height: 1.2em;
+      opacity: 1;
+    }
+    99% {
+      max-height: 1000em;
+    }
+    100%{
+    }
+}
+
+@keyframes hide-proof {
+    from {
+      visibility: visible;
+      max-height: 10em;
+      opacity: 1;
+    }
+    to {
+      max-height: 1.2em;
+    }
+}
 
 .proof {
   cursor: pointer;
@@ -24,17 +40,135 @@
   cursor: pointer;
 }
 
+.proof {
+  overflow: hidden;
+  position: relative;
+  transition: opacity 1s;
+  display: inline-block;
+}
+
 .proof[show="false"] {
-  height: 1.2em;
-  overflow:hidden;
-  display:inline-block;
-  opacity:0;
+  max-height: 1.2em;
+  visibility: hidden;
+  opacity: 0;
+}
+
+.proof[show="false"][animate] {
+  animation-name: hide-proof;
+  animation-duration: 0.25s;
+}
+
+.proof[show=true] {
+  animation-name: show-proof;
+  animation-duration: 10s;
+}
+
+.proof[show="false"]:before {
+  position: absolute;
+  visibility: visible;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  content: "M";
+}
+.proof[show="false"]:hover:before {
+  content: "";
 }
 
 .proof[show="false"] + br + br {
-  display:none;
+  display: none;
 }
 
 .proof[show="false"]:hover {
-  opacity:0.7;
+  visibility: visible;
+  opacity: 0.5;
+}
+
+#toggle-proofs[proof-status="no-proofs"] {
+  display: none;
+}
+
+#toggle-proofs[proof-status="some-hidden"]:before {
+  content: "Show Proofs";
+}
+
+#toggle-proofs[proof-status="all-shown"]:before {
+  content: "Hide Proofs";
+}
+
+/* header */
+#header {
+  position:fixed;
+  top:0px;
+  width:100%;
+  z-index: 100;
+  padding: 0.25em;
+}
+
+.button {
+  cursor: pointer;
+}
+
+#header {
+    display: block;
+    padding: 0;
+    margin: 0;
+    vertical-align: middle;
+    background-color: rgb(21,57,105);
+    color: white;
+    font-weight: bold;
+}
+
+#header > * {
+    color: white;
+    text-decoration: none;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+#header > a {
+    float: right;
+}
+
+#header > a, #header .button {
+    color : #D6EFFF;
+}
+
+#header > a:hover, #header .button:hover {
+    color: white;
+}
+
+#header h1 { padding: 0;
+             margin: 0;}
+
+/* hyperlinks */
+
+@keyframes highlight {
+    50%{
+      background-color: black;
+    }
+}
+
+:target * {
+  animation-name: highlight;
+  animation-duration: 1s;
+}
+
+/* fix placement given a fixed header */
+#main  a[name] {
+  position: relative;
+  padding-top: 4em;
+}
+/*#main  a[name]:before {
+  content: "M";
+  font-size: 0;
+}
+#main a[name] * {
+  position: relative;
+  top: 4em;
+}*/
+
+#page {
+  margin-top: 1.2em;
 }
