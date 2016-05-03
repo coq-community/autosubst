@@ -56,11 +56,11 @@ Section SubstInstance.
   Context  {term : sort -> Type} {VarConstr_term : VarConstr term} {Rename_term : Rename term}
            {Subst_term : Subst term} {SubstLemmas_term : SubstLemmas term}.
 
-  Context {o : sort}.
+  Context {o1 o2 : sort}.
 
-Fixpoint atnd (Gamma : list (term o)) : var -> term o -> Prop :=
+  Fixpoint atn (o1 : sort) (Gamma : list (term o2)) : var -> term o2 -> Prop :=
                  match Gamma with
-                 | cons s Gamma' => (eq s.[ren o (+1)]) .: rcomp (atnd Gamma') (subst1 (ren o (+1)) >> eq)
+                 | cons s Gamma' => (eq s.[ren o1 (+1)]) .: rcomp (atn o1 Gamma') (subst1 (ren o1 (+1)) >> eq)
                  | nil => fun _ _ => False
                  end.
 
