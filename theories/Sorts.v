@@ -21,7 +21,7 @@ Proof. intros. f_ext. now intros[]. Defined.
 
 Inductive sort2 := Sort1_2 | Sort2_2.
 
-Instance decide_eq_sort2 (o1 o2 : sort2) : Dec (o1 = o2). gen_Dec_eq. Defined.
+Instance decide_eq_sort2 (o1 o2 : sort2) : Dec (o1 = o2). derive. Defined.
 
 Instance Vector_sort2 : Vector sort2 :=
   {
@@ -35,5 +35,3 @@ Instance Vector_sort2 : Vector sort2 :=
   }.
 Proof. intros. f_ext. now destruct 0. Defined.
 
-
-Inductive sort3 := Sort1_3 | Sort2_3 | Sort3_3.

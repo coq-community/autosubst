@@ -8,11 +8,11 @@ Unset Strict Implicit.
 (** Untyped Lambda Terms and Parallel Substitutions *)
 
 Inductive term :=
-| Var (x : var)
+| VarC (x : var)
 | App (s t : term)
 | Lam (s : {bind term}).
 
-Instance Ids_term : Ids term. derive. Defined.
+Instance VarConstr_term : VarConstr term. derive. Defined.
 Instance Rename_term : Rename term. derive. Defined.
 Instance Subst_term : Subst term. derive. Defined.
 Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
@@ -21,7 +21,7 @@ Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
 
 Fixpoint lift_at (d k : nat) (s : term) : term :=
   match s with
-    | Var i   => if i < d then Var i else Var (k + i)
+    | VarC i   => if i < d then VarC i else VarC (k + i)
     | App s t => App (lift_at d k s) (lift_at d k t)
     | Lam s   => Lam (lift_at d.+1 k s)
   end.
@@ -29,7 +29,7 @@ Notation lift := (lift_at 0).
 
 Fixpoint sbst_at (d : nat) (t s : term) : term :=
   match s with
-    | Var x => if x < d then Var x else if x == d then lift d t else Var x.-1
+    | VarC x => if x < d then VarC x else if x == d then lift d t else VarC x.-1
     | App s1 s2 => App (sbst_at d t s1) (sbst_at d t s2)
     | Lam s => Lam (sbst_at d.+1 t s)
   end.
@@ -55,7 +55,7 @@ Qed.
 
 Lemma upnP n sigma x :
   upn n sigma x =
-    if x < n then Var x else (sigma (x - n)).[ren (+n)].
+    if x < n then VarC x else (sigma (x - n)).[ren (+n)].
 Proof.
   case: ifPn.
   - elim: x n =>[|x ih][|n]//=/ih e. rewrite iterate_S. asimpl. by rewrite e.
@@ -70,7 +70,7 @@ Proof.
   - rewrite lift_sound. rewrite upnP. case: ifPn => //=. rewrite -leqNgt => le.
     case: ifP => [/eqP->|/eqP/eqP]. by rewrite subnn. rewrite neq_ltn =>/orP[|{le}]//.
     move=> /leq_trans/(_ le). by rewrite ltnn. rewrite -subn_gt0 => p.
-    move: (p) => /ltn_predK<-/=. rewrite/ids/Ids_term. f_equal.
+    move: (p) => /ltn_predK<-/=. rewrite/ids/VarConstr_term. f_equal.
     case: x p => //= n p. rewrite subSKn plusE subnKC //. by rewrite subn_gt0 in p.
   - by rewrite ih1 ih2.
   - by rewrite ih.

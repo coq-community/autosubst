@@ -172,11 +172,11 @@ The type \lst${bind term}$ is definitionally equal to \lst$term$ and just serves
 We also need to tag the constructor that builds variables. We do so by specifying the type of its single argument as \lst$var$, which is definitionally equal to \lst$nat$.
 
 Using this definition of term, we can generate the substitution operation \lst@subst@ by declaring an instance of the \lst$Subst$ type class using our custom tactic \lst$derive$. This is comparable to the usage of deriving-clauses in Haskell.
-We also need to define instances for the two auxiliary type classes \lst$Ids$ and \lst$Rename$, which define the functions \lst$ids$ and \lst$rename$. 
+We also need to define instances for the two auxiliary type classes \lst$VarConstr$ and \lst$Rename$, which define the functions \lst$ids$ and \lst$rename$. 
 The function \lst$rename$ is only needed for technical reasons\footnote{The function rename applies a renaming \lst@var -> var@ to a term. Since it is possible to give a direct structurally recursive definition of \lst@rename@, we use \lst@rename@ to give a structurally recursive definition of \lst@subst@. By simplifying \lst@subst@ and afterwards unfolding \lst@up@, it is possible to stumble upon an occurrence of \lst@rename@. We try to prevent this by eagerly replacing \lst@rename xi@ with \lst@subst (ren xi)@ in our automation and simplification tactics.} and is mostly hidden from the interface.
 The function \lst$ids$ is the identity substitution, which is identical to the variable constructor.
 \begin{lstlisting}
-Instance Ids_term : Ids term. derive. Defined.
+Instance VarConstr_term : VarConstr term. derive. Defined.
 Instance Rename_term : Rename term. derive. Defined.
 Instance Subst_term : Subst term. derive. Defined.
 \end{lstlisting}
@@ -370,7 +370,7 @@ This is done with instance declarations for the corresponding typeclass instance
   \begin{tabular}{l l l l}
   Typeclass                & Function             & Notation         & Type                                   \\\hline\noalign{\vspace{0.5em}}
                                                                      
-  \lst$Ids term$           & \lst$ids x$          &                  & \lst$var -> term$                      \\
+  \lst$VarConstr term$           & \lst$ids x$          &                  & \lst$var -> term$                      \\
   \lst$Rename term$        & \lst$rename xi s$    &                  & \stackr{\lst$(var -> var) ->$}{\lst$term -> term$}     \\
   \lst$Subst term$         & \lst$subst sigma s$  & \lst$s.[sigma]$  & \stackr{\lst$(var -> term) ->$}{\lst$term -> term$}    \\
   \lst$HSubst term1 term2$ & \lst$hsubst sigma s$ & \lst$s.|[sigma]$ & \stackr{\lst$(var -> term1) ->$}{\lst$term2 -> term2$} 
@@ -399,7 +399,7 @@ For example, the syntax of System F needs the declarations shown in \autoref{fig
 \begin{figure}
   \centering
 \begin{lstlisting}
-Instance Ids_type : Ids type. derive. Defined.
+Instance VarConstr_type : VarConstr type. derive. Defined.
 Instance Rename_type : Rename type. derive. Defined.
 Instance Subst_type : Subst type. derive. Defined.
 
@@ -407,7 +407,7 @@ Instance SubstLemmas_type : SubstLemmas type. derive. Qed.
 
 Instance HSubst_term : HSubst type term. derive. Defined.
 
-Instance Ids_term : Ids term. derive. Defined.
+Instance VarConstr_term : VarConstr term. derive. Defined.
 Instance Rename_term : Rename term. derive. Defined.
 Instance Subst_term : Subst term. derive. Defined.
 
@@ -426,7 +426,7 @@ We summarize the dependencies between the type class instances in \autoref{tab:d
   \begin{tabular}{l l}
     Typeclass & Required Prior Declarations \\\hline\noalign{\vspace{0.5em}}
 
-    \lst$Ids term$ & none \\
+    \lst$VarConstr term$ & none \\
 
     \lst$Rename term$ & none \\
 
@@ -462,7 +462,7 @@ We summarize the dependencies between the type class instances in \autoref{tab:d
     
     \lst$SubstLemmas term$ & \vtop{
       \hbox{\strut
-        \lst$Ids term$,
+        \lst$VarConstr term$,
       }
       \hbox{\strut
         \lst$Subst term$,
@@ -607,7 +607,7 @@ fix inst (sigma : var -> term) (s : term) {struct s} : term :=
   match s as t return (@annot Type term term t) with
   | Var x => sigma x
   | App s1 s2 => App (@subst term inst sigma s1) (@subst term inst sigma s2)
-  | Lam s0 => Lam (@subst term inst (@up term Ids_term Rename_term sigma) s0)
+  | Lam s0 => Lam (@subst term inst (@up term VarConstr_term Rename_term sigma) s0)
   end
 \end{lstlisting}
 

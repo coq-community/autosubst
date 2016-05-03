@@ -3,7 +3,7 @@ From Autosubst Require Import Basics MMap Classes Tactics Decidable.
 
 (* Ltac app_var := match goal with [ |- var] => assumption end. *)
 
-(* Ltac derive_Ids := intro;  solve *)
+(* Ltac derive_VarConstr := intro;  solve *)
 (*   [ constructor 1; [app_var] | constructor 2; [app_var] *)
 (*   | constructor 3; [app_var] | constructor 4; [app_var] *)
 (*   | constructor 5; [app_var] | constructor 6; [app_var] *)
@@ -14,7 +14,7 @@ From Autosubst Require Import Basics MMap Classes Tactics Decidable.
 (*   | constructor 15; [app_var] | constructor 16; [app_var] *)
 (*   | constructor 17; [app_var] | constructor 18; [app_var] *)
 (*   | constructor 19; [app_var] | constructor 20; [app_var]]. *)
-(* Hint Extern 0 (Ids _) => derive_Ids : derive. *)
+(* Hint Extern 0 (VarConstr _) => derive_VarConstr : derive. *)
 
 
 Ltac derive_Rename :=
@@ -22,7 +22,7 @@ Ltac derive_Rename :=
     hnf; fix inst 3; change _ with (Rename term) in inst;
     intros xi o s; change (annot (term o) s); destruct s;
     match goal with
-      | [ x : var |- annot _ (?Var _ _)] => exact (Var o (xi o x))
+      | [ x : var |- annot _ (?VarC _ _)] => exact (VarC o (xi o x))
       | [ |- annot _ ?t ] =>
         let rec map s :=
             (match s with
@@ -67,7 +67,7 @@ Ltac derive_Subst :=
     hnf; fix inst 3; change _ with (Subst term) in inst;
     intros sigma o s; change (annot (term o) s); destruct s;
     match goal with
-      | [ x : var |- annot _ (?Var _ _)] =>
+      | [ x : var |- annot _ (?VarC _ _)] =>
         exact (getV sigma o x)
       | [ |- annot _ ?t ] =>
         let rec map s :=
@@ -77,9 +77,9 @@ Ltac derive_Subst :=
                  let T  := typeof s2 in
                  let s2 :=
                    match T with
-                     | term _ => constr:(s2.[sigma])
-                     | _bind ?o _ 1 => constr:(s2.[up o sigma])
-                     | _bind ?o _ ?n => constr:(s2.[iterate (up o) n sigma])
+                     | term _ => constr:(s2.|[sigma])
+                     | _bind ?o _ 1 => constr:(s2.|[up o sigma])
+                     | _bind ?o _ ?n => constr:(s2.|[iterate (up o) n sigma])
                    end in
                  constr:(s1 s2)
                | _ => s
@@ -114,7 +114,7 @@ Section SubstLemmasInternal.
 
   Context {sort : Set} {decide_eq_sort : forall a b : sort, Dec (a = b)} {Vector_sort : Vector sort}.
   Context {term : sort -> Type}
-          {Ids_term : Ids term} {Rename_term : Rename term} {Subst_term : Subst term}
+          {VarConstr_term : VarConstr term} {Rename_term : Rename term} {Subst_term : Subst term}
           {SubstLemmas_term : SubstLemmas term}.
 
 Lemma up_comp_subst_ren_n_internal :
@@ -147,7 +147,7 @@ End SubstLemmasInternal.
 Ltac derive_SubstLemmas :=
   lazymatch goal with
     [ |-
-@SubstLemmas ?sort ?Vector_sort ?term ?Ids_term ?Rename_term ?Subst_term] =>
+@SubstLemmas ?sort ?Vector_sort ?term ?VarConstr_term ?Rename_term ?Subst_term] =>
 
     (* rename subst *)
 

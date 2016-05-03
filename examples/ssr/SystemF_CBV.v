@@ -27,7 +27,7 @@ Open Scope bind_scope.
 
 
 
-(* Goal forall s t,  Arr s t = Var Ty 3 -> s = t. intros. inversion H. *)
+(* Goal forall s t,  Arr s t = VarC Ty 3 -> s = t. intros. inversion H. *)
 
 Class Vector (sort : Type) :=
   {
@@ -68,8 +68,8 @@ Section SubstOps.
 
   Context {term : sort -> Type}.
 
-  Class Ids := ids : (forall o, var -> term o).
-  Global Arguments ids {Ids} o x.
+  Class VarConstr := ids : (forall o, var -> term o).
+  Global Arguments ids {VarConstr} o x.
   Class Rename := rename : (sort -> var -> var) -> forall o : sort, term o -> term o.
   Global Arguments rename {Rename} xi [o] !s/.
   Class Subst := subst : (substitution term) -> forall {o : sort}, term o -> term o.
@@ -77,7 +77,7 @@ Section SubstOps.
 
 End SubstOps.
 
-Arguments Ids {sort} term.
+Arguments VarConstr {sort} term.
 Arguments Rename {sort} term.
 Arguments Subst {sort} {Vector_sort} term.
 (* Notation subst := (_subst (Subst:=$(exact _ )$)). *)
@@ -121,7 +121,7 @@ Section Classes.
 
   Context (term : sort -> Type).
   
-  Context {Ids_term : Ids term} {Rename_term : Rename term} {Subst_term : Subst term}.
+  Context {VarConstr_term : VarConstr term} {Rename_term : Rename term} {Subst_term : Subst term}.
   
   Definition upren (o : sort) (xi : sort -> var -> var) : sort -> var -> var :=
     upd o (0 .: (xi o >>> S)) xi.
@@ -166,9 +166,9 @@ Qed.
     }.
   
 End Classes.
-Arguments up {sort dec_eq_sort Vector_sort term Ids_term Rename_term} o sigma : simpl never.
-Arguments ren {sort Vector_sort term Ids_term} xi : simpl never.
-Arguments SubstLemmas {sort Vector_sort} term {Ids_term Rename_term Subst_term}.
+Arguments up {sort dec_eq_sort Vector_sort term VarConstr_term Rename_term} o sigma : simpl never.
+Arguments ren {sort Vector_sort term VarConstr_term} xi : simpl never.
+Arguments SubstLemmas {sort Vector_sort} term {VarConstr_term Rename_term Subst_term}.
 
 Arguments idr {sort} o/ x. 
 
@@ -193,7 +193,7 @@ Instance Vector_sort : Vector sort :=
 Proof. intros. f_ext. now destruct 0. Defined.
 
 Inductive term : sort -> Type :=
-| Var  (o : sort) (x : var) : term o
+| VarC  (o : sort) (x : var) : term o
 | Arr    (A B : term Ty) : term Ty
 | All    (A : {bind Ty in (term Ty)}) : term Ty
 | Abs    (A : term Ty) (s : {bind Ter in term Ter}) : term Ter
@@ -201,14 +201,14 @@ Inductive term : sort -> Type :=
 | TAbs   (s : {bind Ty in term Ter}) : term Ter
 | TApp   (s : term Ter) (A : term Ty) : term Ter.
 
-Instance Ids_term : Ids term := Var.
+Instance VarConstr_term : VarConstr term := VarC.
 
 Ltac derive_Rename :=
   match goal with [ |- Rename ?term ] =>
     hnf; fix inst 3; change _ with (Rename term) in inst;
     intros xi o s; change (annot (term o) s); destruct s;
     match goal with
-      | [ x : var |- annot _ (?Var _ _)] => exact (Var o (xi o x))
+      | [ x : var |- annot _ (?VarC _ _)] => exact (VarC o (xi o x))
       | [ |- annot _ ?t ] =>
         let rec map s :=
             (match s with
@@ -256,7 +256,7 @@ Ltac derive_Subst :=
     hnf; fix inst 3; change _ with (Subst term) in inst;
     intros sigma o s; change (annot (term o) s); destruct s;
     match goal with
-      | [ x : var |- annot _ (?Var _ _)] => 
+      | [ x : var |- annot _ (?VarC _ _)] => 
         exact (getV sigma o x)
       | [ |- annot _ ?t ] =>
         let rec map s :=
@@ -309,7 +309,7 @@ Qed.
 Ltac derive_SubstLemmas :=
   lazymatch goal with
     [ |- 
-@SubstLemmas ?sort ?Vector_sort ?term ?Ids_term ?Rename_term ?Subst_term] =>
+@SubstLemmas ?sort ?Vector_sort ?term ?VarConstr_term ?Rename_term ?Subst_term] =>
 
     (* rename subst *)
 
@@ -414,7 +414,7 @@ Section LemmasForSubst.
           {dec_eq_sort : forall a b : sort, Dec (a = b)}
           {Vector_sort : Vector sort}
           {term : sort -> Type}
-          {Ids_term : Ids term} {Rename_term : Rename term} {Subst_term : Subst term}
+          {VarConstr_term : VarConstr term} {Rename_term : Rename term} {Subst_term : Subst term}
           {SubstLemmas_term : SubstLemmas term}.
 
 Implicit Types (sigma tau theta :  substitution term) (xi : sort -> var -> var).

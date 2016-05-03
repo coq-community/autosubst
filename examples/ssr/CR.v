@@ -8,11 +8,11 @@ Unset Printing Implicit Defensive.
 (** **** Untyped Lambda Calculus *)
 
 Inductive term : Type :=
-| Var (x : var)
+| VarC (x : var)
 | App (s t : term)
 | Lam (s : {bind term}).
 
-Instance Ids_term : Ids term. derive. Defined.
+Instance VarConstr_term : VarConstr term. derive. Defined.
 Instance Rename_term : Rename term. derive. Defined.
 Instance Subst_term : Subst term. derive. Defined.
 Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
@@ -64,7 +64,7 @@ Inductive pstep : term -> term -> Prop :=
 | pstep_beta (s1 s2 t1 t2 : term) :
     pstep s1 s2 -> pstep t1 t2 -> pstep (App (Lam s1) t1) s2.[t2/]
 | pstep_var (x : var) :
-    pstep (Var x) (Var x)
+    pstep (VarC x) (VarC x)
 | pstep_app (s1 s2 t1 t2 : term) :
     pstep s1 s2 -> pstep t1 t2 -> pstep (App s1 t1) (App s2 t2)
 | pstep_lam (s1 s2 : term) :

@@ -5,3 +5,5 @@ Require Export Autosubst.Tactics.
 Require Export Autosubst.Lemmas.
 Require Export Autosubst.Derive.
 Require Export Autosubst.MMapInstances.
+Require Export Autosubst.Decidable.
+Require Export Autosubst.Sorts.

@@ -11,13 +11,13 @@ Unset Printing Implicit Defensive.
 (** **** Curry-style type theory with a hierarchy of predicative universes. *)
 
 Inductive term : Type :=
-| Var (x : var)
+| VarC (x : var)
 | Sort (n : nat)
 | App  (s t : term)
 | Lam  (s : {bind term})
 | Prod (s : term) (t : {bind term}).
 
-Instance Ids_term : Ids term. derive. Defined.
+Instance VarConstr_term : VarConstr term. derive. Defined.
 Instance Rename_term : Rename term. derive. Defined.
 Instance Subst_term : Subst term. derive. Defined.
 Instance substLemmas_term : SubstLemmas term. derive. Qed.
@@ -128,7 +128,7 @@ Inductive pstep : term -> term -> Prop :=
 | pstep_beta s1 s2 t1 t2 u :
     u = s2.[t2/] ->
     pstep s1 s2 -> pstep t1 t2 -> pstep (App (Lam s1) t1) u
-| pstep_var x : pstep (Var x) (Var x)
+| pstep_var x : pstep (VarC x) (VarC x)
 | pstep_sort n : pstep (Sort n) (Sort n)
 | pstep_app s1 s2 t1 t2 :
     pstep s1 s2 -> pstep t1 t2 -> pstep (App s1 t1) (App s2 t2)
@@ -160,7 +160,7 @@ Lemma pstep_red s t : pstep s t -> red s t.
 Proof.
   elim=> {s t} //=; eauto with red_congr.
   move=> s1 s2 t1 t2 u -> {u} _ A _ B. eapply starES. by econstructor.
-  apply: (star_trans (s2.[t1.:Var])). exact: red_subst.
+  apply: (star_trans (s2.[t1.:VarC])). exact: red_subst.
   by apply: red_compat => -[|].
 Qed.
 
@@ -320,7 +320,7 @@ Reserved Notation "[ Gamma |- s :- A ]".
 Inductive has_type : list term -> term -> term -> Prop :=
 | ty_var Gamma x :
     x < size Gamma ->
-    [ Gamma |- Var x :- Gamma`_x ]
+    [ Gamma |- VarC x :- Gamma`_x ]
 | ty_sort Gamma n  :
     [ Gamma |- Sort n :- Sort n.+1 ]
 | ty_app Gamma A B s t :
@@ -352,7 +352,7 @@ Inductive context_ok : list term -> Prop :=
 where "[ Gamma |- ]" := (context_ok Gamma).
 
 Lemma ty_evar Gamma (A : term) (x : var) :
-  A = Gamma`_x -> x < size Gamma -> [ Gamma |- Var x :- A ].
+  A = Gamma`_x -> x < size Gamma -> [ Gamma |- VarC x :- A ].
 Proof. move->. exact: ty_var. Qed.
 
 Lemma ty_eapp Gamma (A B C s t : term) :

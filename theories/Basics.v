@@ -15,11 +15,27 @@ Definition annot {A B} (a : A) (b : B) : A := a.
 (** A variant of type of that is stable under import of ssreflect. *)
 Ltac typeof s := let T := type of s in T.
 
+(** temporarily intros everything, then apply a tactic, then revert what has been introduced *)
+Ltac under_intros T_hyp T_goal :=
+  let m := fresh "marker" in
+  pose (m := tt);
+    repeat (intro; lazymatch goal with [H: _ |- _] => T_hyp H end);
+    T_goal;
+    repeat ( (try (first[revert m | fail 2]; fail)); lazymatch goal with [H : _ |- _] => revert H end);
+    intros _.
+
 (** Apply a tactic T in all assumptions. *)
 Tactic Notation "in_all" tactic(T) :=
-  repeat match goal with
-  | [H : _ |- _] => first[T H; try revert H | revert H]
-  end; intros.
+  let m := fresh "marker" in
+  pose (m := tt); revert m;
+  repeat lazymatch goal with
+    | [H : _ |- _] => first[T H; try revert H | revert H]
+    end;
+  repeat first[revert m; intros _; fail 1 | intro]; clear m.
+
+(* revert all assumptions that appear in the current goal *)
+Ltac revert_dep :=
+  repeat match goal with [H : _ |- _ ] => try first[clear H; fail 2 | revert H] end.
 
 (** Shorthand for functional extensionality. *)
 Ltac f_ext := apply functional_extensionality_dep.
@@ -274,42 +290,48 @@ Proof. apply (scons_eta id). Qed.
 
 (** Automation for the above *)
 
-Ltac fsimpl :=
-  repeat match goal with
-    | [|- context[id >> ?f]] => change (id >> f) with f
-    | [|- context[?f >> id]] => change (f >> id) with f
-    | [|- context[(?f >> ?g) >> ?h]] =>
-        change ((f >> g) >> h) with (f >> (g >> h))
-    | [|- context[(+0)]] => change (+0) with (@id var)
-    | [|- context[0 + ?m]] => change (0 + m) with m
-    | [|- context[S ?n + ?m]] => change (S n + m) with (S (n + m))
-    | [|- context[(+S ?n) >> (?x .: ?xr)]] =>
-        change ((+S n) >> (x .: xr)) with ((+n) >> xr)
-    | [|- appcontext[?x .: (+ S ?n) >> ?f]] =>
-        change x with (f n); rewrite (@scons_eta _ f n)
-    | _ => progress (rewrite ?scons_comp, ?plusnS, ?plusnO, ?plusA,
-                             ?lift_comp, ?lift_compR, ?lift_eta)
-  end.
+Ltac fsimplG :=
+  repeat first[
+           match goal with
+           | [|- context[id >> ?f]] => change (id >> f) with f
+           | [|- context[?f >> id]] => change (f >> id) with f
+           | [|- context[(?f >> ?g) >> ?h]] =>
+             change ((f >> g) >> h) with (f >> (g >> h))
+           | [|- context[(+0)]] => change (+0) with (@id var)
+           | [|- context[0 + ?m]] => change (0 + m) with m
+           | [|- context[S ?n + ?m]] => change (S n + m) with (S (n + m))
+           | [|- context[(+S ?n) >> (?x .: ?xr)]] =>
+             change ((+S n) >> (x .: xr)) with ((+n) >> xr)
+           | [|- appcontext[?x .: (+ S ?n) >> ?f]] =>
+             change x with (f n); rewrite (@scons_eta _ f n)
+           | _ => progress (rewrite ?scons_comp, ?plusnS, ?plusnO, ?plusA,
+                           ?lift_comp, ?lift_compR, ?lift_eta)
+           end
+         | simpl].
 
 Ltac fsimplH H :=
-  repeat match typeof H with
-    | context[id >> ?f] => change (id >> f) with f in H
-    | context[?f >> id] => change (f >> id) with f in H
-    | context[(?f >> ?g) >> ?h] =>
+  repeat first[
+      match typeof H with
+      | context[id >> ?f] => change (id >> f) with f in H
+      | context[?f >> id] => change (f >> id) with f in H
+      | context[(?f >> ?g) >> ?h] =>
         change ((f >> g) >> h) with (f >> (g >> h)) in H
-    | context[(+0)] => change (+0) with (@id var) in H
-    | context[0 + ?m] => change (0 + m) with m in H
-    | context[S ?n + ?m] => change (S n + m) with (S (n + m)) in H
-    | context[(+S ?n) >> (?x .: ?xr)] =>
+      | context[(+0)] => change (+0) with (@id var) in H
+      | context[0 + ?m] => change (0 + m) with m in H
+      | context[S ?n + ?m] => change (S n + m) with (S (n + m)) in H
+      | context[(+S ?n) >> (?x .: ?xr)] =>
         change ((+S n) >> (x .: xr)) with ((+n) >> xr) in H
-    | appcontext[?x .: (+ S ?n) >> ?f] =>
+      | appcontext[?x .: (+ S ?n) >> ?f] =>
         change x with (f n) in H; rewrite (@scons_eta _ f n) in H
-    | _ => progress (rewrite ?scons_comp, ?plusnS, ?plusnO, ?plusA,
+      | _ => progress (rewrite ?scons_comp, ?plusnS, ?plusnO, ?plusA,
                              ?lift_comp, ?lift_compR, ?lift_eta in H)
-  end.
+      end
+    | simpl in H].
+
+Ltac fsimpl := under_intros fsimplH fsimplG.
 
 Tactic Notation "fsimpl" "in" ident(H) := fsimplH H.
-Tactic Notation "fsimpl" "in" "*" := (in_all fsimplH); fsimpl.
+Tactic Notation "fsimpl" "in" "*" := in_all fsimplH; fsimpl.
 
 (** Misc Lemmas *)
 

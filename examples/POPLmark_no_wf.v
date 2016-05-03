@@ -60,9 +60,9 @@ Inductive sub (Delta : list type) : type -> type -> Prop :=
 | SA_Top A :
     SUB Delta |- A <: Top
 | SA_Refl x :
-    SUB Delta |- Var x <: Var x
+    SUB Delta |- VarC x <: VarC x
 | SA_Trans x A B :
-    atnd Delta x A -> SUB Delta |- A <: B -> SUB Delta |- Var x <: B
+    atnd Delta x A -> SUB Delta |- A <: B -> SUB Delta |- VarC x <: B
 | SA_Arrow A1 A2 B1 B2 :
     SUB Delta |- B1 <: A1 -> SUB Delta |- A2 <: B2 ->
     SUB Delta |- Arr A1 A2 <: Arr B1 B2
@@ -171,9 +171,9 @@ Reserved Notation "'TY' Delta ; Gamma |- A : B"
 Inductive ty (Delta Gamma : list type) : term -> type -> Prop :=
 | T_Var A x :
     atn Gamma x A ->
-    TY Delta;Gamma |- Var x : A
+    TY Delta;Gamma |- VarC x : A
 | T_Abs A B s:
-    TY Delta;A::Gamma |- s : B   -> 
+    TY Delta;A::Gamma |- s : B   ->
     TY Delta;Gamma |- Abs A s : Arr A B
 | T_App A B s t:
     TY Delta;Gamma |- s : Arr A B   ->   TY Delta;Gamma |- t : A   ->
@@ -183,7 +183,7 @@ Inductive ty (Delta Gamma : list type) : term -> type -> Prop :=
     TY Delta;Gamma |- TAbs A s : All A B
 | T_TApp A B A' s B' :
     TY Delta;Gamma |- s : All A B ->
-    SUB Delta |- A' <: A -> B' = B.[A' .: Var] ->
+    SUB Delta |- A' <: A -> B' = B.[A' .: VarC] ->
     TY Delta;Gamma |- TApp s A' : B'
 | T_Sub A B s :
     TY Delta;Gamma |- s : A   ->   SUB Delta |- A <: B   ->
@@ -193,8 +193,8 @@ where "'TY' Delta ; Gamma |- s : A" := (ty Delta Gamma s A).
 Reserved Notation "'EV' s => t"
   (at level 68, s at level 80, no associativity, format "'EV'   s  =>  t").
 Inductive eval : term -> term -> Prop :=
-| E_AppAbs A s t : EV App (Abs A s) t => s.[t .: Var]
-| E_TAppTAbs A s B : EV TApp (TAbs A s) B => s.|[B .: Var]
+| E_AppAbs A s t : EV App (Abs A s) t => s.[t .: VarC]
+| E_TAppTAbs A s B : EV TApp (TAbs A s) B => s.|[B .: VarC]
 | E_AppFun s s' t :
      EV s => s' ->
      EV App s t => App s' t
@@ -332,8 +332,8 @@ Corollary ty_subst_term Delta Gamma1 Gamma2 s A sigma:
   TY Delta;Gamma2 |- s.[sigma] : A.
 Proof.
   intros.
-  cutrewrite(s = s.|[Var]);[idtac|now autosubst].
-  cutrewrite (A = A.[Var]);[idtac|now autosubst].
+  cutrewrite(s = s.|[VarC]);[idtac|now autosubst].
+  cutrewrite (A = A.[VarC]);[idtac|now autosubst].
   eapply ty_subst; eauto; intros; autosubst; eauto using sub, sub_refl.
 Qed.
 
@@ -402,7 +402,7 @@ Proof.
     + pose proof (ty_inv_abs H H0) as [? [B' [? ?]]].
       eapply ty_subst_term; eauto using ty.
       intros [|] ? ?; simpl in *; subst; eauto using ty.
-  - cutrewrite (s.|[B .: Var] = s.|[B .: Var].[Var]);[idtac|now autosubst].
+  - cutrewrite (s.|[B .: VarC] = s.|[B .: VarC].[VarC]);[idtac|now autosubst].
     inv H_ty; [idtac | pose proof (ty_inv_tabs H0 H1) as [? [B' [? ?]]]];
     (eapply ty_subst; eauto using ty; [
         now intros ? ? H_atnd; inv H_atnd; autosubst; eauto using sub, sub_refl

@@ -22,7 +22,7 @@ Inductive term :=
 
 (** **** Substitution Lemmas *)
 
-Instance Ids_type : Ids type. derive. Defined.
+Instance VarConstr_type : VarConstr type. derive. Defined.
 Instance Rename_type : Rename type. derive. Defined.
 Instance Subst_type : Subst type. derive. Defined.
 
@@ -30,7 +30,7 @@ Instance SubstLemmas_type : SubstLemmas type. derive. Qed.
 
 Instance HSubst_term : HSubst type term. derive. Defined.
 
-Instance Ids_term : Ids term. derive. Defined.
+Instance VarConstr_term : VarConstr term. derive. Defined.
 Instance Rename_term : Rename term. derive. Defined.
 Instance Subst_term : Subst term. derive. Defined.
 

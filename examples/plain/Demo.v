@@ -28,10 +28,10 @@ Inductive term {o : sort1} :=
 (** Now we can automatically derive the substitution operations and lemmas.
     This is done by generating instances for the following typeclasses:
 
-    - [Ids term] provides the generic identity substitution [ids] for term.
+    - [VarConstr term] provides the generic identity substitution [ids] for term.
       It is always equivalent to the variable constructor of term, i.e.
       to the unique constructor having a single argument of type [var].
-      In this example, [ids] is convertible to [Var].
+      In this example, [ids] is convertible to [VarC].
     - [Rename term] provides the renaming operation on term.
     - [Subst term] provides the substitution operation on term and needs a
       [Rename] instance in the presence of binders.
@@ -39,7 +39,7 @@ Inductive term {o : sort1} :=
 
     Each instance is inferred automatically by using the [derive] tactic. *)
 
-Instance Ids_term : Ids (@term) := @Var.
+Instance VarConstr_term : VarConstr (@term) := @Var.
 Instance Rename_term : Rename (@term). derive. Show Proof. Defined.
 Instance Subst_term : Subst (@term). derive. Show Proof. Defined.
 Instance SubstLemmas_term : SubstLemmas (@term). Admitted.
@@ -56,24 +56,25 @@ Instance SubstLemmas_term : SubstLemmas (@term). Admitted.
 Let us test the simplification behavior of [s.[sigma]].
 *)
 
-Eval simpl in fun sigma x => (Var x).[sigma].
-(* simplifies to [sigma x]*)
+(* Eval simpl in fun sigma x => (VarC x).[sigma]. *)
+(* (* simplifies to [sigma x]*) *)
 
-Eval simpl in fun sigma s t => (App s t).[sigma].
-(* simplifies to [App s.[sigma] t.[sigma]]*)
+(* Eval simpl in fun sigma s t => (App s t).[sigma]. *)
+(* (* simplifies to [App s.|[sigma] t.|[sigma]]*) *)
 
-Eval simpl in fun sigma s => (Lam s).[sigma].
-(* simplifies to [Lam s.[up sigma]]*)
+(* Eval simpl in fun sigma s => (Lam s).[sigma]. *)
+(* (* simplifies to [Lam s.[up tt sigma]]*) *)
 
 
 (** The operator [up] adapts a substitution when going below a binder.
     It does not simplify with [simpl], but we can use our tactic [asimpl]
     to perform the simplification.
 
-*)
+ *)
+
 Goal forall sigma,
   (Lam (App (Var 0) (Var 3))).[sigma] = Lam (App (Var 0) (Var 2).[sigma].[ren (+1)]).
-intros. asimpl. reflexivity. Qed.
+    intros. asimpl. reflexivity. Qed.
 
 (** ** Reduction and substitutivity
 
@@ -107,7 +108,7 @@ intros. asimpl. reflexivity. Qed.
 
 Inductive step : term -> term -> Prop :=
 | Step_beta (s1 s2 t : term) :
-    s1.[t .: ids _] = s2 -> step (App (Lam s1) t) s2
+    s1.[t .: ids] = s2 -> step (App (Lam s1) t) s2
 | Step_appL (s1 s2 t : term) :
     step s1 s2 -> step (App s1 t) (App s2 t)
 | Step_appR (s t1 t2 : term) :
@@ -128,9 +129,9 @@ Inductive step : term -> term -> Prop :=
 Lemma substitutivity s1 s2 :
   step s1 s2 -> forall sigma, step s1.[sigma] s2.[sigma].
 Proof.
-  induction 1; constructor; subst; autosubst.
-Restart.
-  induction 1; intros; simpl; eauto using step; subst.
+  induction 1; constructor; asimpl; subst; autosubst.
+  Restart.
+  induction 1; intros; asimpl; eauto using step; subst.
   constructor. asimpl. reflexivity.
 Qed.
 
@@ -164,6 +165,8 @@ Proof.
   - eapply IHty. autosubst.
 Qed.
 
+(* Arguments subst1 {sort dec_eq_sort Vector_sort term VarConstr_term Subst_term o1} o sigma !s/. *)
+
 (** By generalizing [ty_ren] to substitutions, we obtain that we preserve typing
     if we replace variables by terms of the same type.
 *)
@@ -174,7 +177,7 @@ Lemma ty_subst Gamma s A:
 Proof.
   induction 1; intros; subst; asimpl; eauto using ty.
   - econstructor. eapply IHty.
-    intros [|]; asimpl; eauto using ty, ty_ren.
+    intros [|] **; asimpl; eauto using ty, ty_ren.
 Qed.
 
 (** To show type preservation of the simply typed lambda calculus, we use [ty_subst] to

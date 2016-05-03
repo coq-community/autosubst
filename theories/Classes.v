@@ -39,8 +39,8 @@ Section SubstOps.
 
   Definition upd (o : sort) {T : sort -> Type} (x : T o) (f : forall o, T o) : forall o, T o.
     refine (fun o' => match decide (o = o') with
-                       | left p => _
-                       | right _ => f o' end).
+                       | inl p => _
+                       | inr _ => f o' end).
     subst. exact x.
   Defined.
   Global Arguments upd !o {T} x f !o0/.
@@ -62,26 +62,33 @@ Section SubstOps.
 
   Context (term : sort -> Type).
 
-  Class Ids := ids : (forall o, var -> term o).
+  Class VarConstr := Var : (forall o, var -> term o).
   Class Rename := rename : (sort -> var -> var) -> forall o : sort, term o -> term o.
   Class Subst := subst : (substitution term) -> forall {o : sort}, term o -> term o.
 
 End SubstOps.
-Arguments ids {sort term Ids} o x.
+Arguments Var {sort term VarConstr} o x.
 Arguments rename {sort term Rename} xi [o] !s/.
 Arguments subst {sort Vector_sort term Subst} sigma [o] !s/.
 
+Notation ids := (Var _).
+
+Notation "^ sigma" := (subst sigma (o:= _)) (at level 56, right associativity) : subst_scope.
 
 Notation "v |>> f" := (funcompV v f)
   (at level 56, right associativity) : subst_scope.
 
-Notation "s .[ sigma ]" := (subst sigma s)
-  (at level 2, sigma at level 200, left associativity,
-   format "s .[ sigma ]" ) : subst_scope.
+Notation "s .|[ sigma1 , sigma2 , .. , sigman ]" := (subst (pair .. (pair sigma1 sigma2) .. sigman) s)
+  (at level 2, left associativity,
+   format "s .|[ sigma1 , sigma2 , .. , sigman ]" ) : subst_scope.
 
-Notation "s ..[ sigma ]" := (mmap (subst sigma) s)
+Notation "s .|[ sigma ]" := (subst sigma s)
   (at level 2, sigma at level 200, left associativity,
-   format "s ..[ sigma ]" ) : subst_scope.
+   format "s .|[ sigma ]" ) : subst_scope.
+
+Notation "s ..|[ sigma ]" := (mmap (subst sigma) s)
+  (at level 2, sigma at level 200, left associativity,
+   format "s ..|[ sigma ]" ) : subst_scope.
 
 
 
@@ -92,23 +99,24 @@ Section Classes.
           {dec_eq_sort : forall a b : sort, Dec (a = b)}.
   Context {Vector_sort : Vector sort}.
 
-  Context (term : sort -> Type).
+  Context {term : sort -> Type}.
 
-  Context {Ids_term : Ids term} {Rename_term : Rename term} {Subst_term : Subst term}.
+  Context {VarConstr_term : VarConstr term} {Rename_term : Rename term} {Subst_term : Subst term}.
 
 
   Definition idr : sort -> var -> var := fun _ => id.
+  Definition idsV := newV Var.
 
   (** Coercion from renamings to substitutions. *)
 
-  Definition renV (xi : sort -> var -> var) := newV (xi >>2 ids).
+  Definition renV (xi : sort -> var -> var) := newV (xi >>2 Var).
 
 
   (** Modify a substitution when going below a binder. *)
 
 
   Definition up (o : sort) (sigma : substitution term) : substitution term :=
-    updV o (ids o 0 .: getV sigma o >> rename (upd o (+1) idr) (o := _)) (sigma |>> rename (upd o (+1) idr)).
+    updV o (Var o 0 .: getV sigma o >> rename (upd o (+1) idr) (o := _)) (sigma |>> rename (upd o (+1) idr)).
   Global Arguments up o sigma : simpl never.
 
   Notation upn := (iterate up).
@@ -126,17 +134,19 @@ Section Classes.
       rename_subst (xi : sort -> var -> var) (o : sort) (s : term o) :
         rename xi s = subst (renV xi) s;
       subst_id (o : sort) (s : term o) :
-        s.[newV ids] = s;
+        s.|[newV Var] = s;
       id_subst (sigma : substitution term) (o : sort) (x : var) :
-        (ids o x).[sigma] = getV sigma o x;
+        (Var o x).|[sigma] = getV sigma o x;
       subst_comp (sigma tau : substitution term) (o : sort) (s : term o) :
-        s.[sigma].[tau] = s.[sigma |>> subst tau]
+        s.|[sigma].|[tau] = s.|[sigma |>> subst tau]
     }.
 
+ Definition subst1 {o1 o2 : sort} (sigma : var -> term o2) (s : term o1) := s.|[updV o2 sigma idsV].
+
 End Classes.
-Arguments up {sort dec_eq_sort Vector_sort term Ids_term Rename_term} o sigma : simpl never.
-Arguments renV {sort Vector_sort term Ids_term} xi : simpl never.
-Arguments SubstLemmas {sort Vector_sort} term {Ids_term Rename_term Subst_term}.
+Arguments up {sort dec_eq_sort Vector_sort term VarConstr_term Rename_term} o sigma : simpl never.
+Arguments renV {sort Vector_sort term VarConstr_term} xi : simpl never.
+Arguments SubstLemmas {sort Vector_sort} term {VarConstr_term Rename_term Subst_term}.
 
 Arguments idr {sort} o/ x.
 
@@ -144,4 +154,9 @@ Arguments newV : simpl never.
 Arguments getV {sort Vector T} v o.
 Arguments funcompV {sort Vector_sort term} !v f.
 
-Notation ren xi := (xi >> ids _).
+Arguments subst1 : simpl never.
+
+Notation ren o xi := (xi >> Var o).
+Notation "s .[ sigma ]" := (subst1 sigma s)
+  (at level 2, sigma at level 200, left associativity,
+   format "s .[ sigma ]" ) : subst_scope.

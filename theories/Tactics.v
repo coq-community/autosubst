@@ -1,5 +1,6 @@
 (** The main automation tactics. *)
-Require Import Autosubst.Basics Autosubst.Decidable Autosubst.MMap Autosubst.Classes.
+Require Import Program.Tactics.
+From Autosubst Require Import Basics Decidable MMap Classes Morphisms.
 
 (** Derived substitution lemmas. *)
 
@@ -9,7 +10,7 @@ Section LemmasForSubst.
           {dec_eq_sort : forall a b : sort, Dec (a = b)}
           {Vector_sort : Vector sort}
           {term : sort -> Type}
-          {Ids_term : Ids term} {Rename_term : Rename term} {Subst_term : Subst term}
+          {VarConstr_term : VarConstr term} {Rename_term : Rename term} {Subst_term : Subst term}
           {SubstLemmas_term : SubstLemmas term}.
 
 Implicit Types (sigma tau theta :  substitution term) (xi : sort -> var -> var).
@@ -23,36 +24,38 @@ Proof. repeat(f_ext; intros). now apply rename_subst. Qed.
 
 Lemma upX o (sigma : substitution term) :
   up o sigma =
-  updV o (ids o 0 .: getV sigma o >> subst (renV (upd o (+1) idr)) (o:=o))
+  updV o (Var o 0 .: getV sigma o >> subst (renV (upd o (+1) idr)) (o:=o))
      (sigma |>> subst (renV (upd o (+1) idr))).
 Proof. unfold up. now rewrite rename_substX. Qed.
 
-Lemma id_scompX sigma o : ids o >> subst sigma (o := o) = getV sigma o.
+Lemma id_scompX sigma o : ids >> subst sigma (o := o) = getV sigma o.
 Proof. f_ext. now eapply id_subst. Qed.
 
 Lemma id_scompR {A} sigma o (f : term o -> A) :
-  ids o >> (subst sigma (o := o) >> f) = getV sigma o >> f.
+  ids >> (subst sigma (o := o) >> f) = getV sigma o >> f.
 Proof. now rewrite <- compA, id_scompX. Qed.
 
-Lemma subst_idX : subst (newV ids) = fun o (s : term o) => s.
+Lemma subst_idX : subst (newV Var) = fun o (s : term o) => s.
 Proof. f_ext. intro. f_ext. now eapply subst_id. Qed.
 
 Lemma subst_compI sigma tau o (s : term o) :
-  s.[sigma].[tau] = s.[sigma |>> subst tau].
+  s.|[sigma].|[tau] = s.|[sigma |>> subst tau].
 Proof. now eapply subst_comp. Qed.
 
-Lemma subst_compX sigma tau o :
-  subst sigma (o := o) >> subst tau (o := o) = subst (sigma |>> subst tau) (o := o).
+Lemma subst_compX sigma tau o:
+  (^sigma) >>^ tau = subst (sigma |>> subst tau) (o := o).
 Proof. f_ext. intro. now eapply subst_comp. Qed.
 
-(* Lemma subst_compR {A} sigma tau (f : _ -> A) : *)
-(*   subst sigma >> (subst tau >> f) = subst (sigma >> subst tau) >> f. *)
-(* Proof. now rewrite <- subst_compX. Qed. *)
+Lemma subst_compR {A} sigma tau o (f : _ -> A) :
+  (^ sigma) >> subst tau (o := o) >> f = (^ sigma |>> subst tau) >> f.
+Proof. now rewrite <- subst_compX. Qed.
 
 Lemma fold_ren_cons (x : var) (xi : var -> var) o :
-  ids o x .: (xi >> ids o) = (x .: xi) >> ids o.
+  Var o x .: (xi >> ids) = (x .: xi) >> ids.
 Proof. now rewrite scons_comp. Qed.
 
+Lemma fold_comp_ren o (xi zeta : var -> var) : xi >> ren o zeta = ren o (xi >> zeta).
+Proof. now rewrite compA. Qed.
 (* unfold upn *)
 
 (* Lemma upnSX n sigma : *)
@@ -102,8 +105,6 @@ Proof. now rewrite scons_comp. Qed.
 
 End LemmasForSubst.
 
-Ltac autosubst_fold := rewrite <- ?compA, -> ?fold_ren_cons.
-
 Ltac autosubst_typeclass_normalize :=
   mmap_typeclass_normalize;
   repeat match goal with
@@ -145,29 +146,47 @@ Ltac autosubst_unfold_upH H :=
 
 Ltac autosubst_unfold :=
   autosubst_typeclass_normalize; autosubst_unfold_up;
-  rewrite ?(@rename_substX _ _ _ _ _ _); unfold renV, upren, newV.
+  rewrite ?(@rename_substX _ _ _ _ _ _);
+  repeat (unfold subst1, renV, upren, updV, newV, funcompV; simpl);
+  repeat match goal with [|- context[_ (?VarC ?o ?x)]] => progress change (VarC o x) with (Var o x) end.
 
-Ltac autosubst_unfoldH H :=
-  autosubst_typeclass_normalizeH H; autosubst_unfold_upH H;
-  rewrite ?(@rename_substX _ _ _ _ _ _) in H; unfold renV, upren, newV in H.
+(* Ltac autosubst_unfoldH H := *)
+(*   autosubst_typeclass_normalizeH H; autosubst_unfold_upH H; *)
+(*   rewrite ?(@rename_substX _ _ _ _ _ _) in H; unfold renV, upren, newV in H. *)
+
+Ltac autosubst_fold :=
+  rewrite ?fold_comp_ren, ?fold_ren_cons;
+  repeat match goal
+         with [|-context[ ?t ]] =>
+              match t with ?s.|[?sigma] =>
+                           let rec findarg sigma :=
+                               first[ replace t with s.[sigma] by reflexivity
+                                    | match sigma with (?sigma1, ?sigma2) =>
+                                                   first[replace t with s.[sigma1] by reflexivity
+                                                        | findarg sigma2]
+                                      end]
+                           in
+                                                       findarg sigma
+         end end;
+  repeat match goal with |- context[@Var _ _ ?VarC ?o ?x] => change (@Var _ _ VarC o x) with (VarC o x); try unfold VarC end.
 
 Ltac etaReduce := repeat lazymatch goal with [|- context[fun x => ?f x]] => change (fun x => f x) with f end.
 
 Ltac etaReduceH H := repeat lazymatch goal with [H : context[fun x => ?f x] |- _ ] => change (fun x => f x) with f in H end.
 
-Ltac asimpl := fsimpl; try
+Ltac asimplG := autosubst_unfold; fsimplG; try
   let subst_idX_inst := fresh "E" in
   lazymatch goal with [|- appcontext[@subst _ _ _ ?Subst_term]] =>
 pose proof (@subst_idX _ _ _ _ _ Subst_term _) as subst_idX_inst;
   unfold newV in subst_idX_inst;
   simpl in subst_idX_inst
-  end;
-  simpl; autosubst_unfold; repeat first
+  end; repeat first
   [ progress (
-      simpl; unfold _bind, renV, funcompV; fsimpl; autosubst_unfold_up;
+      autosubst_unfold; fsimpl; autosubst_unfold_up;
       autorewrite with autosubst;
       rewrite ?id_scompX, ?id_scompR, ?subst_compX,
-      (* ?subst_compR, *) ?id_subst, ?subst_id, ?subst_compI, ?subst_idX_inst
+      ?subst_compR, ?id_subst, ?subst_id, ?subst_compI, ?subst_idX_inst,
+      ?rapp_eq1, ?rapp_eq2, ?rapp_rapp, ?eq_rapp, ?rapp_ex, ?ex_True
       (* repeat match goal with [|- appcontext[@subst ?sort ?vec ?term ?Subst ?sigma]] => *)
       (*                        replace (@subst sort vec term Subst sigma ) with (fun o : sort =>  @id (term o)) by eauto using subst_idX end *)
     )
@@ -176,22 +195,30 @@ pose proof (@subst_idX _ _ _ _ _ Subst_term _) as subst_idX_inst;
   clear subst_idX_inst
 .
 
+(* Ltac asimplH H := *)
+(*   simpl in H; autosubst_unfoldH H; repeat first *)
+(*   [ progress ( *)
+(*         simpl in H; *)
+(*         unfold _bind, renV, funcompV in H; fsimplH H; *)
+(*         autosubst_unfold_upH H; *)
+(*         autorewrite with autosubst in H; *)
+(*         rewrite ?id_scompX, ?id_scompR, ?subst_compX, *)
+(*         (* ?subst_compR, *) ?id_subst, ?subst_id in H; *)
+(*         repeat setoid_rewrite subst_compI in H; *)
+(*         let E := constr:(@subst_idX _ _ _ _ _ _) in rewrite ?(E _ _) in H (* I have no idea why this works ... well, it does no longer in Coq 8.5*) *)
+(*       ) *)
+(*   | fold_idH H](* ; *) *)
+(* (* fold_ren; fold_comp; fold_up *). *)
+
+
+
+Ltac asimpl := under_intros idtac (*TODO: asimplH *) asimplG.
+(*Tactic Notation "asimpl" "in" ident(H) := asimplH H. *)
+Tactic Notation "asimpl" "in" "*" := asimplG;
+  let m := fresh "marker" in
+  pose (m := tt); intros;
+  repeat(revert_last; asimplG);
+  repeat first[revert m; intros _; fail 1 | intro].
+
+
 Ltac autosubst := now asimpl.
-
-Ltac asimplH H :=
-  simpl in H; autosubst_unfoldH H; repeat first
-  [ progress (
-        simpl in H;
-        unfold _bind, renV, funcompV in H; fsimplH H;
-        autosubst_unfold_upH H;
-        autorewrite with autosubst in H;
-        rewrite ?id_scompX, ?id_scompR, ?subst_compX,
-        (* ?subst_compR, *) ?id_subst, ?subst_id in H;
-        repeat setoid_rewrite subst_compI in H;
-        let E := constr:(@subst_idX _ _ _ _ _ _) in rewrite ?(E _ _) in H (* I have no idea why this works ... well, it does no longer in Coq 8.5*)
-      )
-  | fold_idH H](* ; *)
-(* fold_ren; fold_comp; fold_up *).
-
-Tactic Notation "asimpl" "in" ident(H) := asimplH H.
-Tactic Notation "asimpl" "in" "*" := (in_all asimplH); asimpl.

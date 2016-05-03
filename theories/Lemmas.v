@@ -3,7 +3,7 @@ Require Import Autosubst.Basics Autosubst.MMap Autosubst.Classes Autosubst.Tacti
 
 Section SubstLemmas.
 
-Context {sort : Set} {Vector_sort : Vector sort} {term : sort -> Type} {Ids_term : Ids term}
+Context {sort : Set} {Vector_sort : Vector sort} {term : sort -> Type} {VarConstr_term : VarConstr term}
   {Rename_term : Rename term} {Subst_term : Subst term} {SubstLemmas_term : SubstLemmas term}.
 
 (* Lemma up_id o : up o ids = ids o. *)
