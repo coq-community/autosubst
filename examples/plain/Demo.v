@@ -1,5 +1,6 @@
 (** * Autosubst Tutorial
 
+#<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>#
     In this tutorial we will use Autosubst to formalize the simply typed lambda calculus and show substitutivity and type preservation of the reduction relation. *)
 
 Require Import Autosubst.Autosubst.
