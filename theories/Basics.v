@@ -19,7 +19,7 @@ Ltac typeof s := let T := type of s in T.
 Ltac under_intros T_hyp T_goal :=
   let m := fresh "marker" in
   pose (m := tt);
-    repeat (intro; lazymatch goal with [H: _ |- _] => T_hyp H end);
+    repeat (match goal with [|- forall _, _ ] => intros ? end; lazymatch goal with [H: _ |- _] => T_hyp H end);
     T_goal;
     repeat ( (try (first[revert m | fail 2]; fail)); lazymatch goal with [H : _ |- _] => revert H end);
     intros _.

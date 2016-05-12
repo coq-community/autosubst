@@ -74,6 +74,7 @@ Arguments subst {sort Vector_sort term Subst} sigma [o] !s/.
 Notation ids := (Var _).
 
 Notation "^ sigma" := (subst sigma (o:= _)) (at level 56, right associativity) : subst_scope.
+(* JK: is it possible/desirable to format this without a white space? *)
 
 Notation "v |>> f" := (funcompV v f)
   (at level 56, right associativity) : subst_scope.
