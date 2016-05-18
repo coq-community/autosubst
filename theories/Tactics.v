@@ -144,7 +144,7 @@ Ltac autosubst_unfold_upH H :=
   (* | context[upn 0 ?sigma] => change (upn 0 sigma) with sigma *)
   (* end *).
 
-Ltac autosubst_unfold :=
+Ltac autosubst_unfoldG :=
   autosubst_typeclass_normalize; autosubst_unfold_up;
   rewrite ?(@rename_substX _ _ _ _ _ _);
   repeat (unfold subst1, renV, upren, updV, newV, funcompV; simpl);
@@ -154,7 +154,7 @@ Ltac autosubst_unfold :=
 (*   autosubst_typeclass_normalizeH H; autosubst_unfold_upH H; *)
 (*   rewrite ?(@rename_substX _ _ _ _ _ _) in H; unfold renV, upren, newV in H. *)
 
-Ltac autosubst_fold :=
+Ltac autosubst_foldG :=
   rewrite ?fold_comp_ren, ?fold_ren_cons;
   repeat match goal
          with [|-context[ ?t ]] =>
@@ -168,21 +168,24 @@ Ltac autosubst_fold :=
                            in
                                                        findarg sigma
          end end;
-  repeat match goal with |- context[@Var _ _ ?VarC ?o ?x] => change (@Var _ _ VarC o x) with (VarC o x); try unfold VarC end.
+  repeat match goal with |- context[@Var _ _ ?VarC ?o ?x] => change (@Var _ _ VarC o x) with (VarC o x); try unfold VarC end;
+  repeat match goal with |- context[?f >> DOM ?R] => change (f >> DOM R) with (DOM f >> R) end.
 
 Ltac etaReduce := repeat lazymatch goal with [|- context[fun x => ?f x]] => change (fun x => f x) with f end.
 
 Ltac etaReduceH H := repeat lazymatch goal with [H : context[fun x => ?f x] |- _ ] => change (fun x => f x) with f in H end.
 
-Ltac asimplG := autosubst_unfold; fsimplG; try
+(* What is all that folding and unfolding about ? *)
+Ltac autosubst_normalizeG :=
+  fsimplG; try
   let subst_idX_inst := fresh "E" in
-  lazymatch goal with [|- appcontext[@subst _ _ _ ?Subst_term]] =>
-pose proof (@subst_idX _ _ _ _ _ Subst_term _) as subst_idX_inst;
-  unfold newV in subst_idX_inst;
-  simpl in subst_idX_inst
+    lazymatch goal with [|- appcontext[@subst _ _ _ ?Subst_term]] =>
+    pose proof (@subst_idX _ _ _ _ _ Subst_term _) as subst_idX_inst;
+    unfold newV in subst_idX_inst;
+    simpl in subst_idX_inst
   end; repeat first
   [ progress (
-      autosubst_unfold; fsimpl; autosubst_unfold_up;
+      autosubst_unfoldG; fsimpl; autosubst_unfold_up; (* ??? why *)
       autorewrite with autosubst;
       rewrite ?id_scompX, ?id_scompR, ?subst_compX,
       ?subst_compR, ?id_subst, ?subst_id, ?subst_compI, ?subst_idX_inst,
@@ -190,10 +193,10 @@ pose proof (@subst_idX _ _ _ _ _ Subst_term _) as subst_idX_inst;
       (* repeat match goal with [|- appcontext[@subst ?sort ?vec ?term ?Subst ?sigma]] => *)
       (*                        replace (@subst sort vec term Subst sigma ) with (fun o : sort =>  @id (term o)) by eauto using subst_idX end *)
     )
-  | fold_id];
-  autosubst_fold;
-  clear subst_idX_inst
+  | fold_id]; clear subst_idX_inst
 .
+
+Ltac asimplG := autosubst_unfoldG; autosubst_normalizeG; autosubst_foldG.
 
 (* Ltac asimplH H := *)
 (*   simpl in H; autosubst_unfoldH H; repeat first *)

@@ -97,7 +97,7 @@ Proof.
   - econstructor; eauto.
   - constructor; eauto.
   - constructor; eauto using wf_mono, rsubset_subset.
-    apply IHsub2. apply rsubset_rcomp; eauto using rsubset_refl. apply rsubset_scons. firstorder.
+    apply IHsub2; eauto using rsubset_rcomp, rsubset_scons, rsubset_refl, subset_refl.
 Qed.
 
 Lemma sub_weak (Delta Delta' : var -> type -> Prop) A1 A2 xi :
@@ -115,7 +115,8 @@ Proof.
   - eapply SA_All; eauto.
     + asimpl. apply wf_weak. eapply wf_mono; eauto.
       apply rsubset_subset in HD. revert HD. now asimpl.
-    + asimpl. apply IHsub2. asimpl. apply rsubset_scons. split; [apply subset_refl|].
+    + asimpl. apply IHsub2. asimpl. apply rsubset_scons; trivial using subset_refl.
+      (* JK: this should not be necessary ... *)
       pose proof (rsubset_rcomp _ _ (REL ^ (ren Typ (+1), ids)) (REL ^ (ren Typ (+1), ids)) (HD) (rsubset_refl _)) as HD'.
       revert HD'. now asimpl.
 Qed.
@@ -252,12 +253,11 @@ Proof.
   intros H; revert Delta' Gamma'. induction H; intros Delta' Gamma' Hrs1 Hrs2.
   - constructor; eauto.
   - constructor.
-    + apply IHty; trivial. now apply rsubset_scons.
+    + apply IHty; auto using rsubset_scons, subset_refl.
     + eapply wf_mono; eauto using rsubset_subset.
   - econstructor; eauto.
   - constructor.
-    + apply IHty; apply rsubset_rcomp; eauto using rsubset_refl.
-      apply rsubset_scons. firstorder.
+    + apply IHty; eauto using rsubset_rcomp, rsubset_scons, rsubset_refl, subset_refl.
     + eapply wf_mono; eauto using rsubset_subset.
   - econstructor; eauto using sub_mono.
   - econstructor; eauto using sub_mono.
@@ -282,6 +282,12 @@ where "'EV' s => t" := (eval s t).
 (* teach something like this to autosubst, without breaking internal nfs *)
 Lemma subst_term_in_type (A : type) sigma tau : A.|[sigma, tau] = A.[sigma].
 Proof. revert sigma tau. depind A; intros; asimpl; autorew; trivial. Qed.
+
+(* note: we have to use the normalform A.|[sigma, ids] over A.[sigma],
+   as the latter might break the calculation of normalforms. *)
+Lemma subst_term_in_type' (A : type) sigma tau : A.|[sigma, tau] = A.|[sigma, ids].
+Proof. revert sigma tau. depind A; intros; asimpl; autorew; trivial. Qed.
+Hint Rewrite subst_term_in_type' : autosubst.
 
 Definition upcons {o} (s : constr o) (Gamma : var -> constr o -> Prop) := ((eq s .: Gamma) >> rapp (REL (subst1 (ren o (+1))))).
 Arguments upcons {o} s Gamma/ x _.
@@ -324,25 +330,19 @@ Lemma ty_weak' (Delta Delta' Gamma Gamma' : var -> type -> Prop) s A xi zeta :
 Proof.
   intros H. revert Delta' Gamma' xi zeta; induction H; intros Delta' Gamma' xi zeta HD HG.
   - constructor. apply HG. asimpl. now apply rapp_eq_app.
-  - asimpl. rewrite subst_term_in_type. (* asimpl should do this ... or something similar *) eapply T_Abs.
-    + eapply IHty; trivial. asimpl. apply rsubset_scons; auto using subset_refl.
-    + (* we need this very often => automate! *)
-      apply wf_weak. (* asimpl should lead to DOM (xi >> Delta') here *)
-      eapply wf_mono; eauto. apply rsubset_subset in HD. revert HD. now asimpl.
+  - asimpl. eapply T_Abs.
+    + eapply IHty; trivial. asimpl. apply rsubset_scons; trivial using subset_refl.
+    + apply wf_weak. eapply wf_mono; eauto. apply rsubset_subset in HD. revert HD. now asimpl.
   - econstructor; eauto.
-  - asimpl. rewrite subst_term_in_type. (* asimpl should do this ... or something similar *) eapply T_TAbs.
+  - asimpl. eapply T_TAbs.
     + eapply IHty; asimpl.
-      * apply rsubset_scons. (* is there a reason why this requires a conjunct? ok: equiv, but why?? *)
-        split; [apply subset_refl|].
+      * apply rsubset_scons; trivial using subset_refl.
         pose proof (rsubset_rcomp _ _ (REL ^(ren Typ (+1), ids)) (REL ^(ren Typ (+1), ids)) HD (rsubset_refl _)) as HD'.
         revert HD'. now asimpl. (* asimpl should yield a goal where rsubset_rcomp can be applied directly ... *)
       * pose proof (rsubset_rcomp _ _ (REL ^(ren Typ (+1), ids)) (REL ^(ren Typ (+1), ids)) HG (rsubset_refl _)) as HG'.
         revert HG'. now asimpl. (* asimpl should yield a goal where rsubset_rcomp can be applied directly ... *)
-    + apply wf_weak. eapply wf_mono; eauto. (* we need this very often => automate! *)
-      apply rsubset_subset in HD. revert HD. now asimpl.
-  - asimpl. rewrite subst_term_in_type. (* asimpl should do this ... or something similar *)
-    (* [econstructor; subst; asimpl; eauto.] yields: Uncaught exception Not_found. Please report *)
-    econstructor; eauto; subst; asimpl; eauto using sub_weak.
+    + apply wf_weak. eapply wf_mono; eauto. apply rsubset_subset in HD. revert HD. now asimpl.
+  - asimpl. econstructor; eauto; subst; asimpl; eauto using sub_weak.
   - econstructor; eauto using sub_weak.
 Qed.
 

@@ -9,6 +9,15 @@ Notation "'DOM' R" := (R >> @ex _) (at level 56, right associativity).
 (* Lifting functions to relations *)
 Notation "'REL' f" := (f >> @eq _) (at level 56, right associativity).
 
+(* JK: these two probably needs to move to tactics, so asimpl can access it ... *)
+Lemma raise_DOM {A B C : Type} (f : A -> B) (R : B -> C -> Prop) :
+  f >> DOM R = DOM (f >> R).
+Proof. firstorder. Qed.
+
+Lemma raise_REL {A B C : Type} (f : A -> B) (g : B -> C) :
+  f >> REL g = REL (f >> g).
+Proof. firstorder. Qed.
+
 Definition subset {A : Type} (P1 P2 : A -> Prop) := forall a, P1 a -> P2 a.
 Notation "P :c Q" := (subset P Q) (at level 57, right associativity).
 
@@ -25,8 +34,8 @@ Proof. firstorder. Qed.
 Definition rsubset {A B : Type} (R1 R2 : A -> B -> Prop) := forall a b, R1 a b -> R2 a b.
 Notation "R :< S" := (rsubset R S) (at level 57, right associativity).
 
-Lemma rsubset_scons {A : Type} (P1 P2 : A -> Prop) R1 R2 :
-  P1 .: R1 :< P2 .: R2  <-> P1 :c P2 /\ R1 :< R2.
+Lemma rsubset_scons_equiv {A : Type} (P1 P2 : A -> Prop) R1 R2 :
+  P1 .: R1 :< P2 .: R2 <-> P1 :c P2 /\ R1 :< R2.
 Proof.
   split.
   - intros H. split.
@@ -34,6 +43,10 @@ Proof.
     + intro n. now specialize (H (S n)).
   - intros [H1 H2] [|n]; simpl; eauto.
 Qed.
+
+Corollary rsubset_scons {A : Type} (P1 P2 : A -> Prop) R1 R2 :
+  P1 :c P2 -> R1 :< R2 -> P1 .: R1 :< P2 .: R2.
+Proof. intros H1 H2. apply rsubset_scons_equiv; auto. Qed.
 
 (* JK: may require improvement *)
 Lemma rsubset_subset {A B : Type} (R1 R2 : A -> B -> Prop): R1 :< R2 -> (DOM R1) :c (DOM R2).
