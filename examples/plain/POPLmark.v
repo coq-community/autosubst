@@ -88,17 +88,17 @@ Proof.
 Qed.
 
 (* JK: this should be automated a lot more ... *)
-Lemma sub_mono Delta Delta' A B :
-  SUB Delta |- A <: B -> Delta :< Delta' -> SUB Delta' |- A <: B.
-Proof.
-  intros H; revert Delta'; induction H; intros Delta' Hrs.
-  - constructor. eapply wf_mono; eauto using rsubset_subset.
-  - constructor. eapply wf_mono; eauto using rsubset_subset.
-  - econstructor; eauto.
-  - constructor; eauto.
-  - constructor; eauto using wf_mono, rsubset_subset.
-    apply IHsub2; eauto using rsubset_rcomp, rsubset_scons, rsubset_refl, subset_refl.
-Qed.
+(* Lemma sub_mono Delta Delta' A B : *)
+(*   SUB Delta |- A <: B -> Delta :< Delta' -> SUB Delta' |- A <: B. *)
+(* Proof. *)
+(*   intros H; revert Delta'; induction H; intros Delta' Hrs. *)
+(*   - constructor. eapply wf_mono; eauto. eauto using rsubset_subset. *)
+(*   - constructor. eapply wf_mono; eauto using rsubset_subset. *)
+(*   - econstructor; eauto. *)
+(*   - constructor; eauto. *)
+(*   - constructor; eauto using wf_mono, rsubset_subset. *)
+(*     apply IHsub2; eauto using rsubset_rcomp, rsubset_scons, rsubset_refl, subset_refl. *)
+(* Qed. *)
 
 Lemma sub_weak (Delta Delta' : var -> type -> Prop) A1 A2 xi :
   SUB Delta |- A1 <: A2 ->
@@ -119,6 +119,12 @@ Proof.
       (* JK: this should not be necessary ... *)
       pose proof (rsubset_rcomp _ _ (REL ^ (ren Typ (+1), ids)) (REL ^ (ren Typ (+1), ids)) (HD) (rsubset_refl _)) as HD'.
       revert HD'. now asimpl.
+Qed.
+
+Lemma sub_mono Delta Delta' A B :
+  SUB Delta |- A <: B -> Delta :< Delta' -> SUB Delta' |- A <: B.
+Proof.
+  intros. cut (SUB Delta' |- A.[ren Typ id] <: B.[ren Typ id]). autosubst. eapply sub_weak; eauto. autosubst.
 Qed.
 
 (* Lemma sub_weak1 Delta A A' B B' C : *)
