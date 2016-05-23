@@ -91,9 +91,9 @@ Ltac autorevert x :=
     | [y : ?Y |- ?claim] =>
       try (match x with y => idtac end; fail 1);
         match goal with [z : _ |- _] =>
-          match claim with appcontext[z] =>
+          match claim with context[z] =>
             first
-              [ match Y with appcontext[z] => revert y; autorevert x end
+              [ match Y with context[z] => revert y; autorevert x end
               | match y with z => revert y; autorevert x end]
           end
         end
@@ -134,7 +134,7 @@ Tactic Notation "ren" ident(H) ":" open_constr(T) :=
 
 Tactic Notation "renc" ident(H) ":" open_constr(T) :=
   match goal with
-    | [G : appcontext C [T] |- _] =>
+    | [G : context C [T] |- _] =>
         let TG := typeof G in
         let CT := context C [T] in
           unify TG CT;
@@ -302,10 +302,10 @@ Ltac fsimplG :=
            | [|- context[S ?n + ?m]] => change (S n + m) with (S (n + m))
            | [|- context[(+S ?n) >> (?x .: ?xr)]] =>
              change ((+S n) >> (x .: xr)) with ((+n) >> xr)
-           | [|- appcontext[?x .: (+ S ?n) >> ?f]] =>
+           | [|- context[?x .: (+ S ?n) >> ?f]] =>
              change x with (f n); rewrite (@scons_eta _ f n)
            | _ => progress (rewrite ?scons_comp, ?plusnS, ?plusnO, ?plusA,
-                           ?lift_comp, ?lift_compR, ?lift_eta)
+                            ?lift_comp, ?lift_compR, ?lift_eta)
            end
          | simpl].
 
@@ -321,10 +321,10 @@ Ltac fsimplH H :=
       | context[S ?n + ?m] => change (S n + m) with (S (n + m)) in H
       | context[(+S ?n) >> (?x .: ?xr)] =>
         change ((+S n) >> (x .: xr)) with ((+n) >> xr) in H
-      | appcontext[?x .: (+ S ?n) >> ?f] =>
+      | context[?x .: (+ S ?n) >> ?f] =>
         change x with (f n) in H; rewrite (@scons_eta _ f n) in H
       | _ => progress (rewrite ?scons_comp, ?plusnS, ?plusnO, ?plusA,
-                             ?lift_comp, ?lift_compR, ?lift_eta in H)
+                       ?lift_comp, ?lift_compR, ?lift_eta in H)
       end
     | simpl in H].
 

@@ -49,7 +49,7 @@ Inductive wf_ty (Delta : var -> Prop) : type -> Prop :=
 .
 
 Lemma wf_mono Delta Delta' A :
-  wf_ty Delta A -> Delta :c Delta' -> wf_ty Delta' A.
+  wf_ty Delta A -> Delta <1= Delta' -> wf_ty Delta' A.
 Proof.
   intros H; revert Delta'. induction H; intros Delta' HS; econstructor; eauto.
   apply IHwf_ty2. intros [|x]; trivial; simpl; apply HS.
@@ -61,48 +61,52 @@ Proof.
   constructor; asimpl; eauto. apply IHA0. now asimpl.
 Qed.
 
+(* not sure if this is the right version ... as there is no tau post composed onto the Delta ...*)
+Lemma wf_subst Delta Delta' A (tau : var -> type) :
+  wf_ty Delta A ->
+  Delta <1= tau >> (wf_ty Delta') ->
+  (* (forall x B, atnd Delta x B -> wf_ty Delta' (sigma x)) -> *)
+  wf_ty Delta' A.[tau].
+Proof.
+  intros H. revert Delta' tau. induction H; intros Delta' tau HD.
+  - asimpl. now apply HD.
+  - constructor.
+  - constructor; asimpl; auto.
+  - constructor; asimpl; auto.
+    apply IHwf_ty2. asimpl. intros [|]; simpl; intros.
+    + constructor. now asimpl.
+    + asimpl. apply wf_weak. asimpl. now apply HD.
+Qed.
+
 Notation "$?" := ltac:(eauto; econstructor; try econstructor; now eauto) (only parsing).
 
 Reserved Notation "'SUB' Delta |- A <: B"
   (at level 68, A at level 99, no associativity).
 Inductive sub (Delta : var -> type -> Prop) : type -> type -> Prop :=
 | SA_Top A :
-    wf_ty (Delta >> @ex _) A -> SUB Delta |- A <: Top
+    wf_ty (DOM Delta) A -> SUB Delta |- A <: Top
 | SA_Refl x :
-    wf_ty (Delta >> @ex _) (Var x) -> SUB Delta |- Var x <: Var x
+    wf_ty (DOM Delta) (Var x) -> SUB Delta |- Var x <: Var x
 | SA_Trans x A B :
     Delta x A -> SUB Delta |- A <: B -> SUB Delta |- Var x <: B
 | SA_Arrow A1 A2 B1 B2 :
     SUB Delta |- B1 <: A1 -> SUB Delta |- A2 <: B2 ->
     SUB Delta |- Arr A1 A2 <: Arr B1 B2
 | SA_All A1 A2 B1 B2 :
-    SUB Delta |- B1 <: A1 -> wf_ty (Delta >> @ex _) B1 -> SUB (((eq B1) .: Delta) >> rapp ((^(ren Typ (+1), ids)) >> eq)) |- A2 <: B2 ->
+    SUB Delta |- B1 <: A1 -> wf_ty (DOM Delta) B1 -> SUB (((eq B1) .: Delta) >> rapp ((^(ren Typ (+1), ids)) >> eq)) |- A2 <: B2 ->
     SUB Delta |- All A1 A2 <: All B1 B2
 where "'SUB' Delta |- A <: B" := (sub Delta A B).
 
-Lemma sub_refl Delta A : wf_ty (Delta >> @ex _) A -> SUB Delta |- A <: A.
+Lemma sub_refl Delta A : wf_ty (DOM Delta) A -> SUB Delta |- A <: A.
 Proof.
   revert Delta. dependent induction A; intros; ainv; constructor; eauto using wf_ty.
   - constructor. simpl; eauto.
   - apply IHA0. now asimpl.
 Qed.
 
-(* JK: this should be automated a lot more ... *)
-(* Lemma sub_mono Delta Delta' A B : *)
-(*   SUB Delta |- A <: B -> Delta :< Delta' -> SUB Delta' |- A <: B. *)
-(* Proof. *)
-(*   intros H; revert Delta'; induction H; intros Delta' Hrs. *)
-(*   - constructor. eapply wf_mono; eauto. eauto using rsubset_subset. *)
-(*   - constructor. eapply wf_mono; eauto using rsubset_subset. *)
-(*   - econstructor; eauto. *)
-(*   - constructor; eauto. *)
-(*   - constructor; eauto using wf_mono, rsubset_subset. *)
-(*     apply IHsub2; eauto using rsubset_rcomp, rsubset_scons, rsubset_refl, subset_refl. *)
-(* Qed. *)
-
 Lemma sub_weak (Delta Delta' : var -> type -> Prop) A1 A2 xi :
   SUB Delta |- A1 <: A2 ->
-  Delta >> rapp (REL ^(ren Typ xi, ids)) :< xi >> Delta' ->
+  Delta >> rapp (REL ^(ren Typ xi, ids)) <2= xi >> Delta' ->
   SUB Delta' |- A1.[ren Typ xi] <: A2.[ren Typ xi].
 Proof.
   intros H. revert Delta' xi; induction H; intros Delta' xi HD.
@@ -127,6 +131,26 @@ Proof.
   intros. cut (SUB Delta' |- A.[ren Typ id] <: B.[ren Typ id]). autosubst. eapply sub_weak; eauto. autosubst.
 Qed.
 
+Corollary sub_trans Delta A B C:
+  SUB Delta |- A <: B -> SUB Delta |- B <: C -> SUB Delta |- A <: C.
+Admitted.
+(* Proof. intros. eapply sub_trans'; eauto. Qed. *)
+
+Lemma sub_subst (Delta Delta' : var -> type -> Prop) A1 A2 tau :
+  SUB Delta |- A1 <: A2 ->
+  Delta >> rapp (REL ^ (tau, ids)) <2= tau >> sub Delta'  ->
+  DOM Delta <1= tau >> (wf_ty (DOM Delta')) -> (* can I get rid of this premise? *)
+  SUB Delta' |- A1.[tau] <: A2.[tau].
+Proof.
+  intros H. revert Delta' tau; induction H; intros Delta' tau HDs HDw.
+  - constructor. eapply wf_subst; eauto.
+  - eapply sub_refl, wf_subst; eauto.
+  - eapply sub_trans; eauto. apply HDs. asimpl. apply rapp_eq_app; auto.
+  - constructor; eauto.
+  - constructor; asimpl; eauto using wf_subst. (* apply IHsub2; asimpl. *)
+    admit.
+Admitted.
+
 (* Lemma sub_weak1 Delta A A' B B' C : *)
 (*   SUB Delta |- A <: B ->  A' = A.[ren(+1)] ->  B' = B.[ren(+1)] -> *)
 (*   SUB (C :: Delta) |- A' <: B'. *)
@@ -135,7 +159,9 @@ Qed.
 Lemma sub_wf {Delta A B} :
   SUB Delta |- A <: B -> wf_ty (DOM Delta) A /\ wf_ty (DOM Delta) B.
 Proof.
-  intros H. induction H; ainv; simpl; split; (try constructor); asimpl; eauto using wf_ty; now asimpl in *.
+  intros H. induction H; ainv; simpl; split; (try constructor); asimpl; eauto using wf_ty.
+  - now asimpl in H2.
+  - now asimpl in H3.
 Qed.
 
 (* Lemma sub_wf_1 Delta A B : SUB Delta |- A <: B -> wf_ty Delta A. *)
@@ -212,11 +238,6 @@ Proof. tauto. Qed.
 (*   } *)
 (* Qed. *)
 
-Corollary sub_trans Delta A B C:
-  SUB Delta |- A <: B -> SUB Delta |- B <: C -> SUB Delta |- A <: C.
-Admitted.
-(* Proof. intros. eapply sub_trans'; eauto. Qed. *)
-
 (* Corollary sub_narrow Delta' Delta B B' A C : *)
 (*      SUB Delta' ++ B :: Delta |- A <: C -> *)
 (*      SUB Delta |- B' <: B -> *)
@@ -254,7 +275,7 @@ where "'TY' Delta ; Gamma |- s : A" := (ty Delta Gamma s A).
 
 (* JK: same as with sub_mono, lots of automation potential *)
 Lemma ty_mono Delta Gamma Delta' Gamma' s A :
-  TY Delta;Gamma |- s : A -> Delta :< Delta' -> Gamma :< Gamma'-> TY Delta';Gamma' |- s : A.
+  TY Delta;Gamma |- s : A -> Delta <2= Delta' -> Gamma <2= Gamma'-> TY Delta';Gamma' |- s : A.
 Proof.
   intros H; revert Delta' Gamma'. induction H; intros Delta' Gamma' Hrs1 Hrs2.
   - constructor; eauto.
@@ -298,40 +319,51 @@ Hint Rewrite subst_term_in_type' : autosubst.
 Definition upcons {o} (s : constr o) (Gamma : var -> constr o -> Prop) := ((eq s .: Gamma) >> rapp (REL (subst1 (ren o (+1))))).
 Arguments upcons {o} s Gamma/ x _.
 
-(* Lemma ty_subst' (Delta Delta' Gamma Gamma' : var -> type -> Prop) s A tau sigma : *)
-(*   TY Delta;Gamma  |- s : A -> *)
-(*   DOM Delta >> rapp (REL ^ (tau, ids)) :c tau >> (wf_ty (DOM Delta')) -> *)
-(*   Gamma >> rapp (REL ^ (tau, ids)) :< sigma >> ty Delta' Gamma' -> *)
-(*   TY Delta';Gamma' |- s.|[tau, sigma] : A.[tau]. *)
-(* Proof. *)
-(*   intros H. revert Delta' Gamma' tau sigma; induction H; intros Delta' Gamma' tau sigma HD HG. *)
-(*   - asimpl. apply HG. asimpl. now apply rapp_eq_app. *)
-(*   - asimpl. rewrite subst_term_in_type. (* asimpl should do this ... or something similar *) eapply T_Abs. *)
-(*     + eapply IHty; trivial. asimpl. apply rsubset_scons; auto using subset_refl. *)
-(*     + apply wf_weak. eapply wf_mono; eauto. (* we need this very often => automate! *) *)
-(*       apply rsubset_subset in HD. revert HD. now asimpl. *)
-(*   - econstructor; eauto. *)
-(*   - asimpl. rewrite subst_term_in_type. (* asimpl should do this ... or something similar *) eapply T_TAbs. *)
-(*     + eapply IHty; asimpl. *)
-(*       * apply rsubset_scons. (* is there a reason why this requires a conjunct? *) *)
-(*         split; [apply subset_refl|]. *)
-(*         pose proof (rsubset_rcomp _ _ ((^ (ren Typ (+1), ids)) >> eq) ((^ (ren Typ (+1), ids)) >> eq) (HD) (rsubset_refl _)) as HD'. *)
-(*         revert HD'. now asimpl. (* asimpl should yield a goal where rsubset_rcomp can be applied directly ... *) *)
-(*       * pose proof (rsubset_rcomp _ _ ((^ (ren Typ (+1), ids)) >> eq) ((^ (ren Typ (+1), ids)) >> eq) (HG) (rsubset_refl _)) as HG'. *)
-(*         revert HG'. now asimpl. (* asimpl should yield a goal where rsubset_rcomp can be applied directly ... *) *)
-(*     + apply wf_weak. eapply wf_mono; eauto. (* we need this very often => automate! *) *)
-(*       apply rsubset_subset in HD. revert HD. now asimpl. *)
-(*   - asimpl. rewrite subst_term_in_type. (* asimpl should do this ... or something similar *) *)
-(*     (* [econstructor; subst; asimpl; eauto.] yields: Uncaught exception Not_found. Please report *) *)
-(*     econstructor; eauto; subst; asimpl; eauto using sub_weak. *)
-(*   - econstructor; eauto using sub_weak. *)
-(* Qed. *)
 
+Lemma ctx_sub_ext (R1 R2 : var -> type -> Prop)  :
+  R1 <2= R2 <->
+  all (fun (T: Type) => forall (xi zeta : var -> var) tau sigma (S : type -> T -> Prop),
+  R1 >> rapp (REL ^(ren Typ xi, ren Ter zeta)) >> rapp (REL ^(tau, sigma)) >> rapp S <2=
+  R2 >> rapp (REL ^(ren Typ xi, ren Ter zeta)) >> rapp (REL ^(tau, sigma)) >> rapp S).
+Proof.
+  split; try firstorder.
+  intros H. specialize (H type id id ids ids (@eq _)). asimplHQ H. trivial.
+Qed.
+
+(* JK: Testing asimplHQ *)
+
+Example test_wf1 Delta A xi :
+  (forall zeta, wf_ty Delta A.[ren Typ xi].[ren Typ zeta]) ->
+  (forall zeta, wf_ty Delta A.[ren Typ (xi >> zeta)]).
+Proof.
+  intros H. asimplHQ H. exact H.
+Qed.
+
+Example test_wf2 Delta A :
+  (forall (xi zeta : var -> var), wf_ty Delta A.[ren Typ xi].[ren Typ zeta]) ->
+  (forall (xi zeta : var -> var), wf_ty Delta A.[ren Typ (xi >> zeta)]).
+Proof.
+  intros H. asimplHQ H. exact H.
+Qed.
+
+Example test_wf4 :
+  (forall Delta A (xi zeta : var -> var), wf_ty Delta A.[ren Typ xi].[ren Typ zeta]) ->
+  (forall Delta A (xi zeta : var -> var), wf_ty Delta A.[ren Typ (xi >> zeta)]).
+Proof.
+  intros H. asimplHQ H. exact H.
+Qed.
+
+Example test_rapp (A B : Type) (R : A -> B -> Prop) :
+  (forall (C : Type) (S : B -> C -> Prop) (Q : A -> C -> Prop), (rapp R >> rapp S) <2= rapp Q) ->
+  (forall (C : Type) (S : B -> C -> Prop) (Q : A -> C -> Prop), (rapp (R >> rapp S)) <2= rapp Q).
+Proof.
+  intros H. asimplHQ H. exact H.
+Qed.
 
 Lemma ty_weak' (Delta Delta' Gamma Gamma' : var -> type -> Prop) s A xi zeta :
   TY Delta;Gamma  |- s : A ->
-  Delta >> rapp (REL ^(ren Typ xi, ids)) :< xi >> Delta' ->
-  Gamma >> rapp (REL ^(ren Typ xi, ids)) :< zeta >> Gamma' ->
+  Delta >> rapp (REL ^(ren Typ xi, ids)) <2= xi >> Delta' ->
+  Gamma >> rapp (REL ^(ren Typ xi, ids)) <2= zeta >> Gamma' ->
   TY Delta';Gamma' |- s.|[ren Typ xi, ren Ter zeta] : A.[ren Typ xi].
 Proof.
   intros H. revert Delta' Gamma' xi zeta; induction H; intros Delta' Gamma' xi zeta HD HG.
@@ -343,17 +375,18 @@ Proof.
   - asimpl. eapply T_TAbs.
     + eapply IHty; asimpl.
       * apply rsubset_scons; trivial using subset_refl.
-        pose proof (rsubset_rcomp _ _ (REL ^(ren Typ (+1), ids)) (REL ^(ren Typ (+1), ids)) HD (rsubset_refl _)) as HD'.
-        revert HD'. now asimpl. (* asimpl should yield a goal where rsubset_rcomp can be applied directly ... *)
-      * pose proof (rsubset_rcomp _ _ (REL ^(ren Typ (+1), ids)) (REL ^(ren Typ (+1), ids)) HG (rsubset_refl _)) as HG'.
-        revert HG'. now asimpl. (* asimpl should yield a goal where rsubset_rcomp can be applied directly ... *)
+        (* we have to provide sufficiently many holes for unification: *)
+        apply ctx_sub_ext; apply ctx_sub_ext in HD; unfold all in *.
+        asimplHQ HD. intros. asimpl. trivial.
+      * (* as above *) apply ctx_sub_ext; apply ctx_sub_ext in HG; unfold all in *.
+        asimplHQ HG. intros. asimpl. trivial.
     + apply wf_weak. eapply wf_mono; eauto. apply rsubset_subset in HD. revert HD. now asimpl.
   - asimpl. econstructor; eauto; subst; asimpl; eauto using sub_weak.
   - econstructor; eauto using sub_weak.
 Qed.
 
 (* JK: Lib stuff *)
-Lemma rsubset_fcomp {A B : Type} (f : A -> A) (R1 R2 : A -> B -> Prop) : R1 :< R2 -> f >> R1 :< f >> R2.
+Lemma rsubset_fcomp {A B : Type} (f : A -> A) (R1 R2 : A -> B -> Prop) : R1 <2= R2 -> f >> R1 <2= f >> R2.
 Proof. firstorder. Qed.
 
 (* JK: not sure if this is the top-level form we want ... *)
@@ -369,6 +402,34 @@ Proof.
     + apply rsubset_rcomp; eauto using rsubset_refl, preconv_K1, fun_func.
     + rewrite rapp_eq1. apply rsubset_refl.
 Qed.
+
+Lemma ty_subst' (Delta Delta' Gamma Gamma' : var -> type -> Prop) s A tau sigma :
+  TY Delta;Gamma  |- s : A ->
+  DOM Delta <1= tau >> (wf_ty (DOM Delta')) ->
+  (* DOM Delta >> rapp (REL ^ (tau, ids)) <1= tau >> (wf_ty (DOM Delta')) -> *)
+  Gamma >> rapp (REL ^ (tau, ids)) <2= sigma >> ty Delta' Gamma' ->
+  TY Delta';Gamma' |- s.|[tau, sigma] : A.[tau].
+Proof.
+  intros H. revert Delta' Gamma' tau sigma; induction H; intros Delta' Gamma' tau sigma HD HG.
+  - asimpl. apply HG. asimpl. now apply rapp_eq_app.
+  - asimpl. eapply T_Abs.
+    + admit. (* eapply IHty; trivial. asimpl. apply rsubset_scons; auto using subset_refl. *)
+    + eapply wf_subst; eauto.
+  - econstructor; eauto.
+  - asimpl. eapply T_TAbs.
+    + admit. (* eapply IHty; asimpl. *)
+      (* * apply rsubset_scons. (* is there a reason why this requires a conjunct? *) *)
+      (*   split; [apply subset_refl|]. *)
+      (*   pose proof (rsubset_rcomp _ _ ((^ (ren Typ (+1), ids)) >> eq) ((^ (ren Typ (+1), ids)) >> eq) (HD) (rsubset_refl _)) as HD'. *)
+      (*   revert HD'. now asimpl. (* asimpl should yield a goal where rsubset_rcomp can be applied directly ... *) *)
+      (* * pose proof (rsubset_rcomp _ _ ((^ (ren Typ (+1), ids)) >> eq) ((^ (ren Typ (+1), ids)) >> eq) (HG) (rsubset_refl _)) as HG'. *)
+      (*   revert HG'. now asimpl. (* asimpl should yield a goal where rsubset_rcomp can be applied directly ... *) *)
+    + eapply wf_subst; eauto.
+  - asimpl. econstructor; eauto; subst; asimpl. eauto using sub_weak.
+  - econstructor; eauto. using sub_weak.
+Qed.
+
+
 
 Lemma ty_weak_ty  xi Delta1 Delta2 Gamma1 Gamma2 s s' A A':
   TY Delta1;Gamma1 |- s : A ->

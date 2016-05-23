@@ -19,7 +19,7 @@ Lemma raise_REL {A B C : Type} (f : A -> B) (g : B -> C) :
 Proof. firstorder. Qed.
 
 Definition subset {A : Type} (P1 P2 : A -> Prop) := forall a, P1 a -> P2 a.
-Notation "P :c Q" := (subset P Q) (at level 57, right associativity).
+Notation "P <1= Q" := (subset P Q) (at level 57, right associativity).
 
 Lemma subset_eq {A : Type} (x : A) P : subset (eq x) P <-> P x.
 Proof. split; repeat intro; subst; eauto. Qed.
@@ -32,10 +32,10 @@ Lemma subset_trans {A : Type} (P1 P2 P3 : A -> Prop) :
 Proof. firstorder. Qed.
 
 Definition rsubset {A B : Type} (R1 R2 : A -> B -> Prop) := forall a b, R1 a b -> R2 a b.
-Notation "R :< S" := (rsubset R S) (at level 57, right associativity).
+Notation "R <2= S" := (rsubset R S) (at level 57, right associativity).
 
 Lemma rsubset_scons_equiv {A : Type} (P1 P2 : A -> Prop) R1 R2 :
-  P1 .: R1 :< P2 .: R2 <-> P1 :c P2 /\ R1 :< R2.
+  P1 .: R1 <2= P2 .: R2 <-> P1 <1= P2 /\ R1 <2= R2.
 Proof.
   split.
   - intros H. split.
@@ -45,19 +45,19 @@ Proof.
 Qed.
 
 Corollary rsubset_scons {A : Type} (P1 P2 : A -> Prop) R1 R2 :
-  P1 :c P2 -> R1 :< R2 -> P1 .: R1 :< P2 .: R2.
+  P1 <1= P2 -> R1 <2= R2 -> P1 .: R1 <2= P2 .: R2.
 Proof. intros H1 H2. apply rsubset_scons_equiv; auto. Qed.
 
 (* JK: may require improvement *)
-Lemma rsubset_subset {A B : Type} (R1 R2 : A -> B -> Prop): R1 :< R2 -> (DOM R1) :c (DOM R2).
+Lemma rsubset_subset {A B : Type} (R1 R2 : A -> B -> Prop): R1 <2= R2 -> (DOM R1) <1= (DOM R2).
 Proof. firstorder. Qed.
 
 (* JK: may require improvement *)
-Lemma rsubset_refl {A B : Type} (R : A -> B -> Prop): R :< R.
+Lemma rsubset_refl {A B : Type} (R : A -> B -> Prop): R <2= R.
 Proof. firstorder. Qed.
 
 Lemma rsubset_trans {A B : Type} (R1 R2 R3 : A -> B -> Prop) :
-  R1 :< R2 -> R2 :< R3 -> R1 :<  R3.
+  R1 <2= R2 -> R2 <2= R3 -> R1 <2=  R3.
 Proof. firstorder. Qed.
 
 (* Definition papp {A B : Type} (R : A -> B -> Prop) P : B -> Prop := fun b => exists a, P a /\ R a b. *)
@@ -83,7 +83,7 @@ Definition total {A B : Type} (R : A -> B -> Prop) := forall a : A, exists b : B
 
 (* JK: may require improvement *)
 Lemma sub_rapp_ex {A B C : Type} (R1 : A -> B -> Prop) (R2 : B -> C -> Prop) :
-  (DOM (R1 >> rapp R2)) :c (DOM R1).
+  (DOM (R1 >> rapp R2)) <1= (DOM R1).
 Proof. firstorder. Qed.
 
 Lemma ex_True {A : Type} y : (exists x : A, y = x) = True.
@@ -99,7 +99,7 @@ Definition rcomp {A B C : Type} (R1 : A -> B -> Prop) (R2 : B -> C -> Prop) : A 
 
 (* JK: may require improvement *)
 Lemma rsubset_rcomp {A B C : Type} (R1 R1' : A -> B -> Prop) (R2 R2' : B -> C -> Prop) :
-  R1 :< R1' -> R2 :< R2' -> R1 >> rapp R2 :< R1' >> rapp R2'.
+  R1 <2= R1' -> R2 <2= R2' -> R1 >> rapp R2 <2= R1' >> rapp R2'.
 Proof. firstorder. Qed.
 
 (* Converse relation; maybe deprecated ...  *)
@@ -117,7 +117,7 @@ Definition injectiveF {A B : Type} (f : A -> B) := forall a1 a2 : A, f a1 = f a2
 (* Proof. intros f_inj. f_ext. intros. cbv. apply prop_ext. firstorder; auto. congruence. Qed. *)
 
 Lemma conv_fun_subset {A B : Type} (f : A -> B) (a : A) :
-  eq a :c conv (REL f) (f a).
+  eq a <1= conv (REL f) (f a).
 Proof. intros a' Ea; congruence. Qed.
 
 Definition surjectiveR {A B : Type} (R : A -> B -> Prop) := forall b : B, exists a : A, R a b.
@@ -130,7 +130,7 @@ Definition functional {A B : Type} (R : A -> B -> Prop) := forall a b b', R a b 
 Lemma fun_func {A B : Type} (f : A -> B) : functional (REL f).
 Proof. intros a b b'. simpl. congruence. Qed.
 
-Lemma preconv_K1 {A B : Type} (R : A-> B -> Prop) : functional R -> conv R >> rapp R :< eq.
+Lemma preconv_K1 {A B : Type} (R : A-> B -> Prop) : functional R -> conv R >> rapp R <2= eq.
 Proof. firstorder. Qed.
 
 (* Lemma convK1 {A B : Type} (R : A -> B -> Prop) : *)
@@ -156,3 +156,10 @@ Section SubstInstance.
                  end.
 
 End SubstInstance.
+
+(* 1-step simplification for relations *)
+Ltac rel_stepG :=
+  rewrite ?rapp_eq1, ?rapp_eq2, ?rapp_rapp, ?eq_rapp, ?rapp_ex, ?ex_True.
+
+Ltac rel_stepH H :=
+  rewrite ?rapp_eq1, ?rapp_eq2, ?rapp_rapp, ?eq_rapp, ?rapp_ex, ?ex_True in H.
