@@ -209,8 +209,7 @@ Ltac fold_ren :=
     | [|- context[?xi >>> (@ren ?T _ ?zeta >>> ?g)]] =>
          change (xi >>> (@ren T _ zeta >>> g)) with
                 (@ren T _ (xi >>> zeta) >>> g)
-    | [|- context [?V ?x .: ?sigma]] =>
-      try change V with ids;
+    | [|- context [ids ?x .: ?sigma]] =>
       first[
           rewrite fold_ren_cons
         | replace (ids x .: ids) with (ren (x .: id))
@@ -229,8 +228,7 @@ Ltac fold_renH H :=
     | context[?xi >>> (@ren ?T _ ?zeta >>> ?g)] =>
          change (xi >>> (@ren T _ zeta >>> g)) with
                 (@ren T _ (xi >>> zeta) >>> g) in H
-    | context [?V ?x .: ?sigma] =>
-      try change V with ids in H;
+    | context [ids ?x .: ?sigma] =>
       first[
           rewrite fold_ren_cons in H
         | replace (ids x .: ids) with (ren (x .: id)) in H
