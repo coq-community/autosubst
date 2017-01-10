@@ -122,6 +122,7 @@ Tactic Notation "msimpl" "in" "*" := (in_all msimplH); msimpl.
 (** Deriving Instances *)
 
 Ltac derive_MMap :=
+  let map := fresh "dummy" in (* hack due to potential ltac bug ! *)
   hnf; match goal with [ |- (?A -> ?A) -> ?B -> ?B ] =>
     intros f; fix map 1; intros xs; change (annot B xs); destruct xs;
     match goal with
