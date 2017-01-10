@@ -20,10 +20,10 @@ Arguments mmap {A B _} f !s /.
   argument. This is sufficient to allow the fixpoint checker to lift proofs
   over mmap.
 *)
-Class MMapExt (A B : Type) `{MMap A B} := 
+Class MMapExt (A B : Type) `{MMap A B} :=
   mmap_ext : forall f g,
     (forall t, f t = g t) -> forall s, mmap f s = mmap g s.
-Arguments mmap_ext {A B _ _ f g} H s.
+Arguments mmap_ext {A B H' _ f g} H s : rename. (* JK-TODO: check how this affects existing code? *)
 
 Class MMapLemmas (A B : Type) `{MMap A B} := {
   mmap_id x : mmap id x = x;
@@ -84,13 +84,13 @@ Lemma mmap_const_instE {A B} f x : @mmap _ _ (@MMap_const A B) f x = x. reflexiv
 
 Ltac mmap_typeclass_normalize :=
   repeat match goal with
-  | [|- appcontext[@mmap ?A ?B _ ?f]] =>
+  | [|- context[@mmap ?A ?B _ ?f]] =>
      let s := constr:(@mmap A B _ f) in progress change (@mmap A B _ f) with s
   end.
 
 Ltac mmap_typeclass_normalizeH H :=
   repeat match typeof H with
-  | appcontext[@mmap ?A ?B _ ?f] =>
+  | context[@mmap ?A ?B _ ?f] =>
      let s := constr:(@mmap A B _ f) in progress change (@mmap A B _ f) with s
   end.
 
@@ -104,7 +104,7 @@ Hint Rewrite @mmap_id @mmap_comp @mmap_idX @mmap_compX @mmap_compR
 
 Ltac msimpl :=
   mmap_typeclass_normalize;
-  repeat first 
+  repeat first
   [ solve [trivial]
   | progress (simpl; autorewrite with mmap)
   | fold_id].

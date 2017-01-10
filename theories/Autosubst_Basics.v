@@ -23,10 +23,10 @@ Tactic Notation "in_all" tactic(T) :=
 Ltac f_ext := apply functional_extensionality.
 
 
-(** 
-  A variant of the Coq [fold] tactic that works with open terms. 
-  For example, [repeat open_fold (f _).] tries to undo [unfold f] for 
-  a defined function [f] with a single argument. 
+(**
+  A variant of the Coq [fold] tactic that works with open terms.
+  For example, [repeat open_fold (f _).] tries to undo [unfold f] for
+  a defined function [f] with a single argument.
 *)
 Tactic Notation "open_fold" open_constr(s) :=
   let s' := (eval red in s) in
@@ -41,9 +41,9 @@ Tactic Notation "open_fold" open_constr(s) "in" hyp(H) :=
 Ltac derive := trivial with derive; fail.
 
 (** Assert that type class instance exists.*)
-Ltac require_instance s := 
+Ltac require_instance s :=
   try (first[
-              assert s;[exact _|idtac] 
+              assert s;[exact _|idtac]
             | fail 10 "The instance" s "is missing"
             ]; fail).
 
@@ -73,9 +73,9 @@ Ltac autorevert x :=
     | [y : ?Y |- ?claim] =>
       try (match x with y => idtac end; fail 1);
         match goal with [z : _ |- _] =>
-          match claim with appcontext[z] =>
+          match claim with context[z] =>
             first
-              [ match Y with appcontext[z] => revert y; autorevert x end
+              [ match Y with context[z] => revert y; autorevert x end
               | match y with z => revert y; autorevert x end]
           end
         end
@@ -116,7 +116,7 @@ Tactic Notation "ren" ident(H) ":" open_constr(T) :=
 
 Tactic Notation "renc" ident(H) ":" open_constr(T) :=
   match goal with
-    | [G : appcontext C [T] |- _] =>
+    | [G : context C [T] |- _] =>
         let TG := typeof G in
         let CT := context C [T] in
           unify TG CT;
@@ -188,10 +188,10 @@ Definition scons {X : Type} (s : X) (sigma : var -> X) (x : var) : X :=
   match x with S y => sigma y | _ => s end.
 Notation "s .: sigma" := (scons s sigma) (at level 55, sigma at level 56, right associativity) : subst_scope.
 
-(** A test and demonstration of the precedence rules, which effectively declare scons and 
+(** A test and demonstration of the precedence rules, which effectively declare scons and
     funcomp at the same level, with scons being right associative and funcomp being left
     associative *)
-Check fun (f : var -> var) (sigma : var -> list var) => 
+Check fun (f : var -> var) (sigma : var -> list var) =>
         nil .: nil .: f >>> f >>> nil .: nil .: f >>> f >>> nil .: nil .: sigma.
 
 (* plus with different simplification behaviour *)
@@ -269,11 +269,11 @@ Ltac fsimpl :=
         change ((f >>> g) >>> h) with (f >>> (g >>> h))
     | [|- context[(+0)]] => change (+0) with (@id var)
     | [|- context[0 + ?m]] => change (0 + m) with m
-    | [|- appcontext[?s S]] => change (s S) with (s (+1))
+    | [|- context[?s S]] => change (s S) with (s (+1))
     | [|- context[S ?n + ?m]] => change (S n + m) with (S (n + m))
     | [|- context[(+S ?n) >>> (?x .: ?xr)]] =>
         change ((+S n) >>> (x .: xr)) with ((+n) >>> xr)
-    | [|- appcontext[?x .: (+ S ?n) >>> ?f]] =>
+    | [|- context[?x .: (+ S ?n) >>> ?f]] =>
         change x with (f n); rewrite (@scons_eta _ f n)
     | _ => progress (rewrite ?scons_comp, ?plusnS, ?plusnO, ?plusA,
                              ?lift_comp, ?lift_compR, ?lift_eta)
@@ -287,11 +287,11 @@ Ltac fsimplH H :=
         change ((f >>> g) >>> h) with (f >>> (g >>> h)) in H
     | context[(+0)] => change (+0) with (@id var) in H
     | context[0 + ?m] => change (0 + m) with m in H
-    | appcontext[?s S] => change (s S) with (s (+1)) in H
+    | context[?s S] => change (s S) with (s (+1)) in H
     | context[S ?n + ?m] => change (S n + m) with (S (n + m)) in H
     | context[(+S ?n) >>> (?x .: ?xr)] =>
         change ((+S n) >>> (x .: xr)) with ((+n) >>> xr) in H
-    | appcontext[?x .: (+ S ?n) >>> ?f] =>
+    | context[?x .: (+ S ?n) >>> ?f] =>
         change x with (f n) in H; rewrite (@scons_eta _ f n) in H
     | _ => progress (rewrite ?scons_comp, ?plusnS, ?plusnO, ?plusA,
                              ?lift_comp, ?lift_compR, ?lift_eta in H)
