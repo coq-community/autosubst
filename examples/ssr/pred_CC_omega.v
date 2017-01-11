@@ -2,8 +2,6 @@
  *)
 
 From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
-Require Import mathcomp.ssreflect.ssreflect.
-From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
 Require Import AutosubstSsr ARS Context.
 
 Set Implicit Arguments.
@@ -544,5 +542,5 @@ Proof.
 Qed.
 
 (* Local Variables: *)
-(* coq-load-path: (("." "Ssr")) *)
+(* coq-load-path: (("." "Ssr") ("../../theories" "Autosubst")) *)
 (* End: *)

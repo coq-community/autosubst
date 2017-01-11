@@ -1,10 +1,10 @@
 (** * Autosubst wrapper for ssreflect *)
-Require Export Autosubst_Basics.
-Require Export Autosubst_MMap.
-Require Export Autosubst_Classes.
-Require Export Autosubst_Tactics.
-Require Export Autosubst_Lemmas.
-Require Export Autosubst_Derive.
+Require Export Autosubst.Autosubst_Basics.
+Require Export Autosubst.Autosubst_MMap.
+Require Export Autosubst.Autosubst_Classes.
+Require Export Autosubst.Autosubst_Tactics.
+Require Export Autosubst.Autosubst_Lemmas.
+Require Export Autosubst.Autosubst_Derive.
 Require Import mathcomp.ssreflect.ssreflect.
 From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
 
@@ -53,5 +53,5 @@ Defined.
 End MMapInstances.
 
 (* Local Variables: *)
-(* coq-load-path: (("." "Ssr")) *)
+(* coq-load-path: (("." "Ssr") ("../../theories" "Autosubst")) *)
 (* End: *)
