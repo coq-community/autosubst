@@ -7,6 +7,7 @@ Class Size (A : Type) := size : A -> nat.
 Arguments size {A _} !x /.
 
 Ltac derive_Size :=
+  let size' := fresh "dummy" in
   hnf; match goal with [ |- ?A -> nat] =>
     fix size' 1;
     let s := fresh "s" in

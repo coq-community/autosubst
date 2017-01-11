@@ -96,13 +96,16 @@ Ltac clean :=
 
 Ltac inv H := inversion H; try clear H; try subst.
 
+(* JK: IMPORTANT: This tactic appears to rely on the order in which hypothesis are tried during a match goal, and the default order in which hypotheses are matched appears to have changed from 8.5 to 8.6! the [reverse] keyword reinstates the old behaviour but it might be better to reimplement the tactic in a more predictable fashion! this would probably have a significant impact on existing code! *)
 Ltac ainv t :=
   clean;
-  do? 10 (idtac; match goal with
+  do? 10 (idtac; match reverse goal with
     | H : ?s |- _ =>
       progress((cut True; [inv H; t|]);
         [(intros _ || trivial) | now idtac ..]; clean)
   end).
+
+
 
 Tactic Notation "ainv" tactic(t) := ainv t.
 Tactic Notation "ainv" := ainv trivial.

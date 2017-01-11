@@ -206,7 +206,7 @@ Proof.
         repeat rewrite app_length. simpl. omega.
       + change (B1 :: Delta' ++ B' :: Delta)
           with ((B1 :: Delta') ++ B' :: Delta).
-        eapply IHsub2; eauto. reflexivity.
+        eapply IHsub2; eauto.
   }
 Qed.
 
@@ -427,7 +427,7 @@ Lemma can_form_arr {s A B}:
 Proof.
   intros H.
   depind H; intros; eauto; ainv.
-  inv H0. ainv. eauto.
+  inv H0. ainv. eauto. (* JK: With the 8.6 Goal matching default hypothesis order (newest first) this would break with the old ainv version! *)
 Qed.
 
 Lemma can_form_all {s A B}:
@@ -441,17 +441,17 @@ Qed.
 Theorem ev_progress s A:
   TY nil;nil |- s : A -> value s \/ exists t,  EV s => t.
 Proof.
-  intros. depind H.
+  intros. depind H. (* depind appears to not remove generated trivial equality guards any longer *)
   - inv H.
   - left; constructor.
-  - right. destruct IHty1 as [? | [? ?]].
+  - right. destruct IHty1 as [? | [? ?]]; trivial.
     + edestruct (can_form_arr H H1) as [? [? ?]]; subst. eauto using eval.
     + eauto using eval.
   - left; constructor.
-  - right. destruct IHty as [? | [? ?]].
+  - right. destruct IHty as [? | [? ?]]; trivial.
     + edestruct (can_form_all H H1) as [? [? ?]]; subst. eauto using eval.
     + eauto using eval.
-  - assumption.
+  - auto.
 Qed.
 
 Lemma ty_inv_abs {Delta Gamma A A' B C s}:
