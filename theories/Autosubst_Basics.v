@@ -314,6 +314,14 @@ Proof.
   rewrite !iterate_S, <- IHn. reflexivity.
 Qed.
 
+Lemma iterate_iterate {A} (f : A -> A) i j x :
+  iterate f i (iterate f j x) = iterate f (i + j) x.
+Proof.
+  induction i; intros.
+  { now rewrite iterate_0. }
+  { now rewrite plusSn, iterate_S, IHi. }
+Qed.
+
 Lemma equal_f {X Y} {f g : X -> Y} a : f = g -> f a = g a.
 Proof. intros. now subst. Qed.
 
