@@ -39,6 +39,10 @@ Lemma subst_compR {A} sigma tau (f : _ -> A) :
   subst sigma >>> (subst tau >>> f) = subst (sigma >>> subst tau) >>> f.
 Proof. now rewrite <- subst_compX. Qed.
 
+Lemma scompA f g h :
+  f >> (g >> h) = f >> g >> h.
+Proof. unfold scomp. now rewrite <- subst_compX, compA. Qed.
+
 Lemma fold_ren_cons (x : var) (xi : var -> var) :
   ids x .: ren xi = ren (x .: xi).
 Proof. unfold ren. now rewrite scons_comp. Qed.
