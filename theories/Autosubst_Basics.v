@@ -221,7 +221,7 @@ Fixpoint take {X : Type} n (sigma : nat -> X) : list X :=
 Lemma id_comp {A B} (f : A -> B) : id >>> f = f. reflexivity. Qed.
 Lemma comp_id {A B} (f : A -> B) : f >>> id = f. reflexivity. Qed.
 Lemma compA {A B C D} (f : A -> B) (g : B -> C) (h : C -> D) :
-  (f >>> g) >>> h = f >>> (g >>> h).
+  f >>> (g >>> h) = (f >>> g) >>> h.
 Proof. reflexivity. Qed.
 
 Section LemmasForFun.
