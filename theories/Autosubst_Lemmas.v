@@ -32,6 +32,9 @@ Lemma up_comp_n sigma tau n :
   upn n sigma >> upn n tau = upn n (sigma >> tau).
 Proof. induction n; [reflexivity|now rewrite !iterate_S, <- IHn, up_comp]. Qed.
 
+Lemma upn_upn i j sigma : upn i (upn j sigma) = upn (i + j) sigma.
+Proof. eapply iterate_iterate. Qed.
+
 Lemma ren_uncomp A xi zeta : A.[ren (xi >>> zeta)] = A.[ren xi].[ren zeta].
 Proof. autosubst. Qed.
 
