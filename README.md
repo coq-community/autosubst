@@ -48,7 +48,7 @@ You can use the file doc/toc.html to browse the documentation.
 
 ## Bug Reports
 
-Please submit bugs reports on https://github.com/tebbi/autosubst/issues
+Please submit bugs reports on https://github.com/uds-psl/autosubst/issues
 
 
 
