@@ -53,6 +53,11 @@ Proof.
   intros H. apply lift_inj in H. auto.
 Qed.
 
+Lemma lift_injn_eq (A B : term) n : A.[ren(+n)] = B.[ren(+n)] <-> A = B.
+Proof.
+  split; intros; subst; eauto using lift_injn.
+Qed.
+
 End SubstLemmas.
 
 (* Local Variables: *)
