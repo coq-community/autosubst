@@ -380,7 +380,7 @@ Qed.
 (* Substitution Lemma *)
 
 Notation "[ Delta |- sigma -| Gamma ]" :=
-  (forall x, x < size Gamma -> [ Delta |- sigma x :- (Gamma`_x).[sigma] ]).
+  (forall x, x < size Gamma -> [ Delta |- sigma x :- (Gamma`_x).[(sigma : _ -> _)] ]).
 
 Lemma ty_renaming xi Gamma Delta s A :
   [ Gamma |- s :- A ] ->

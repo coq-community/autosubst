@@ -343,7 +343,7 @@ Proof with eauto using ty.
     move: ty1 => /ty_inv_abs. exact: ty_beta.
   - move=> Delta Gamma A B s _ _ t ev. by inv ev.
   - move=> Delta Gamma A B C s ty ih sub t ev. inv ev.
-    + move: ty0 => /ty_inv_tabs. exact: ty_betaT.
+    + move: ty => /ty_inv_tabs. exact: ty_betaT.
     + apply: ty_tapp sub. exact: ih.
 Qed.
 
@@ -399,5 +399,5 @@ Theorem ev_progress s A:
 Proof. move=> ty. exact: ev_progress' ty _. Qed.
 
 (* Local Variables: *)
-(* coq-load-path: (("." "Ssr")) *)
+(* coq-load-path: (("." "Ssr") ("../../theories" "Autosubst")) *)
 (* End: *)
