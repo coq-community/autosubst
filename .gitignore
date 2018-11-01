@@ -6,3 +6,4 @@ doc/*
 .DS_Store
 *.aux
 Makefile.coq.conf
+.coqdeps.d
