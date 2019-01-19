@@ -19,7 +19,7 @@ Please note, that ownership of the definitiv version of Autosubst on github was 
 
 or (experimentally, using branch `coq86-devel`, https://github.com/uds-psl/autosubst/issues/3):
 - Coq 8.6-8.8
-- ssreflect is still needed even with Coq 8.8; version 1.7 appears to work.
+- to compile ssreflect-based examples, ssreflect is still needed even with Coq 8.8; version 1.7 appears to work.
 
 ## Installation
 
