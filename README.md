@@ -6,19 +6,15 @@ https://www.ps.uni-saarland.de/autosubst
 
 ## IMPORTANT: Change of Ownership
 
-Please note, that ownership of the definitiv version of Autosubst on github was transferred from Tobias Tebbi to the github account of the Programming Systems Lab at Saarland University. While appropriate redirects where installed during the transfer so that the old remote URLs in existing repository clones still function, Github strongly advises to update local clones to the new remote origin URL. To achieve this, please execute the following in each of your clones of this project:
+Ownership of Autosubst was transferred to coq-community. While appropriate redirects where installed during the transfer so that the old remote URLs in existing repository clones still function, Github strongly advises to update local clones to the new remote origin URL. To achieve this, please execute the following in each of your clones of this project:
 ```
-    git remote set-url origin https://github.com/uds-psl/autosubst.git
+git remote set-url origin https://github.com/coq-community/autosubst.git
 ```
 
 
 ## Requirements
 
-- Coq 8.5
-- ssreflect version 1.6 for some examples
-
-or (experimentally, using branch `coq86-devel`, https://github.com/uds-psl/autosubst/issues/3):
-- Coq 8.6-8.8
+- Coq 8.9 - 8.12
 - to compile ssreflect-based examples, ssreflect is still needed even with Coq 8.8; version 1.7 appears to work.
 
 ## Installation
