@@ -17,6 +17,7 @@ Ltac derive_Ids := intro;  solve
 Hint Extern 0 (Ids _) => derive_Ids : derive.
 
 Ltac derive_Rename :=
+  let inst := fresh "dummy" in (* hack/workaround *)
   match goal with [ |- Rename ?term ] =>
     hnf; fix inst 2; change _ with (Rename term) in inst;
     intros xi s; change (annot term s); destruct s;
@@ -64,6 +65,7 @@ Ltac has_var s :=
   end.
 
 Ltac derive_Subst :=
+  let inst := fresh "dummy" in (* hack/workaround *)
   match goal with [ |- Subst ?term ] =>
     require_instance (Rename term);
     hnf; fix inst 2; change _ with (Subst term) in inst;
@@ -105,6 +107,7 @@ Ltac derive_Subst :=
 Hint Extern 0 (Subst _) => derive_Subst : derive.
 
 Ltac derive_HSubst :=
+  let inst := fresh "dummy" in (* hack/workaround *)
   match goal with [ |- HSubst ?inner ?outer ] =>
     require_instance (Subst inner);
     hnf; fix inst 2; change _ with (HSubst inner outer) in inst;
@@ -310,6 +313,7 @@ Qed.
 End InternalLemmasHSubst.
 
 Ltac derive_SubstLemmas :=
+  let ih := fresh "dummy" in (* hack/workaround *)
   match goal with
     [ |- @SubstLemmas ?term ?Ids_term ?Rename_term ?Subst_term] =>
     let rename := constr:(@rename term Rename_term) in
@@ -378,6 +382,7 @@ Ltac derive_SubstLemmas :=
 Hint Extern 0 (SubstLemmas _) => derive_SubstLemmas : derive.
 
 Ltac derive_HSubstLemmas :=
+  let ih := fresh "dummy" in (* hack/workaround *)
   match goal with [|- HSubstLemmas ?inner ?outer ] =>
   let ids := constr:(ids : var -> inner) in
 
@@ -400,6 +405,7 @@ Ltac derive_HSubstLemmas :=
 Hint Extern 0 (HSubstLemmas _ _) => derive_HSubstLemmas : derive.
 
 Ltac derive_SubstHSubstComp :=
+  let ih := fresh "dummy" in (* hack/workaround *)
   match goal with [|- SubstHSubstComp ?inner ?outer ] => hnf;
 
   assert (ren_hsubst_comp : forall xi (theta : var -> inner) (s : outer),

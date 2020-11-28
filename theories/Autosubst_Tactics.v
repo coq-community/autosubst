@@ -151,13 +151,13 @@ Ltac autosubst_typeclass_normalize :=
   repeat match goal with
   | [|- context[ids ?x]] =>
     let s := constr:(ids x) in progress change (ids x) with s
-  | [|- appcontext[ren ?xi]] =>
+  | [|- context[ren ?xi]] =>
     let s := constr:(ren xi) in progress change (ren xi) with s
-  | [|- appcontext[rename ?xi]] =>
+  | [|- context[rename ?xi]] =>
     let s := constr:(rename xi) in progress change (rename xi) with s
-  | [|- appcontext[subst ?sigma]] =>
+  | [|- context[subst ?sigma]] =>
     let s := constr:(subst sigma) in progress change (subst sigma) with s
-  | [|- appcontext[hsubst ?sigma]] =>
+  | [|- context[hsubst ?sigma]] =>
     let s := constr:(hsubst sigma) in progress change (hsubst sigma) with s
   end.
 
@@ -166,13 +166,13 @@ Ltac autosubst_typeclass_normalizeH H :=
   repeat match typeof H with
   | context[ids ?x] =>
     let s := constr:(ids x) in progress change (ids x) with s in H
-  | appcontext[ren ?xi] =>
+  | context[ren ?xi] =>
     let s := constr:(ren xi) in progress change (ren xi) with s in H
-  | appcontext[rename ?xi] =>
+  | context[rename ?xi] =>
     let s := constr:(rename xi) in progress change (rename xi) with s in H
-  | appcontext[subst ?sigma] =>
+  | context[subst ?sigma] =>
     let s := constr:(subst sigma) in progress change (subst sigma) with s in H
-  | appcontext[hsubst ?sigma] =>
+  | context[hsubst ?sigma] =>
     let s := constr:(hsubst sigma) in progress change (hsubst sigma) with s in H
   end.
 
@@ -290,7 +290,7 @@ Ltac autosubst :=
               ?scomp_hcompR, ?hsubst_compX, ?hsubst_compR,
               ?hsubst_id, ?id_hsubst, ?hsubst_compI, ?scomp_hcompI
     )
-  | match goal with [|- appcontext[(_ .: _) ?x]] =>
+  | match goal with [|- context[(_ .: _) ?x]] =>
       match goal with [y : _ |- _ ] => unify y x; destruct x; simpl @scons end
     end
   | fold_id]].
