@@ -22,10 +22,10 @@ lib:
 
 all: lib examples-plain examples-ssr
 
-examples-plain:
+examples-plain: lib
 	$(MAKE) -C examples/plain
 
-examples-ssr:
+examples-ssr: lib
 	$(MAKE) -C examples/ssr
 
 clean-doc:
