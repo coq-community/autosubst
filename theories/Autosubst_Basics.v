@@ -139,7 +139,7 @@ Tactic Notation "epose" open_constr(T) := eassert _;[refine T | idtac].
 
 Definition id {A} (x : A) := x.
 Arguments id {A} x /.
-Hint Unfold id.
+Hint Unfold id : core.
 
 Ltac fold_id :=
   repeat match goal with
@@ -177,6 +177,7 @@ Arguments funcomp {A B C} f g x /.
 
 (** ... with reversed notation *)
 
+Declare Scope subst_scope.
 Delimit Scope subst_scope with subst.
 Open Scope subst_scope.
 
@@ -194,7 +195,7 @@ Notation "s .: sigma" := (scons s sigma) (at level 55, sigma at level 56, right 
 (** A test and demonstration of the precedence rules, which effectively declare scons and
     funcomp at the same level, with scons being right associative and funcomp being left
     associative *)
-Check fun (f : var -> var) (sigma : var -> list var) =>
+Local Definition parse_test := fun (f : var -> var) (sigma : var -> list var) =>
         nil .: nil .: f >>> f >>> nil .: nil .: f >>> f >>> nil .: nil .: sigma.
 
 (* plus with different simplification behaviour *)
@@ -233,7 +234,7 @@ Context {A B : Type}.
 Implicit Types (x : A) (f : var -> A) (g : A -> B) (n m : var).
 
 Lemma scons_comp x f g : (x .: f) >>> g = (g x) .: f >>> g.
-Proof. f_ext; now destruct 0. Qed.
+Proof. f_ext; let x := fresh in intros x; now destruct x. Qed.
 
 Lemma plusSn n m : S n + m = S (n + m). reflexivity. Qed.
 Lemma plusnS n m : n + S m = S (n + m). symmetry. apply plus_n_Sm. Qed.
