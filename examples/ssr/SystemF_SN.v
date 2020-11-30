@@ -1,7 +1,7 @@
 (** * Strong Normalization of System F *)
 
-Require Import mathcomp.ssreflect.ssreflect.
-From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+From Coq Require Import ssreflect ssrfun ssrbool.
+From Coq Require Import Lists.List Init.Nat.
 Require Import AutosubstSsr ARS Context.
 
 Set Implicit Arguments.
@@ -129,12 +129,13 @@ Proof. move=> h. apply: red_compat => -[|n]/=; [exact: star1|exact: starR]. Qed.
 
 (** **** Syntactic typing *)
 
-Definition ctx := seq type.
-Local Notation "Gamma `_ i" := (get Gamma i).
+Definition ctx := list type.
+Local Notation "Gamma `_ i" := (get Gamma i) (at level 3, i at level 2,
+  left associativity, format "Gamma `_ i").
 
 Inductive has_type (Gamma : ctx) : term -> type -> Prop :=
 | ty_var (x : var) :
-    x < size Gamma -> has_type Gamma (TeVar x) Gamma`_x
+    x < length Gamma -> has_type Gamma (TeVar x) Gamma`_x
 | ty_abs (A B : type) (s : term) :
     has_type (A :: Gamma) s B ->
     has_type Gamma (Abs A s) (Arr A B)
@@ -189,7 +190,7 @@ Fixpoint L (T : type) (rho : nat -> cand) : cand :=
   end.
 
 Definition EL E (rho : nat -> cand) (sigma : var -> term) : Prop :=
-  forall x, x < size E -> L E`_x rho (sigma x).
+  forall x, x < length E -> L E`_x rho (sigma x).
 
 Definition admissible (rho : nat -> cand) :=
   forall x, reducible (rho x).
@@ -315,9 +316,10 @@ Theorem soundness Gamma s A :
 Proof with eauto using L_sn, ad_cons.
   elim=> {Gamma s A} [|Gamma A B s _ ih||Gamma A s _ ih|Gamma A B s _ /=ih]
     rho theta sigma ad el; asimpl...
-  - move=> t h. apply: beta_expansion... asimpl. apply: ih... by case.
+  - move=> t h. apply: beta_expansion... asimpl. apply: ih...
+    case=>/= [_ | n /Lt.lt_S_n /el // ]. exact: h.
   - move=> P B h. apply: inst_expansion... asimpl. apply: ih... move=> x.
-    rewrite size_map => lt. rewrite get_map // L_weaken...
+    rewrite map_length => lt. rewrite get_map // L_weaken...
   - rewrite L_subst. specialize (ih _ theta sigma ad el (L B rho) B.[theta]).
     have/ih: reducible (L B rho). exact: L_reducible. apply L_ext. by case.
 Qed.

@@ -5,8 +5,7 @@ Require Export Autosubst.Autosubst_Classes.
 Require Export Autosubst.Autosubst_Tactics.
 Require Export Autosubst.Autosubst_Lemmas.
 Require Export Autosubst.Autosubst_Derive.
-Require Import mathcomp.ssreflect.ssreflect.
-From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+From Coq Require Import ssreflect ssrfun ssrbool Lists.List.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -33,9 +32,9 @@ Global Instance MMapLemmas_pair : MMapLemmas A (B * C). derive. Qed.
 Global Instance MMapExt_pair : MMapExt A (B * C). derive. Defined.
 
 
-Global Instance mmap_seq : MMap A (seq B) := fun f => map (mmap f).
-Global Instance mmapLemmas_seq : MMapLemmas A (seq B). derive. Qed.
-Global Instance mmapExt_seq : MMapExt A (seq B). derive. Defined.
+Global Instance mmap_list : MMap A (list B) := fun f => map (mmap f).
+Global Instance mmapLemmas_list : MMapLemmas A (list B). derive. Qed.
+Global Instance mmapExt_list : MMapExt A (list B). derive. Defined.
 
 
 Global Instance MMap_fun : MMap A (B -> C) := fun f g x => mmap f (g x).

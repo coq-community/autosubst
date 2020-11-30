@@ -1,7 +1,7 @@
 (** * Normalization of Call-By-Value System F *)
 
-Require Import mathcomp.ssreflect.ssreflect.
-From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+From Coq Require Import ssreflect ssrfun ssrbool.
+From Coq Require Import Lists.List.
 Require Import AutosubstSsr Context.
 
 Set Implicit Arguments.
@@ -56,14 +56,14 @@ Hint Resolve eval_abs eval_tabs.
 
 (** **** Syntactic typing *)
 
-Definition ctx := seq type.
-Local Notation "Gamma `_ i" := (get Gamma i).
+Definition ctx := list type.
+Local Notation "Gamma `_ i" := (get Gamma i) (at level 80).
 
 Inductive has_type (Gamma : ctx) : term -> type -> Prop :=
 | ty_var (x : var) :
-    x < size Gamma -> has_type Gamma (TeVar x) Gamma`_x
+    x < length Gamma -> has_type Gamma (TeVar x) (Gamma`_x)
 | ty_abs (A B : type) (s : term) :
-    has_type (A :: Gamma) s B ->
+    has_type (cons A Gamma) s B ->
     has_type Gamma (Abs A s) (Arr A B)
 | ty_app (A B : type) (s t : term) :
     has_type Gamma s (Arr A B) ->
@@ -147,7 +147,7 @@ Proof.
 Qed.
 
 Definition VG (Gamma : ctx) (rho : var -> term -> Prop) (sigma : var -> term) :=
-  forall x, x < size Gamma -> E Gamma`_x rho (sigma x).
+  forall x, x < length Gamma -> E (Gamma`_x) rho (sigma x).
 
 Theorem soundness Gamma s A :
   has_type Gamma s A ->
@@ -157,13 +157,16 @@ Proof.
                       Gamma A s _ ih|Gamma A B s _ ih] delta sigma rho l.
   - exact: l.
   - eexists; first by autosubst. (do 2 eexists)=> [//|t vt]. asimpl.
-    apply: ih=> -[_/=|x/l//]. exact: V_to_E.
+    apply: ih=> -[_/=|x /= /Lt.lt_S_n Hx].
+    + exact: V_to_E.
+    + by apply/l.
   - case: (ih1 delta _ _ l) => {ih1} /= v ev1 [A' [u eq ih1]]; subst v.
     case: (ih2 delta _ _ l) => {ih2} v ev2 ih2.
     case: (ih1 _ ih2) => {ih1} w ev3 ih1. exists w => //.
     exact: eval_beta ev1 ev2 ev3.
   - apply: V_to_E. eexists=> [//=|P B]. asimpl. apply: ih => x /=.
-    rewrite size_map => wf. rewrite get_map //. apply/E_ren. exact: l.
+    rewrite map_length => wf.
+    rewrite get_map //. apply/E_ren. exact: l.
   - move: (ih delta _ _ l) => [v ev1 {ih} /=[s' eq ih]]; subst v.
     specialize (ih (V B rho) B.[delta]). move: ih => [v ev2 ih]. exists v.
     exact: eval_tbeta ev1 ev2. apply/V_subst. apply: eq_V ih => -[|x] //=.
@@ -175,19 +178,21 @@ Qed.
 Definition nilA : var -> term -> Prop := fun _ _ => False.
 
 Corollary soundness_nil s A :
-  has_type [::] s A -> E A nilA s.
+  has_type nil s A -> E A nilA s.
 Proof.
-  move=> h. cut (E A nilA s.|[ids].[ids]). autosubst. exact: (soundness h).
+  move=> h. cut (E A nilA s.|[ids].[ids]); first autosubst.
+  apply: soundness; eauto. rewrite /VG.
+  move=> x /= /PeanoNat.Nat.nlt_0_r [].
 Qed.
 
 Corollary normalization s A :
-  has_type [::] s A -> exists v, eval s v.
+  has_type nil s A -> exists v, eval s v.
 Proof.
   move=> /soundness_nil[v hv] _. by exists v.
 Qed.
 
 Corollary consistency s :
-  ~has_type [::] s (All (TyVar 0)).
+  ~has_type nil s (All (TyVar 0)).
 Proof.
   move=> /soundness_nil[v _ /= [t {s v} _ /(_ (fun _ => False) (TyVar 0))]].
   by move=> [s {t} _ []].

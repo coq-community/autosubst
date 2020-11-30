@@ -9,8 +9,8 @@
     and in particular does not contain well-formedness assumptions.
  *)
 
-Require Import mathcomp.ssreflect.ssreflect.
-From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+From Coq Require Import ssreflect ssrfun ssrbool.
+From Coq Require Import Lists.List micromega.Lia.
 Require Import AutosubstSsr Context.
 
 (** **** Syntax *)
@@ -44,7 +44,8 @@ Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
 
 (** **** Subtyping *)
 
-Notation "Gamma `_ x" := (dget Gamma x).
+Notation "Gamma `_ x" := (dget Gamma x) (at level 3, x at level 2,
+  left associativity, format "Gamma `_ x").
 Notation "Gamma ``_ x" := (get Gamma x) (at level 3, x at level 2,
   left associativity, format "Gamma ``_ x").
 
@@ -56,7 +57,7 @@ Inductive sub (Gamma : list type) : type -> type -> Prop :=
 | sub_var_refl x :
     SUB Gamma |- TyVar x <: TyVar x
 | sub_var_trans x A :
-    x < size Gamma -> SUB Gamma |- Gamma`_x <: A -> SUB Gamma |- TyVar x <: A
+    x < length Gamma -> SUB Gamma |- Gamma`_x <: A -> SUB Gamma |- TyVar x <: A
 | sub_fun A1 A2 B1 B2 :
     SUB Gamma |- B1 <: A1 -> SUB Gamma |- A2 <: B2 ->
     SUB Gamma |- Arr A1 A2 <: Arr B1 B2
@@ -70,8 +71,8 @@ Proof. elim: A Gamma; eauto using sub. Qed.
 Hint Resolve sub_refl.
 
 Lemma sub_ren Gamma Delta xi A B :
-  (forall x, x < size Gamma -> xi x < size Delta) ->
-  (forall x, x < size Gamma -> Delta`_(xi x) = (Gamma`_x).[ren xi]) ->
+  (forall x, x < length Gamma -> xi x < length Delta) ->
+  (forall x, x < length Gamma -> Delta`_(xi x) = (Gamma`_x).[ren xi]) ->
   SUB Gamma |- A <: B -> SUB Delta |- A.[ren xi] <: B.[ren xi].
 Proof.
   move=> sub eqn ty. elim: ty Delta xi sub eqn => {Gamma A B} Gamma //=;
@@ -79,13 +80,15 @@ Proof.
   - move=> x A lt _ ih Delta xi sub eqn. apply: sub_var_trans. exact: sub.
     rewrite eqn //. exact: ih.
   - move=> A1 A2 B1 B2 _ ih1 _ ih2 Delta xi sub eqn. apply: sub_all.
-    exact: ih1. asimpl. apply: ih2. by move=> [|x /sub].
-    move=> [_|x /eqn/=->]; autosubst.
+    { exact: ih1. }
+    asimpl. apply: ih2.
+    + move=> [_|x /Lt.lt_S_n /sub]; asimpl; lia.
+    + move=> [_|x /Lt.lt_S_n /eqn/=->]; autosubst.
 Qed.
 
 Lemma sub_weak Gamma A B C :
   SUB Gamma |- A <: B -> SUB (C :: Gamma) |- A.[ren (+1)] <: B.[ren (+1)].
-Proof. exact: sub_ren. Qed.
+Proof. apply sub_ren=> * //=; lia. Qed.
 
 Definition transitivity_at (B : type) := forall Gamma A C xi,
   SUB Gamma |- A <: B.[ren xi] -> SUB Gamma |- B.[ren xi] <: C ->
@@ -101,9 +104,9 @@ Lemma transitivity_ren B xi : transitivity_at B -> transitivity_at B.[ren xi].
 Proof. move=> h Gamma A C zeta. asimpl. exact: h. Qed.
 
 Lemma sub_narrow_t Gamma Delta A B :
-  (forall x, x < size Gamma -> x < size Delta) ->
-  (forall x, x < size Gamma -> SUB Delta |- Delta`_x <: Gamma`_x) ->
-  (forall x, x < size Gamma ->
+  (forall x, x < length Gamma -> x < length Delta) ->
+  (forall x, x < length Gamma -> SUB Delta |- Delta`_x <: Gamma`_x) ->
+  (forall x, x < length Gamma ->
     Delta`_x = Gamma`_x \/ transitivity_at (Gamma`_x)) ->
   SUB Gamma |- A <: B -> SUB Delta |- A <: B.
 Proof with eauto using sub.
@@ -111,8 +114,11 @@ Proof with eauto using sub.
   - move=> Gamma x A lt _ ih Delta h1 h2 h3. apply: sub_var_trans...
     case: (h3 x lt) => [->|]...
   - move=> Gamma A1 A2 B1 B2 _ ih1 _ ih2 Delta h1 h2 h3. apply: sub_all...
-    apply: ih2 => [[|x /h1]|[|x /h2/sub_weak]|[_|x /h3[|]]] //=...
-    move=>->... move=> tr. right. exact: transitivity_ren.
+    apply: ih2 =>
+        [[|x /Lt.lt_S_n/h1]|[|x /Lt.lt_S_n/h2/sub_weak]|[_|x /Lt.lt_S_n/h3[|]]] //=;
+        eauto; try lia.
+    { move=>->... }
+    move=> tr. right. exact: transitivity_ren.
 Qed.
 
 Definition is_var (A : type) : bool := if A is TyVar _ then true else false.
@@ -151,13 +157,14 @@ Proof.
 Qed.
 
 Lemma sub_subst Gamma Delta A B sigma :
-  (forall x, x < size Gamma -> SUB Delta |- sigma x <: (Gamma`_x).[sigma]) ->
+  (forall x, x < length Gamma -> SUB Delta |- sigma x <: (Gamma`_x).[sigma]) ->
   SUB Gamma |- A <: B -> SUB Delta |- A.[sigma] <: B.[sigma].
 Proof with eauto using sub.
   move=> h ty. elim: ty Delta sigma h => {Gamma A B} Gamma...
   - move=> x A lt _ ih Delta sigma h /=. apply: sub_trans (h _ lt) _. exact: ih.
   - move=> A1 A2 B1 B2 _ ih1 _ ih2 Delta sigma h /=. apply: sub_all...
-    apply: ih2 => -[_|x /h/sub_weak]. apply: sub_var_trans => //. autosubst.
+    apply: ih2 => -[_|x /= /Lt.lt_S_n/h/sub_weak].
+    { apply: sub_var_trans => /=. lia. autosubst. }
     autosubst.
 Qed.
 
@@ -168,7 +175,7 @@ Reserved Notation "'TY' Delta ; Gamma |- A : B"
    format "'TY'  Delta ; Gamma  |-  A  :  B").
 Inductive ty (Delta Gamma : list type) : term -> type -> Prop :=
 | ty_var x :
-    x < size Gamma ->
+    x < length Gamma ->
     TY Delta;Gamma |- TeVar x : Gamma``_x
 | ty_abs A B s :
     TY Delta;A::Gamma |- s : B ->
@@ -207,7 +214,7 @@ Inductive eval : term -> term -> Prop :=
 where "'EV' s => t" := (eval s t).
 
 Lemma ty_evar Delta Gamma x A :
-  A = Gamma``_x -> x < size Gamma -> TY Delta;Gamma |- TeVar x : A.
+  A = Gamma``_x -> x < length Gamma -> TY Delta;Gamma |- TeVar x : A.
 Proof. move->. exact: ty_var. Qed.
 
 Lemma ty_etapp Delta Gamma A B C D s :
@@ -219,36 +226,37 @@ Proof. move->. exact: ty_tapp. Qed.
 (** **** Preservation *)
 
 Lemma ty_ren Delta Gamma1 Gamma2 s A xi :
-  (forall x, x < size Gamma1 -> xi x < size Gamma2) ->
-  (forall x, x < size Gamma1 -> Gamma2``_(xi x) = Gamma1``_x) ->
+  (forall x, x < length Gamma1 -> xi x < length Gamma2) ->
+  (forall x, x < length Gamma1 -> Gamma2``_(xi x) = Gamma1``_x) ->
   TY Delta;Gamma1 |- s : A -> TY Delta;Gamma2 |- s.[ren xi] : A.
 Proof with eauto using ty.
   move=> h1 h2 ty. elim: ty Gamma2 xi h1 h2 => {Delta Gamma1 s A} /=...
   - move=> Delta Gamma1 x lt Gamma2 xi h1 h2. rewrite -h2 //. apply: ty_var...
   - move=> Delta Gamma1 A B s _ ih Gamma2 xi h1 h2. asimpl. apply: ty_abs.
-    by apply: ih => [[|x/h1]|[|x/h2]].
+    apply: ih => [[|x/Lt.lt_S_n/h1]|[|x/Lt.lt_S_n/h2]] //=; lia.
   - move=> Delta Gamma1 A B s _ ih Gamma2 xi h1 h2. apply: ty_tabs.
-    apply: ih => x. by rewrite !size_map => /h1. rewrite !size_map => lt.
+    apply: ih => x. by rewrite !map_length => /h1. rewrite !map_length => lt.
     rewrite !get_map ?h2 //. exact: h1.
 Qed.
 
 Lemma ty_weak Delta Gamma s A B :
   TY Delta;Gamma |- s : A -> TY Delta; B :: Gamma |- s.[ren (+1)] : A.
-Proof. exact: ty_ren. Qed.
+Proof. eapply ty_ren=> [x | x] //=. lia. Qed.
 
 Lemma ty_hsubst Delta1 Delta2 Gamma s A sigma :
-  (forall x, x < size Delta1 -> SUB Delta2 |- sigma x <: (Delta1`_x).[sigma]) ->
+  (forall x, x < length Delta1 -> SUB Delta2 |- sigma x <: (Delta1`_x).[sigma]) ->
   TY Delta1;Gamma |- s : A -> TY Delta2;Gamma..[sigma] |- s.|[sigma] :A.[sigma].
 Proof with eauto using ty.
   move=> h ty. elim: ty Delta2 sigma h => {Delta1 Gamma s A}/=...
   - move=> Delta1 Gamma x lt Delta2 sigma h. apply: ty_evar. by rewrite get_map.
-    by rewrite size_map.
+    by rewrite map_length.
   - move=> Delta1 Gamma A B s _ ih Delta2 sigma h. apply: ty_tabs.
     specialize (ih (A.[sigma] :: Delta2) (up sigma)). move: ih. asimpl.
-    apply. move=> [_|x/h/sub_weak] /=. apply: sub_var_trans => //. autosubst.
+    apply. move=> [_|x/Lt.lt_S_n/h/sub_weak] /=.
+    { apply: sub_var_trans => //=. lia. autosubst. }
     autosubst.
   - move=> Delta1 Gamma A B C s _ ih sub Delta2 sigma h. asimpl.
-    eapply ty_etapp. Focus 2. by eapply ih. autosubst. exact: sub_subst sub.
+    eapply ty_etapp. 2:{ by eapply ih. } autosubst. exact: sub_subst sub.
   - move=> Delta1 Gamma A B s _ ih sub Delta2 sigma h.
     eapply ty_sub. by eapply ih. exact: sub_subst sub.
 Qed.
@@ -256,32 +264,34 @@ Qed.
 Lemma ty_tweak Delta Gamma s A B :
   TY Delta;Gamma |- s : A ->
   TY B :: Delta; Gamma..[ren (+1)] |- s.|[ren (+1)] : A.[ren (+1)].
-Proof. apply: ty_hsubst => x /= lt. exact: sub_var_trans. Qed.
+Proof. apply: ty_hsubst => x /= lt. apply: sub_var_trans=> //=. lia. Qed.
 
 Lemma ty_subst Delta Gamma1 Gamma2 s A sigma :
-  (forall x, x < size Gamma1 -> TY Delta;Gamma2 |- sigma x : Gamma1``_x) ->
+  (forall x, x < length Gamma1 -> TY Delta;Gamma2 |- sigma x : Gamma1``_x) ->
   TY Delta;Gamma1 |- s : A -> TY Delta;Gamma2 |- s.[sigma] : A.
 Proof with eauto using ty.
   move=> h ty. elim: ty Gamma2 sigma h => {Delta Gamma1 s A}/=...
   - move=> Delta Gamma1 A B s _ ih Gamma2 sigma h /=. apply: ty_abs.
-    apply: ih. move=> [_|x/h/ty_weak]... autosubst.
+    apply: ih. move=> [_|x/Lt.lt_S_n/h/ty_weak].
+    { asimpl. econstructor. simpl. lia. }
+    autosubst.
   - move=> Delta Gamma1 A B s _ ih Gamma2 sigma h. apply: ty_tabs. apply: ih.
-    move=> x. rewrite size_map => lt. rewrite get_map //=. exact/ty_tweak/h.
+    move=> x. rewrite map_length => lt. rewrite get_map //=. exact/ty_tweak/h.
 Qed.
 
 Lemma ty_narrow Delta Gamma s A B1 B2 :
   TY Delta;B2::Gamma |- s : A -> SUB Delta |- B1 <: B2 ->
   TY Delta;B1::Gamma |- s : A.
 Proof.
-  move=> ty sub. rewrite -[s]subst_id. apply: ty_subst ty => -[_/=|x lt];
-    [apply: ty_sub sub|]; exact: ty_var.
+  move=> ty sub. rewrite -[s]subst_id. apply: ty_subst ty => /= -[_|x lt];
+  [apply: ty_sub sub|]; apply: ty_var; simpl; lia.
 Qed.
 
 Lemma ty_beta Delta Gamma s t A B :
   TY Delta;Gamma |- t : A -> TY Delta;A::Gamma |- s : B ->
   TY Delta;Gamma |- s.[t/] : B.
 Proof.
-  move=> ty. apply: ty_subst => -[|n lt] //=. exact: ty_var.
+  move=> ty. apply: ty_subst => /= -[|n lt] //=. apply: ty_var; lia.
 Qed.
 
 Lemma ty_narrowT Delta Gamma s A B1 B2 :
@@ -290,7 +300,10 @@ Lemma ty_narrowT Delta Gamma s A B1 B2 :
 Proof.
   move=> ty sub. cut (TY B1::Delta;Gamma..[ids] |- s.|[ids] : A.[ids]).
   autosubst. apply: ty_hsubst ty => -[_|x lt]; asimpl.
-  apply: sub_var_trans => //=. exact: sub_weak. exact: sub_var_trans.
+  apply: sub_var_trans => //=.
+  - lia.
+  - exact: sub_weak.
+  - exact: sub_var_trans.
 Qed.
 
 Lemma ty_betaT Delta Gamma s A B C :
@@ -299,7 +312,8 @@ Lemma ty_betaT Delta Gamma s A B C :
 Proof.
   move=> subt ty.
   cut (TY Delta;Gamma..[ren(+1)]..[C/] |- s.|[C/] : B.[C/]). autosubst.
-  apply: ty_hsubst ty => -[_|x lt]; asimpl => //. exact: sub_var_trans.
+  apply: ty_hsubst ty => /= -[_|x lt]; asimpl => //. apply: sub_var_trans. lia.
+  done.
 Qed.
 
 Lemma ty_inv_abs' Delta Gamma A A' B T s :
@@ -381,10 +395,10 @@ Proof.
 Qed.
 
 Lemma ev_progress' Delta Gamma s A :
-  TY Delta;Gamma |- s : A -> Gamma = [::] -> value s \/ exists t, EV s => t.
+  TY Delta;Gamma |- s : A -> Gamma = nil -> value s \/ exists t, EV s => t.
 Proof with eauto using eval.
   elim=> {Delta Gamma s A} /=; try solve [intuition].
-  - move=> _ Gamma x lt eqn. by subst.
+  - move=> _ Gamma x lt eqn. subst. inversion lt.
   - move=> Delta Gamma A B s t ty1 ih1 _ ih2 eqn. right.
     case: (ih1 eqn) => {ih1} [vs|[s' h1]]...
     case: (ih2 eqn) => {ih2 eqn} [vt|[t' h2]]...

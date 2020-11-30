@@ -1,13 +1,14 @@
 (** * Abstract Reduction Systems
 
     Useful lemmas when working with small-step reduction relations. *)
-Require Import mathcomp.ssreflect.ssreflect.
-From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+From Coq Require Import ssreflect ssrfun ssrbool.
+From Coq Require Import Lists.List Init.Nat.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+Declare Scope prop_scope.
 Delimit Scope prop_scope with PROP.
 Open Scope prop_scope.
 
@@ -238,7 +239,7 @@ Proof. by move/tri/tri. Qed.
 Lemma triangle_cofinal : cofinal.
 Proof.
   move=> x y. elim=> //=[|y' z A [n ih] B]. by exists 0.
-  exists n.+1. apply: starES (tri B) _. rewrite iterS.
+  exists (S n). apply: starES (tri B) _ =>/=.
   apply: star_img ih => a b /triangle_monotone. exact: star1.
 Qed.
 

@@ -1,7 +1,7 @@
 (** * Predicative CC omega: Type Preservation and Confluence
  *)
 
-From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+From Coq Require Import ssreflect ssrfun ssrbool micromega.Lia.
 Require Import AutosubstSsr ARS Context.
 
 Set Implicit Arguments.
@@ -275,7 +275,7 @@ Proof with eauto using sub1, sub1_sub, sub1_conv, conv_sub1.
     [A C D|n m leq C D conv sb|A B1 B2 sb1 ih C D conv sb2]...
   - inv sb...
     + apply: sub_sort. move: conv => /inj_sort eqn. subst.
-      exact: leq_trans leq _.
+      by etransitivity; eauto.
     + exfalso. exact: conv_prod_sort (conv_sym conv).
   - inv sb2...
     + exfalso. exact: conv_prod_sort conv.
@@ -312,17 +312,18 @@ Proof. move=> [A' B' /sub1_subst]; eauto using sub, conv_subst. Qed.
 
 (** **** Typing *)
 
-Notation "Gamma `_ i" := (dget Gamma i).
+Notation "Gamma `_ i" := (dget Gamma i) (at level 3, i at level 2,
+  left associativity, format "Gamma `_ i").
 
 Reserved Notation "[ Gamma |- ]".
 Reserved Notation "[ Gamma |- s :- A ]".
 
 Inductive has_type : list term -> term -> term -> Prop :=
 | ty_var Gamma x :
-    x < size Gamma ->
+    x < length Gamma ->
     [ Gamma |- Var x :- Gamma`_x ]
 | ty_sort Gamma n  :
-    [ Gamma |- Sort n :- Sort n.+1 ]
+    [ Gamma |- Sort n :- Sort (S n) ]
 | ty_app Gamma A B s t :
     [ Gamma |- s :- Prod A B ] ->
     [ Gamma |- t :- A ] ->
@@ -344,7 +345,7 @@ where "[ Gamma |- s :- A ]" := (has_type Gamma s A).
 
 Inductive context_ok : list term -> Prop :=
 | ctx_nil :
-    [ [::] |- ]
+    [ nil |- ]
 | ctx_ncons Gamma A n :
     [ Gamma |- A :- Sort n ] ->
     [ Gamma |- ] ->
@@ -352,7 +353,7 @@ Inductive context_ok : list term -> Prop :=
 where "[ Gamma |- ]" := (context_ok Gamma).
 
 Lemma ty_evar Gamma (A : term) (x : var) :
-  A = Gamma`_x -> x < size Gamma -> [ Gamma |- Var x :- A ].
+  A = Gamma`_x -> x < length Gamma -> [ Gamma |- Var x :- A ].
 Proof. move->. exact: ty_var. Qed.
 
 Lemma ty_eapp Gamma (A B C s t : term) :
@@ -366,26 +367,28 @@ Proof. move=>->. exact: ty_app. Qed.
 Notation "[ Gamma |- s ]" := (exists n, [ Gamma |- s :- Sort n ]).
 
 Lemma ty_sort_wf Gamma n : [ Gamma |- Sort n ].
-Proof. exists n.+1. exact: ty_sort. Qed.
+Proof. exists (S n). exact: ty_sort. Qed.
 Hint Resolve ty_sort_wf ty_sort.
 
 Lemma ty_prod_wf Gamma A B :
   [ Gamma |- A ] -> [ A :: Gamma |- B ] -> [ Gamma |- Prod A B ].
 Proof.
-  move=> [n tp1] [m tp2]. exists (maxn n m). apply: ty_prod.
-  - eapply (ty_sub (A := Sort n)); eauto. eapply sub_sort. exact: leq_maxl.
-  - eapply (ty_sub (A := Sort m)); eauto. apply: sub_sort. exact: leq_maxr.
+  move=> [n tp1] [m tp2]. exists (max n m). apply: ty_prod.
+  - eapply (ty_sub (A := Sort n)); eauto. eapply sub_sort.
+    exact: PeanoNat.Nat.le_max_l.
+  - eapply (ty_sub (A := Sort m)); eauto. apply: sub_sort.
+    exact: PeanoNat.Nat.le_max_r.
 Qed.
 
 (* Substitution Lemma *)
 
 Notation "[ Delta |- sigma -| Gamma ]" :=
-  (forall x, x < size Gamma -> [ Delta |- sigma x :- (Gamma`_x).[(sigma : _ -> _)] ]).
+  (forall x, x < length Gamma -> [ Delta |- sigma x :- (Gamma`_x).[(sigma : _ -> _)] ]).
 
 Lemma ty_renaming xi Gamma Delta s A :
   [ Gamma |- s :- A ] ->
-  (forall x, x < size Gamma -> xi x < size Delta) ->
-  (forall x, x < size Gamma -> (Gamma`_x).[ren xi] = Delta`_(xi x)) ->
+  (forall x, x < length Gamma -> xi x < length Delta) ->
+  (forall x, x < length Gamma -> (Gamma`_x).[ren xi] = Delta`_(xi x)) ->
   [ Delta |- s.[ren xi] :- A.[ren xi] ].
 Proof.
   move=> tp. elim: tp xi Delta => {Gamma s A} /=
@@ -397,18 +400,18 @@ Proof.
   - apply: (@ty_eapp _ A.[ren xi] B.[up (ren xi)]). autosubst.
       exact: ih1. exact: ih2.
   - eapply ty_lam. by eapply ih1. asimpl. apply: ih2.
-    + by move=> [//|x /subctx].
-    + by move=> [_|x /eqn/=<-]; autosubst.
+    + move=>[/=|/= x /Lt.lt_S_n /subctx]; lia.
+    + move=>[_|x /Lt.lt_S_n /eqn/=<-]; autosubst.
   - apply: ty_prod. exact: ih1. asimpl. apply: ih2.
-    + by move=> [//|x /subctx].
-    + by move=> [_|x /eqn/=<-]; autosubst.
+    + move=> [/=|x /Lt.lt_S_n /subctx /=]; lia.
+    + move=> [_|x /Lt.lt_S_n /eqn/=<-]; autosubst.
   - apply: (@ty_sub _ n A.[ren xi] B.[ren xi]). exact: sub_subst.
-      exact: ih1. exact: ih2.
+    exact: ih1. exact: ih2.
 Qed.
 
 Lemma weakening Gamma s A B :
   [ Gamma |- s :- A ] -> [ B :: Gamma |- s.[ren (+1)] :- A.[ren (+1)] ].
-Proof. move=> /ty_renaming. exact. Qed.
+Proof. move=> /ty_renaming H. eapply H; simpl; lia || done. Qed.
 
 Lemma eweakening Gamma s s' A A' B :
   s' = s.[ren (+1)] -> A' = A.[ren (+1)] ->
@@ -416,9 +419,10 @@ Lemma eweakening Gamma s s' A A' B :
 Proof. move=>->->. exact: weakening. Qed.
 
 Lemma ty_ok Gamma :
-  [ Gamma |- ] -> forall x, x < size Gamma -> [ Gamma |- Gamma`_x ].
+  [ Gamma |- ] -> forall x, x < length Gamma -> [ Gamma |- Gamma`_x ].
 Proof.
-  elim=> // {Gamma} Gamma A n tp _ ih [_|x /ih [{n tp} n tp]];
+  elim=>[x /PeanoNat.Nat.nlt_0_r // | {Gamma} Gamma A n tp _ ih ].
+  elim=>[_ |x ih2 /= /Lt.lt_S_n /ih {n tp} [n tp]];
     exists n; exact: weakening tp.
 Qed.
 
@@ -426,8 +430,9 @@ Lemma sty_up sigma Gamma Delta A :
   [ Delta |- sigma -| Gamma ] ->
   [ A.[sigma] :: Delta |- up sigma -| A :: Gamma ].
 Proof.
-  move=> stp [_//|x /stp tp] /=. apply: ty_evar => //=. autosubst.
-  apply: eweakening tp; autosubst.
+  move=> stp [_/=|x /= /Lt.lt_S_n /stp tp] /=.
+  - apply: ty_evar => //=; lia || autosubst.
+  - apply: eweakening tp; autosubst.
 Qed.
 
 Lemma ty_subst sigma Gamma Delta s A :
@@ -451,18 +456,20 @@ Lemma ty_cut Gamma s t A B :
   [ A :: Gamma |- s :- B ] -> [ Gamma |- t :- A ] ->
   [ Gamma |- s.[t/] :- B.[t/] ].
 Proof.
-  move=> /ty_subst h tp. apply: h => -[_|x leq]; asimpl => //. exact: ty_var.
+  move=> /ty_subst h tp. apply: h => -[_|x /= leq]; asimpl => //.
+  apply: ty_var. lia.
 Qed.
 
 Lemma ty_ctx_conv Gamma s A B C n :
   [ A :: Gamma |- s :- C ] -> B === A -> [ Gamma |- A :- Sort n ] ->
   [ B :: Gamma |- s :- C ].
 Proof.
-  move=> tp1 conv tp2. cut ([ B :: Gamma |- s.[ids] :- C.[ids] ]). autosubst.
-  apply: ty_subst tp1. move=> [_|x //=]. asimpl. eapply ty_sub.
-  eapply conv_sub. eapply (conv_subst _ conv).
-  apply: eweakening tp2 => //. eapply ty_var => //.
-  move=> le. asimpl. exact: ty_var.
+  move=> tp1 conv tp2. cut ([ B :: Gamma |- s.[ids] :- C.[ids] ]); first by autosubst.
+  apply: ty_subst tp1. move=> [_|x //=].
+  - asimpl. eapply ty_sub.
+    eapply conv_sub. eapply (conv_subst _ conv).
+    apply: eweakening tp2 => //. eapply ty_var => /=. lia.
+  - move=> /Lt.lt_S_n le. asimpl. apply: ty_var => /=. lia.
 Qed.
 
 (* Inversion Lemmas *)
@@ -494,8 +501,9 @@ Proof.
     apply: ty_ctx_conv tp2 _ tp1. exact: conv_sym.
   - move=>Gamma n A B s sub1 tp1 ih1 tp2 ih2 A' B' t eqn1 [[sub2 [m tp3]]|eqn2];
       subst; apply: ih2 => //; left; split => //.
-    + exact: sub_trans sub1 sub2. by exists m.
-    + exists n. by move: tp1 => /ty_prod_inv[].
+    + exact: sub_trans sub1 sub2.
+    + by exists m.
+    + exists n. by move: tp1 => /ty_prod_inv [].
 Qed.
 
 Lemma ty_lam_inv Gamma s A B :

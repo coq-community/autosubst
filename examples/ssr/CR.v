@@ -1,5 +1,5 @@
-Require Import mathcomp.ssreflect.ssreflect.
-From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+From Coq Require Import ssreflect ssrfun ssrbool.
+From Coq Require Import Lists.List micromega.Lia.
 Require Import AutosubstSsr ARS.
 
 Set Implicit Arguments.
