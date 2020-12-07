@@ -9,6 +9,9 @@ Require Import Autosubst_Basics Autosubst_MMap.
 Definition _bind (T1 : Type) (T2 : Type) (n : nat) := T2.
 Arguments _bind / T1 T2 n.
 
+Declare Scope bind_scope.
+Open Scope bind_scope.
+
 Notation "{ 'bind' n 'of' T1 'in' T2 }" :=
   (_bind T1 T2 n) (at level 0,
    format "{ 'bind'  n  'of'  T1  'in'  T2 }") : bind_scope.
@@ -24,8 +27,6 @@ Notation "{ 'bind' T1 'in' T2 }" :=
 Notation "{ 'bind' T }" :=
   (_bind T T 1) (at level 0,
    format "{ 'bind'  T }") : bind_scope.
-
-Open Scope bind_scope.
 
 (**
   Classes for the substitution operations.
