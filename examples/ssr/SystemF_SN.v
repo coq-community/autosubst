@@ -1,7 +1,7 @@
 (** * Strong Normalization of System F *)
 
-Require Import mathcomp.ssreflect.ssreflect.
-From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq.
+From Coq Require Import ssrfun.
 Require Import AutosubstSsr ARS Context.
 
 Set Implicit Arguments.
@@ -130,7 +130,7 @@ Proof. move=> h. apply: red_compat => -[|n]/=; [exact: star1|exact: starR]. Qed.
 (** **** Syntactic typing *)
 
 Definition ctx := seq type.
-Local Notation "Gamma `_ i" := (get Gamma i).
+Local Notation "Gamma `_ i" := (get Gamma i) (at level 2).
 
 Inductive has_type (Gamma : ctx) : term -> type -> Prop :=
 | ty_var (x : var) :

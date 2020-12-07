@@ -9,8 +9,7 @@
     and in particular does not contain well-formedness assumptions.
  *)
 
-Require Import mathcomp.ssreflect.ssreflect.
-From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq.
 Require Import AutosubstSsr Context.
 
 (** **** Syntax *)
@@ -44,7 +43,7 @@ Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
 
 (** **** Subtyping *)
 
-Notation "Gamma `_ x" := (dget Gamma x).
+Notation "Gamma `_ x" := (dget Gamma x) (at level 2).
 Notation "Gamma ``_ x" := (get Gamma x) (at level 3, x at level 2,
   left associativity, format "Gamma ``_ x").
 
