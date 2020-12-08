@@ -9,6 +9,8 @@ license: "MIT"
 
 synopsis: "Autosubst (CI only)"
 
-build: [make "-j%{jobs}%" "examples-plain"]
-install: []
-depends: ["coq"]
+build: [make "-j%{jobs}%" "all"]
+depends: [
+  "coq"
+  "coq-mathcomp-ssreflect"
+]

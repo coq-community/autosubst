@@ -1,7 +1,6 @@
 (** * Normalization of Call-By-Value System F *)
 
-Require Import mathcomp.ssreflect.ssreflect.
-From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq.
 Require Import AutosubstSsr Context.
 
 Set Implicit Arguments.
@@ -57,7 +56,7 @@ Hint Resolve eval_abs eval_tabs.
 (** **** Syntactic typing *)
 
 Definition ctx := seq type.
-Local Notation "Gamma `_ i" := (get Gamma i).
+Local Notation "Gamma `_ i" := (get Gamma i) (at level 2).
 
 Inductive has_type (Gamma : ctx) : term -> type -> Prop :=
 | ty_var (x : var) :

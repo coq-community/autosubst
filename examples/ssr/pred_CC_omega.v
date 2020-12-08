@@ -1,7 +1,8 @@
 (** * Predicative CC omega: Type Preservation and Confluence
  *)
 
-From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
+From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq.
+From Coq Require Import ssrfun.
 Require Import AutosubstSsr ARS Context.
 
 Set Implicit Arguments.
@@ -312,7 +313,7 @@ Proof. move=> [A' B' /sub1_subst]; eauto using sub, conv_subst. Qed.
 
 (** **** Typing *)
 
-Notation "Gamma `_ i" := (dget Gamma i).
+Notation "Gamma `_ i" := (dget Gamma i) (at level 2).
 
 Reserved Notation "[ Gamma |- ]".
 Reserved Notation "[ Gamma |- s :- A ]".
