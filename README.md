@@ -15,7 +15,7 @@ git remote set-url origin https://github.com/coq-community/autosubst.git
 ## Requirements
 
 - Coq 8.10 - 8.12
-- to compile `examples/ssr`, ssreflect is needed; version 1.7 appears to work
+- to compile `examples/ssr`, ssreflect is needed; version 1.12 will work
 
 ## Installation
 
