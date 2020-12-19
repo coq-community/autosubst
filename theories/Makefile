@@ -14,7 +14,7 @@ install: $(COQMAKEFILE)
 	$(COQMAKE) install
 
 clean: $(COQMAKEFILE)
-	-$(COQMAKE) clean
+	-$(COQMAKE) cleanall
 	rm -f $(COQMAKEFILE)
 
 .PHONY: all install clean

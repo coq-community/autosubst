@@ -1,0 +1,4 @@
+(coq.theory
+ (name AutosubstSsr)
+ (package coq-autosubst-examples-ssreflect)
+ (synopsis "Ssreflect Autosubst examples"))

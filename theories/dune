@@ -1,0 +1,4 @@
+(coq.theory
+ (name Autosubst)
+ (package coq-autosubst)
+ (synopsis "Coq library for parallel de Bruijn substitutions"))

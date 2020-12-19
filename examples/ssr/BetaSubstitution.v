@@ -1,6 +1,6 @@
 (** * Correctness of Single Variable Substitutions *)
 From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq.
-Require Import Autosubst.
+Require Import Autosubst.Autosubst.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

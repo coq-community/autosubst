@@ -1,0 +1,4 @@
+(coq.theory
+ (name AutosubstPlain)
+ (package coq-autosubst-examples-plain)
+ (synopsis "Plain Autosubst examples"))

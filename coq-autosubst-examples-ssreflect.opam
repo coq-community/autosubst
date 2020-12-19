@@ -7,20 +7,14 @@ dev-repo: "git+https://github.com/coq-community/autosubst.git"
 bug-reports: "https://github.com/coq-community/autosubst/issues"
 license: "MIT"
 
-synopsis: "Coq library for parallel de Bruijn substitutions"
-description: """
-Autosubst is a library for the Coq proof assistant which
-provides automation for formalizing syntactic theories with
-variable binders. Given an inductive definition of syntactic
-objects in de Bruijn representation augmented with binding
-annotations, Autosubst synthesizes the parallel substitution
-operation and automatically proves the basic lemmas about
-substitutions."""
+synopsis: "Ssreflect Autosubst examples"
 
 build: ["dune" "build" "-p" name "-j" jobs]
 depends: [
   "dune" {>= "2.5"}
   "coq" {(>= "8.10" & < "8.14~") | (= "dev")}
+  "coq-autosubst" {= "dev"}
+  "coq-mathcomp-ssreflect" {(>= "1.9" & < "1.13~") | (= "dev")}
 ]
 
 tags: [
@@ -29,7 +23,7 @@ tags: [
   "keyword:binders"
   "keyword:de Bruijn indices"
   "keyword:substitution"
-  "logpath:Autosubst"
+  "logpath:AutosubstSsr"
 ]
 authors: [
   "Steven Schäfer"

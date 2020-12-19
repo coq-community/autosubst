@@ -8,10 +8,10 @@ all: $(COQMAKEFILE)
 	+$(MAKE) -f $(COQMAKEFILE) all
 
 $(COQMAKEFILE): Makefile $(VS)
-	coq_makefile -R $(LIB) Autosubst $(VS) -R . Ssr -o $(COQMAKEFILE)
+	coq_makefile -R $(LIB) Autosubst $(VS) -R . AutosubstSsr -o $(COQMAKEFILE)
 
 clean: $(COQMAKEFILE)
-	-$(COQMAKE) clean
+	-$(COQMAKE) cleanall
 	rm -f $(COQMAKEFILE)
 
 .PHONY: all clean
