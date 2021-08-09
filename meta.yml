@@ -47,9 +47,6 @@ supported_coq_versions:
   text: 8.10 or later
   opam: '{(>= "8.10" & < "8.14~") | (= "dev")}'
 
-tested_coq_nix_versions:
-- version_or_url: https://github.com/coq/coq-on-cachix/tarball/master
-
 tested_coq_opam_versions:
 - version: 'coq-dev'
   repo: 'mathcomp/mathcomp-dev'
