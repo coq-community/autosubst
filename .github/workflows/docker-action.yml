@@ -1,4 +1,4 @@
-name: CI
+name: Docker CI
 
 on:
   push:
@@ -20,7 +20,6 @@ jobs:
           - 'mathcomp/mathcomp:1.12.0-coq-8.12'
           - 'mathcomp/mathcomp:1.11.0-coq-8.12'
           - 'mathcomp/mathcomp:1.10.0-coq-8.11'
-          - 'mathcomp/mathcomp:1.9.0-coq-8.10'
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
