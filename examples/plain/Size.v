@@ -1,5 +1,5 @@
 (** * Support for Size Induction *)
-Require Import Omega List Program.Equality.
+Require Import ZArith Lia List Program.Equality.
 Require Import Autosubst.Autosubst_Basics.
 
 Class Size (A : Type) := size : A -> nat.
@@ -38,8 +38,8 @@ Lemma size_rec {A : Type} f (x : A) :
 Proof.
   intros P IS. cut (forall n x, f x <= n -> P x). { eauto. }
   intros n. induction n; intros; apply IS; intros.
-  - omega.
-  - apply IHn. omega.
+  - lia.
+  - apply IHn. lia.
 Defined.
 
 Lemma size_ind2 {A B : Type} f g (x : A) (y : B) :
@@ -52,18 +52,18 @@ Proof.
   intros P IS. cut (forall n x, f x <= n ->  forall y, P x y). { eauto. }
   intros n. induction n; intros.
   - apply IS; intros.
-    + omega.
+    + lia.
     + cut (forall m x, f x = 0 -> forall y, g y <= m -> P x y). {
-        intros H_c. eapply H_c. omega. eauto. }
-      intros m. induction m; intros; apply IS; intros; try  omega.
-      apply IHm; omega.
+        intros H_c. eapply H_c. lia. eauto. }
+      intros m. induction m; intros; apply IS; intros; try  lia.
+      apply IHm; lia.
   - apply IS; intros.
-    + apply IHn; omega.
+    + apply IHn; lia.
     + cut (forall m x y, f x = f x2 -> g y <= m -> P x y). { eauto. }
-      intros m. depind m; intros; apply IS; intros; try omega.
-      * apply IHn; omega.
-      * apply IHn; omega.
-      * apply IHm; omega.
+      intros m. depind m; intros; apply IS; intros; try lia.
+      * apply IHn; lia.
+      * apply IHn; lia.
+      * apply IHm; lia.
 Qed.
 
 Ltac sind H :=
@@ -76,7 +76,7 @@ Ltac sizesimpl := repeat(simpl in *;
     let s := constr:(size t) in progress change (size t) with s in *
   end; autorewrite with size in *).
 
-Tactic Notation "somega" := sizesimpl; try omega; now trivial.
+Tactic Notation "slia" := sizesimpl; try lia; now trivial.
 
 Instance size_list (A : Type) (size_A : Size A) : Size (list A).
   derive.
@@ -103,8 +103,8 @@ Lemma size_In A (size_A : Size A) (x : A) l : In x l -> size x < size l.
 Proof.
   revert x.
   induction l; intros; simpl in *; intuition subst.
-  - omega.
-  - pose (IHl _ H0). omega.
+  - lia.
+  - pose (IHl _ H0). lia.
 Qed.
 
 Instance size_fact_In (A : Type) (size_A : Size A) x l (x_in_l : In x l) :

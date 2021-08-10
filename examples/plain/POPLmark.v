@@ -5,7 +5,7 @@
     formalization of syntactic theories.  We solve part 1, that is,
     progress and preservation of System F with subtyping.  *)
 
-Require Import Program.Equality List Omega.
+Require Import Program.Equality List Lia.
 Require Import Autosubst.Autosubst.
 Require Import Size Decidable Context.
 
@@ -50,7 +50,7 @@ Defined.
 
 Lemma ren_size_inv (A : type) : forall xi, size A.[ren xi] = size A.
 Proof.
-  induction A; intros; sizesimpl; repeat(asimpl; try autorew); somega.
+  induction A; intros; sizesimpl; repeat(asimpl; try autorew); slia.
 Qed.
 
 Fixpoint wf_ty Delta A := match A with
@@ -101,7 +101,7 @@ Proof.
   intros. replace A with A.[ren id] by now autosubst.
   eapply wf_weak; eauto.
   intros. apply atnd_defined.
-  cut(id x < length Delta1). omega.
+  cut(id x < length Delta1). lia.
   apply atnd_defined. eauto.
 Qed.
 
@@ -161,16 +161,16 @@ Proof.
     induction H_AB; intros; ainv; eauto using sub.
     - inv H_BC.
       + constructor. simpl. split; eauto using sub_wf_1, sub_wf_2.
-      + constructor; eapply IH; eauto; somega.
+      + constructor; eapply IH; eauto; slia.
     - inv H_BC.
       + constructor; constructor.
         * eapply sub_wf; now eauto.
         * eapply wf_weak'. now eapply (sub_wf H_AB2). now simpl.
       + rename B0 into C1. rename B3 into C2.
         constructor; eauto.
-        * eapply IH; eauto; somega.
-        * eapply IH; eauto; try somega.
-          (refine (proj2 (IH _ _) nil _ B1 _ _ _ _ _ _)); eauto; simpl; omega.
+        * eapply IH; eauto; slia.
+        * eapply IH; eauto; try slia.
+          (refine (proj2 (IH _ _) nil _ B1 _ _ _ _ _ _)); eauto; simpl; lia.
   }
   {
     intros H_trans Delta' Delta B B' A C ? H H_B'B. subst.
@@ -178,10 +178,10 @@ Proof.
     depind H; intros; simpl in *.
     - constructor.
       eapply wf_weak'. eassumption.
-      repeat rewrite app_length. simpl. omega.
+      repeat rewrite app_length. simpl. lia.
     - constructor. simpl.
       apply atnd_defined. apply atnd_defined in H.
-      repeat rewrite -> app_length in *. simpl in *. omega.
+      repeat rewrite -> app_length in *. simpl in *. lia.
     - decide (x = length Delta').
       + subst.
         econstructor. { apply atnd_repl. }
@@ -194,7 +194,7 @@ Proof.
           rewrite app_assoc.
           cutrewrite (S (length Delta') = length (Delta' ++ B' :: nil)).
           now apply atnd_steps.
-          rewrite app_length. simpl. omega.
+          rewrite app_length. simpl. lia.
         * asimpl in IHsub.
           eapply IHsub; now eauto.
       + econstructor; eauto.
@@ -203,7 +203,7 @@ Proof.
     - constructor.
       + now eauto.
       + eapply wf_weak'. eassumption.
-        repeat rewrite app_length. simpl. omega.
+        repeat rewrite app_length. simpl. lia.
       + change (B1 :: Delta' ++ B' :: Delta)
           with ((B1 :: Delta') ++ B' :: Delta).
         eapply IHsub2; eauto.
@@ -339,10 +339,10 @@ Lemma ty_narrow Delta2 Delta1 Gamma A B C s:
   TY Delta2 ++ A :: Delta1 ; Gamma |- s : C.
 Proof.
   intros H. depind H; econstructor; eauto using ty.
-  - eapply wf_weak'. eassumption. repeat rewrite app_length. simpl. omega.
+  - eapply wf_weak'. eassumption. repeat rewrite app_length. simpl. lia.
   - change (A0 :: Delta2 ++ A :: Delta1) with ((A0 :: Delta2) ++ A :: Delta1).
     eapply IHty. reflexivity. assumption.
-  - eapply wf_weak'. eassumption. repeat rewrite app_length. simpl. omega.
+  - eapply wf_weak'. eassumption. repeat rewrite app_length. simpl. lia.
   - now eapply sub_narrow; eauto.
   - now eapply sub_narrow; eauto.
 Qed.

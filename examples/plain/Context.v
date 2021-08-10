@@ -1,5 +1,5 @@
 (** * Context *)
-Require Import Omega List Program.Equality.
+Require Import Lia ZArith List Program.Equality.
 Require Import Autosubst.Autosubst.
 
 Fixpoint atn {X} l n (x : X) :=
@@ -119,11 +119,11 @@ Qed.
 Lemma atnd_defined Delta x : (exists B, atnd Delta x B) <-> x < length Delta.
 Proof.
   revert x. induction Delta; intuition; asimpl in *; ainv.
-  - destruct x. omega. cut(x < length Delta). omega.
+  - destruct x. lia. cut(x < length Delta). lia.
     ainv. firstorder.
   - destruct x.
     + eexists. now econstructor.
-    + edestruct IHDelta as [_ [? ?]]. cut(x < length Delta); eauto. omega.
+    + edestruct IHDelta as [_ [? ?]]. cut(x < length Delta); eauto. lia.
       eexists. econstructor; eauto.
 Qed.
 
