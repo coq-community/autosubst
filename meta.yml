@@ -44,8 +44,8 @@ license:
   identifier: MIT
 
 supported_coq_versions:
-  text: 8.10 or later
-  opam: '{(>= "8.10" & < "8.14~") | (= "dev")}'
+  text: 8.11 or later
+  opam: '{(>= "8.11" & < "8.15~") | (= "dev")}'
 
 tested_coq_opam_versions:
 - version: 'coq-dev'
@@ -58,8 +58,6 @@ tested_coq_opam_versions:
   repo: 'mathcomp/mathcomp'
 - version: '1.10.0-coq-8.11'
   repo: 'mathcomp/mathcomp'
-- version: '1.9.0-coq-8.10'
-  repo: 'mathcomp/mathcomp'
 
 namespace: Autosubst
 
@@ -71,4 +69,26 @@ keywords:
 
 categories:
 - name: Computer Science/Lambda Calculi
+
+documentation: |
+  To build the examples that do not need ssreflect, type
+  ```
+  make examples-plain
+  ```
+
+  The examples that depend on ssreflect are built with
+  ```
+  make examples-ssr
+  ```
+
+  To build the documentation (including all examples), type
+  ```
+  make doc
+  ```
+
+  You can use the file `doc/toc.html` to browse the documentation.
+
+  ## Bug Reports
+
+  Please submit bugs reports on https://github.com/coq-community/autosubst/issues
 ---
