@@ -45,7 +45,7 @@ license:
 
 supported_coq_versions:
   text: 8.11 or later
-  opam: '{(>= "8.11" & < "8.15~") | (= "dev")}'
+  opam: '{(>= "8.11" & < "8.16~") | (= "dev")}'
 
 tested_coq_opam_versions:
 - version: 'coq-dev'
