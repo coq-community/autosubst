@@ -139,7 +139,7 @@ Tactic Notation "epose" open_constr(T) := eassert _;[refine T | idtac].
 
 Definition id {A} (x : A) := x.
 Arguments id {A} x /.
-Hint Unfold id : core.
+Global Hint Unfold id : core.
 
 Ltac fold_id :=
   repeat match goal with
