@@ -43,7 +43,7 @@ substitutions.
   - Ralf Jung ([**@RalfJung**](https://github.com/RalfJung))
   - Dan Frumin ([**@co-dan**](https://github.com/co-dan))
 - License: [MIT License](LICENSE)
-- Compatible Coq versions: 8.11 or later
+- Compatible Coq versions: 8.14 or later
 - Additional dependencies: none
 - Coq namespace: `Autosubst`
 - Related publication(s):
