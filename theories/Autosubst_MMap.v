@@ -94,12 +94,12 @@ Ltac mmap_typeclass_normalizeH H :=
      let s := constr:(@mmap A B _ f) in progress change (@mmap A B _ f) with s
   end.
 
-Hint Rewrite @mmap_id_instE @mmap_const_instE : mmap.
-Hint Rewrite @mmap_id @mmap_comp @mmap_idX @mmap_compX @mmap_compR
+Global Hint Rewrite @mmap_id_instE @mmap_const_instE : mmap.
+Global Hint Rewrite @mmap_id @mmap_comp @mmap_idX @mmap_compX @mmap_compR
   using exact _ : mmap.
 
-Hint Rewrite @mmap_id_instE @mmap_const_instE : autosubst.
-Hint Rewrite @mmap_id @mmap_comp @mmap_idX @mmap_compX @mmap_compR
+Global Hint Rewrite @mmap_id_instE @mmap_const_instE : autosubst.
+Global Hint Rewrite @mmap_id @mmap_comp @mmap_idX @mmap_compX @mmap_compR
   using exact _ : autosubst.
 
 Ltac msimpl :=
@@ -144,16 +144,16 @@ Ltac derive_MMap :=
         let ys := tmap ys in exact ys
     end
   end.
-Hint Extern 0 (MMap _ _) => derive_MMap : derive.
+Global Hint Extern 0 (MMap _ _) => derive_MMap : derive.
 
 Ltac derive_MMapLemmas := constructor;
   [ let x := fresh in intros x; induction x; simpl; f_equal; trivial; apply mmap_id
   | let x := fresh in intros ?? x; induction x; simpl; f_equal; trivial; apply mmap_comp ].
-Hint Extern 0 (MMapLemmas _ _) => derive_MMapLemmas : derive.
+Global Hint Extern 0 (MMapLemmas _ _) => derive_MMapLemmas : derive.
 
 Ltac derive_MMapExt :=
   intros ???; fix FIX 1; let x := fresh in intros x; destruct x; simpl; f_equal; auto using mmap_ext.
-Hint Extern 0 (MMapExt _ _) => derive_MMapExt : derive.
+Global Hint Extern 0 (MMapExt _ _) => derive_MMapExt : derive.
 
 (* Local Variables: *)
 (* coq-load-path: (("." "Autosubst")) *)

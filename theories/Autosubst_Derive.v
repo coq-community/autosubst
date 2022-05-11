@@ -14,7 +14,7 @@ Ltac derive_Ids := intro;  solve
   | constructor 15; [app_var] | constructor 16; [app_var]
   | constructor 17; [app_var] | constructor 18; [app_var]
   | constructor 19; [app_var] | constructor 20; [app_var]].
-Hint Extern 0 (Ids _) => derive_Ids : derive.
+Global Hint Extern 0 (Ids _) => derive_Ids : derive.
 
 Ltac derive_Rename :=
   let inst := fresh "dummy" in (* hack/workaround *)
@@ -48,7 +48,7 @@ Ltac derive_Rename :=
         let t := map t in exact t
     end
   end.
-Hint Extern 0 (Rename _) => derive_Rename : derive.
+Global Hint Extern 0 (Rename _) => derive_Rename : derive.
 
 Ltac has_var s :=
   match s with
@@ -104,7 +104,7 @@ Ltac derive_Subst :=
         end
     end
   end.
-Hint Extern 0 (Subst _) => derive_Subst : derive.
+Global Hint Extern 0 (Subst _) => derive_Subst : derive.
 
 Ltac derive_HSubst :=
   let inst := fresh "dummy" in (* hack/workaround *)
@@ -153,7 +153,7 @@ Ltac derive_HSubst :=
         let t := map t in exact t
     end
   end.
-Hint Extern 0 (HSubst _ _) => derive_HSubst : derive.
+Global Hint Extern 0 (HSubst _ _) => derive_HSubst : derive.
 
 Lemma mmap_id_ext {A B} {inst : MMap A B} `{@MMapLemmas A B inst}
   `{@MMapExt A B inst} (f : A -> A) (b : B) :
@@ -379,7 +379,7 @@ Ltac derive_SubstLemmas :=
   constructor; hnf;
     [apply rename_subst|apply subst_id|reflexivity|apply subst_comp]
   end.
-Hint Extern 0 (SubstLemmas _) => derive_SubstLemmas : derive.
+Global Hint Extern 0 (SubstLemmas _) => derive_SubstLemmas : derive.
 
 Ltac derive_HSubstLemmas :=
   let ih := fresh "dummy" in (* hack/workaround *)
@@ -402,7 +402,7 @@ Ltac derive_HSubstLemmas :=
 
   constructor; hnf; [exact hsubst_id|reflexivity|exact hsubst_comp]
   end.
-Hint Extern 0 (HSubstLemmas _ _) => derive_HSubstLemmas : derive.
+Global Hint Extern 0 (HSubstLemmas _ _) => derive_HSubstLemmas : derive.
 
 Ltac derive_SubstHSubstComp :=
   let ih := fresh "dummy" in (* hack/workaround *)
@@ -431,7 +431,7 @@ Ltac derive_SubstHSubstComp :=
   rewrite ?up_hcomp, ?up_hcomp_n, ?hcomp_lift_n_internal, ?mmap_comp;
   try apply mmap_ext; intros; apply ih
   end.
-Hint Extern 0 (SubstHSubstComp _ _) => derive_SubstHSubstComp : derive.
+Global Hint Extern 0 (SubstHSubstComp _ _) => derive_SubstHSubstComp : derive.
 
 (* Local Variables: *)
 (* coq-load-path: (("." "Autosubst")) *)
