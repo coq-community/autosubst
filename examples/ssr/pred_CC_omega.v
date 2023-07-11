@@ -18,10 +18,10 @@ Inductive term : Type :=
 | Lam  (s : {bind term})
 | Prod (s : term) (t : {bind term}).
 
-Instance Ids_term : Ids term. derive. Defined.
-Instance Rename_term : Rename term. derive. Defined.
-Instance Subst_term : Subst term. derive. Defined.
-Instance substLemmas_term : SubstLemmas term. derive. Qed.
+Global Instance Ids_term : Ids term. derive. Defined.
+Global Instance Rename_term : Rename term. derive. Defined.
+Global Instance Subst_term : Subst term. derive. Defined.
+Global Instance substLemmas_term : SubstLemmas term. derive. Qed.
 
 (** **** One-Step Reduction *)
 

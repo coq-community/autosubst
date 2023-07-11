@@ -78,11 +78,11 @@ Ltac sizesimpl := repeat(simpl in *;
 
 Tactic Notation "slia" := sizesimpl; try lia; now trivial.
 
-Instance size_list (A : Type) (size_A : Size A) : Size (list A).
+Global Instance size_list (A : Type) (size_A : Size A) : Size (list A).
   derive.
 Defined.
 
-Instance size_nat : Size nat := id.
+Global Instance size_nat : Size nat := id.
 
 (** A database of facts about the size function *)
 
@@ -95,7 +95,7 @@ Lemma size_app (A : Type) (size_A : Size A) l1 l2 :
 Proof. induction l1; simpl; intuition. Qed.
 Global Hint Rewrite @size_app : size.
 
-Instance size_fact_app (A : Type) (size_A : Size A) l1 l2 :
+Global Instance size_fact_app (A : Type) (size_A : Size A) l1 l2 :
   SizeFact _ (app l1 l2) (size(app l1 l2) = size l1 + size l2).
 Proof. apply size_app. Qed.
 
@@ -107,7 +107,7 @@ Proof.
   - pose (IHl _ H0). lia.
 Qed.
 
-Instance size_fact_In (A : Type) (size_A : Size A) x l (x_in_l : In x l) :
+Global Instance size_fact_In (A : Type) (size_A : Size A) x l (x_in_l : In x l) :
   SizeFact _ x (size x < size l).
 Proof. now apply size_In. Qed.
 

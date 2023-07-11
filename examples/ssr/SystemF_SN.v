@@ -24,22 +24,22 @@ Inductive term :=
 
 (** **** Substitution Lemmas *)
 
-Instance Ids_type : Ids type. derive. Defined.
-Instance Rename_type : Rename type. derive. Defined.
-Instance Subst_type : Subst type. derive. Defined.
+Global Instance Ids_type : Ids type. derive. Defined.
+Global Instance Rename_type : Rename type. derive. Defined.
+Global Instance Subst_type : Subst type. derive. Defined.
 
-Instance SubstLemmas_type : SubstLemmas type. derive. Qed.
+Global Instance SubstLemmas_type : SubstLemmas type. derive. Qed.
 
-Instance HSubst_term : HSubst type term. derive. Defined.
+Global Instance HSubst_term : HSubst type term. derive. Defined.
 
-Instance Ids_term : Ids term. derive. Defined.
-Instance Rename_term : Rename term. derive. Defined.
-Instance Subst_term : Subst term. derive. Defined.
+Global Instance Ids_term : Ids term. derive. Defined.
+Global Instance Rename_term : Rename term. derive. Defined.
+Global Instance Subst_term : Subst term. derive. Defined.
 
-Instance HSubstLemmas_term : HSubstLemmas type term. derive. Qed.
-Instance SubstHSubstComp_type_term : SubstHSubstComp type term. derive. Qed.
+Global Instance HSubstLemmas_term : HSubstLemmas type term. derive. Qed.
+Global Instance SubstHSubstComp_type_term : SubstHSubstComp type term. derive. Qed.
 
-Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
+Global Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
 
 (** **** One-Step Reduction *)
 

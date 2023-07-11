@@ -38,10 +38,10 @@ Inductive term :=
 
     Each instance is inferred automatically by using the [derive] tactic. *)
 
-Instance Ids_term : Ids term. derive. Defined.
-Instance Rename_term : Rename term. derive. Defined.
-Instance Subst_term : Subst term. derive. Defined.
-Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
+Global Instance Ids_term : Ids term. derive. Defined.
+Global Instance Rename_term : Rename term. derive. Defined.
+Global Instance Subst_term : Subst term. derive. Defined.
+Global Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
 
 (** At this point we can use the notations:
 
