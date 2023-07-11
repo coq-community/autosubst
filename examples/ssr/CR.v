@@ -13,10 +13,10 @@ Inductive term : Type :=
 | App (s t : term)
 | Lam (s : {bind term}).
 
-Instance Ids_term : Ids term. derive. Defined.
-Instance Rename_term : Rename term. derive. Defined.
-Instance Subst_term : Subst term. derive. Defined.
-Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
+Global Instance Ids_term : Ids term. derive. Defined.
+Global Instance Rename_term : Rename term. derive. Defined.
+Global Instance Subst_term : Subst term. derive. Defined.
+Global Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
 
 (** **** One-Step Reduction *)
 
@@ -57,7 +57,7 @@ Qed.
 Lemma red_lam s1 s2 : red s1 s2 -> red (Lam s1) (Lam s2).
 Proof. apply: star_hom => x y. exact: step_lam. Qed.
 
-Hint Resolve red_app red_lam : red_congr.
+Global Hint Resolve red_app red_lam : red_congr.
 
 (** **** Church-Rosser theorem *)
 
@@ -88,7 +88,7 @@ Proof. move<-. exact: pstep_beta. Qed.
 
 Lemma pstep_refl s : pstep s s.
 Proof. elim: s; eauto using pstep. Qed.
-Hint Resolve pstep_refl.
+Global Hint Resolve pstep_refl.
 
 Lemma step_pstep s t : step s t -> pstep s t.
 Proof. elim; eauto using pstep. Qed.

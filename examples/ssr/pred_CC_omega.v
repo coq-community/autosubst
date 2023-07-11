@@ -18,10 +18,10 @@ Inductive term : Type :=
 | Lam  (s : {bind term})
 | Prod (s : term) (t : {bind term}).
 
-Instance Ids_term : Ids term. derive. Defined.
-Instance Rename_term : Rename term. derive. Defined.
-Instance Subst_term : Subst term. derive. Defined.
-Instance substLemmas_term : SubstLemmas term. derive. Qed.
+Global Instance Ids_term : Ids term. derive. Defined.
+Global Instance Rename_term : Rename term. derive. Defined.
+Global Instance Subst_term : Subst term. derive. Defined.
+Global Instance substLemmas_term : SubstLemmas term. derive. Qed.
 
 (** **** One-Step Reduction *)
 
@@ -78,7 +78,7 @@ Proof. apply: star_hom. exact: step_subst. Qed.
 Lemma sred_up sigma tau : sred sigma tau -> sred (up sigma) (up tau).
 Proof. move=> A [|n] //=. asimpl. apply: red_subst. exact: A. Qed.
 
-Hint Resolve red_app red_lam red_prod sred_up : red_congr.
+Global Hint Resolve red_app red_lam red_prod sred_up : red_congr.
 
 Lemma red_compat sigma tau s : sred sigma tau -> red s.[sigma] s.[tau].
 Proof. elim: s sigma tau => *; asimpl; eauto with red_congr. Qed.
@@ -152,7 +152,7 @@ Fixpoint rho (s : term) : term :=
 
 Lemma pstep_refl s : pstep s s.
 Proof. elim: s; eauto using pstep. Qed.
-Hint Resolve pstep_refl.
+Global Hint Resolve pstep_refl.
 
 Lemma step_pstep s t : step s t -> pstep s t.
 Proof. elim; eauto using pstep. Qed.
@@ -206,13 +206,13 @@ Proof.
   apply: (cr_method (e2 := pstep) (rho := rho)).
     exact: step_pstep. exact: pstep_red. exact: rho_triangle.
 Qed.
-Hint Resolve church_rosser.
+Global Hint Resolve church_rosser.
 
 (** **** Reduction behaviour *)
 
 Lemma normal_step_sort n : normal step (Sort n).
 Proof. move=> [s st]. inv st. Qed.
-Hint Resolve normal_step_sort.
+Global Hint Resolve normal_step_sort.
 
 CoInductive RedProdSpec A1 B1 : term -> Prop :=
 | RedProdSpecI A2 B2 : red A1 A2 -> red B1 B2 -> RedProdSpec A1 B1 (Prod A2 B2).
@@ -264,7 +264,7 @@ Proof. move/conv_sub1. apply. exact: sub1_refl. Qed.
 
 Lemma sub_refl A : A <: A.
 Proof. apply: sub1_sub. exact: sub1_refl. Qed.
-Hint Resolve sub_refl.
+Global Hint Resolve sub_refl.
 
 Lemma sub_sort n m : n <= m -> Sort n <: Sort m.
 Proof. move=> leq. exact/sub1_sub/sub1_sort. Qed.
@@ -368,7 +368,7 @@ Notation "[ Gamma |- s ]" := (exists n, [ Gamma |- s :- Sort n ]).
 
 Lemma ty_sort_wf Gamma n : [ Gamma |- Sort n ].
 Proof. exists n.+1. exact: ty_sort. Qed.
-Hint Resolve ty_sort_wf ty_sort.
+Global Hint Resolve ty_sort_wf ty_sort.
 
 Lemma ty_prod_wf Gamma A B :
   [ Gamma |- A ] -> [ A :: Gamma |- B ] -> [ Gamma |- Prod A B ].

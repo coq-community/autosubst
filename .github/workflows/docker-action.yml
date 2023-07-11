@@ -18,16 +18,21 @@ jobs:
       matrix:
         image:
           - 'mathcomp/mathcomp-dev:coq-dev'
+          - 'mathcomp/mathcomp:2.0.0-coq-8.17'
+          - 'mathcomp/mathcomp:1.17.0-coq-8.17'
+          - 'mathcomp/mathcomp:1.16.0-coq-8.17'
+          - 'mathcomp/mathcomp:1.15.0-coq-8.16'
           - 'mathcomp/mathcomp:1.14.0-coq-8.15'
           - 'mathcomp/mathcomp:1.13.0-coq-8.15'
           - 'mathcomp/mathcomp:1.12.0-coq-8.14'
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: coq-community/docker-coq-action@v1
         with:
           opam_file: 'coq-autosubst-ci.opam'
           custom_image: ${{ matrix.image }}
+
 
 # See also:
 # https://github.com/coq-community/docker-coq-action#readme

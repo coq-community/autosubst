@@ -15,13 +15,13 @@ Inductive type : Type :=
 | Arr (A1 A2 : type)
 | All (A1 : type) (A2 : {bind type}).
 
-Instance Ids_type : Ids type. derive. Defined.
-Instance Rename_type : Rename type. derive. Defined.
-Instance Subst_type : Subst type. derive. Defined.
+Global Instance Ids_type : Ids type. derive. Defined.
+Global Instance Rename_type : Rename type. derive. Defined.
+Global Instance Subst_type : Subst type. derive. Defined.
 
-Instance SubstLemmas_type : SubstLemmas type. derive. Qed.
+Global Instance SubstLemmas_type : SubstLemmas type. derive. Qed.
 
-Instance size_type : Size type.
+Global Instance size_type : Size type.
   assert(Size var). exact(fun _ => 0). derive.
 Defined.
 
@@ -32,19 +32,19 @@ Inductive term :=
 | TAbs (A : type) (s : {bind type in term})
 | TApp (s : term) (A : type).
 
-Instance hsubst_term : HSubst type term. derive. Defined.
+Global Instance hsubst_term : HSubst type term. derive. Defined.
 
-Instance Ids_term : Ids term. derive. Defined.
-Instance Rename_term : Rename term. derive. Defined.
-Instance Subst_term : Subst term. derive. Defined.
+Global Instance Ids_term : Ids term. derive. Defined.
+Global Instance Rename_term : Rename term. derive. Defined.
+Global Instance Subst_term : Subst term. derive. Defined.
 
-Instance HSubstLemmas_term : HSubstLemmas type term. derive. Qed.
+Global Instance HSubstLemmas_term : HSubstLemmas type term. derive. Qed.
 
-Instance SubstHSubstComp_type_term : SubstHSubstComp type term. derive. Qed.
+Global Instance SubstHSubstComp_type_term : SubstHSubstComp type term. derive. Qed.
 
-Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
+Global Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
 
-Instance size_term : Size term.
+Global Instance size_term : Size term.
   assert(Size var). exact(fun _ => 0). derive.
 Defined.
 

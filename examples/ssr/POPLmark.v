@@ -29,17 +29,17 @@ Inductive term :=
 
 (** **** Substitutions *)
 
-Instance Ids_type : Ids type. derive. Defined.
-Instance Rename_type : Rename type. derive. Defined.
-Instance Subst_type : Subst type. derive. Defined.
-Instance SubstLemmas_type : SubstLemmas type. derive. Qed.
-Instance HSubst_term : HSubst type term. derive. Defined.
-Instance Ids_term : Ids term. derive. Defined.
-Instance Rename_term : Rename term. derive. Defined.
-Instance Subst_term : Subst term. derive. Defined.
-Instance HSubstLemmas_term : HSubstLemmas type term. derive. Qed.
-Instance SubstHSubstComp_type_term : SubstHSubstComp type term. derive. Qed.
-Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
+Global Instance Ids_type : Ids type. derive. Defined.
+Global Instance Rename_type : Rename type. derive. Defined.
+Global Instance Subst_type : Subst type. derive. Defined.
+Global Instance SubstLemmas_type : SubstLemmas type. derive. Qed.
+Global Instance HSubst_term : HSubst type term. derive. Defined.
+Global Instance Ids_term : Ids term. derive. Defined.
+Global Instance Rename_term : Rename term. derive. Defined.
+Global Instance Subst_term : Subst term. derive. Defined.
+Global Instance HSubstLemmas_term : HSubstLemmas type term. derive. Qed.
+Global Instance SubstHSubstComp_type_term : SubstHSubstComp type term. derive. Qed.
+Global Instance SubstLemmas_term : SubstLemmas term. derive. Qed.
 
 (** **** Subtyping *)
 
@@ -66,7 +66,7 @@ where "'SUB' Gamma |- A <: B" := (sub Gamma A B).
 
 Lemma sub_refl Gamma A : SUB Gamma |- A <: A.
 Proof. elim: A Gamma; eauto using sub. Qed.
-Hint Resolve sub_refl.
+Global Hint Resolve sub_refl.
 
 Lemma sub_ren Gamma Delta xi A B :
   (forall x, x < size Gamma -> xi x < size Delta) ->
@@ -94,7 +94,7 @@ Lemma transitivity_proj Gamma A B C :
   transitivity_at B ->
   SUB Gamma |- A <: B -> SUB Gamma |- B <: C -> SUB Gamma |- A <: C.
 Proof. move=> /(_ Gamma A C id). autosubst. Qed.
-Hint Resolve transitivity_proj.
+Global Hint Resolve transitivity_proj.
 
 Lemma transitivity_ren B xi : transitivity_at B -> transitivity_at B.[ren xi].
 Proof. move=> h Gamma A C zeta. asimpl. exact: h. Qed.

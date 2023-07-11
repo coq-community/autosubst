@@ -41,7 +41,7 @@ Definition diamond := forall x y z, e x y -> e x z -> exists2 u, e y u & e z u.
 Definition confluent := forall x y z, star x y -> star x z -> joinable star y z.
 Definition CR := forall x y, conv x y -> joinable star x y.
 
-Hint Resolve starR convR.
+Local Hint Resolve starR convR.
 
 Lemma star1 x y : e x y -> star x y.
 Proof. exact: starSE. Qed.
@@ -92,7 +92,7 @@ Qed.
 
 End Definitions.
 
-Hint Resolve starR convR.
+Global Hint Resolve starR convR.
 Arguments star_trans {T e} y {x z} A B.
 Arguments conv_trans {T e} y {x z} A B.
 
