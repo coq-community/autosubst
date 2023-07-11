@@ -116,7 +116,7 @@ Lemma sred_hup sigma tau theta :
   sred sigma tau -> sred (sigma >>| theta) (tau >>| theta).
 Proof. move=> A n /=. apply/red_hsubst/A. Qed.
 
-Hint Resolve red_app red_abs red_tapp red_tabs sred_up sred_hup : red_congr.
+Global Hint Resolve red_app red_abs red_tapp red_tabs sred_up sred_hup : red_congr.
 
 Lemma red_compat sigma tau s :
   sred sigma tau -> red s.[sigma] s.[tau].
@@ -198,7 +198,7 @@ Definition admissible (rho : nat -> cand) :=
 
 Lemma reducible_sn : reducible sn.
 Proof. constructor; eauto using ARS.sn. by move=> s t [f] /f. Qed.
-Hint Resolve reducible_sn.
+Global Hint Resolve reducible_sn.
 
 Lemma reducible_var P x : reducible P -> P (TeVar x).
 Proof. move/p_nc. apply=> // t st. inv st. Qed.

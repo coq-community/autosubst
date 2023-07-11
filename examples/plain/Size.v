@@ -31,7 +31,7 @@ Ltac derive_Size :=
     end
   end.
 
-Hint Extern 0 (Size _) => derive_Size : derive.
+Global Hint Extern 0 (Size _) => derive_Size : derive.
 
 Lemma size_rec {A : Type} f (x : A) :
   forall P : A -> Type, (forall x, (forall y, f y < f x -> P y) -> P x) -> P x.
@@ -93,7 +93,7 @@ Arguments size_fact {A} x {P _}.
 Lemma size_app (A : Type) (size_A : Size A) l1 l2 :
   size (app l1 l2) = size l1 + size l2.
 Proof. induction l1; simpl; intuition. Qed.
-Hint Rewrite @size_app : size.
+Global Hint Rewrite @size_app : size.
 
 Instance size_fact_app (A : Type) (size_A : Size A) l1 l2 :
   SizeFact _ (app l1 l2) (size(app l1 l2) = size l1 + size l2).

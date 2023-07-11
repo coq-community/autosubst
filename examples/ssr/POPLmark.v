@@ -66,7 +66,7 @@ where "'SUB' Gamma |- A <: B" := (sub Gamma A B).
 
 Lemma sub_refl Gamma A : SUB Gamma |- A <: A.
 Proof. elim: A Gamma; eauto using sub. Qed.
-Hint Resolve sub_refl.
+Global Hint Resolve sub_refl.
 
 Lemma sub_ren Gamma Delta xi A B :
   (forall x, x < size Gamma -> xi x < size Delta) ->
@@ -94,7 +94,7 @@ Lemma transitivity_proj Gamma A B C :
   transitivity_at B ->
   SUB Gamma |- A <: B -> SUB Gamma |- B <: C -> SUB Gamma |- A <: C.
 Proof. move=> /(_ Gamma A C id). autosubst. Qed.
-Hint Resolve transitivity_proj.
+Global Hint Resolve transitivity_proj.
 
 Lemma transitivity_ren B xi : transitivity_at B -> transitivity_at B.[ren xi].
 Proof. move=> h Gamma A C zeta. asimpl. exact: h. Qed.

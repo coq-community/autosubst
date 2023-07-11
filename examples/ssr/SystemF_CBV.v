@@ -51,7 +51,7 @@ Inductive eval : term -> term -> Prop :=
     eval (Abs A s) (Abs A s)
 | eval_tabs (A : term) :
     eval (TAbs A) (TAbs A).
-Hint Resolve eval_abs eval_tabs.
+Global Hint Resolve eval_abs eval_tabs.
 
 (** **** Syntactic typing *)
 
@@ -92,11 +92,11 @@ Notation E A rho := (L (V A rho)).
 
 Lemma V_value A rho v : V A rho v -> eval v v.
 Proof. by elim: A => [x[]|A _ B _/=[A'[s->]]|A _/=[s->]]. Qed.
-Hint Resolve V_value.
+Global Hint Resolve V_value.
 
 Lemma V_to_E A rho v : V A rho v -> E A rho v.
 Proof. exists v; eauto. Qed.
-Hint Resolve V_to_E.
+Global Hint Resolve V_to_E.
 
 Lemma eq_V A rho1 rho2 v :
   (forall X v, eval v v -> (rho1 X v <-> rho2 X v)) -> V A rho1 v -> V A rho2 v.
