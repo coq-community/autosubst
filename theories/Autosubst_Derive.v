@@ -58,10 +58,10 @@ Ltac has_var s :=
         | _ =>
           match typeof s2 with
             | var => constr:(Some s2)
-            | _ => None
+          | _ => open_constr:(None)
           end
       end
-    | _ => None
+    | _ => open_constr:(None)
   end.
 
 Ltac derive_Subst :=
