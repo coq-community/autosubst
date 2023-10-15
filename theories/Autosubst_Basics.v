@@ -5,7 +5,7 @@
 *)
 
 Require Import Coq.Program.Tactics.
-Require Import Coq.Arith.Plus List FunctionalExtensionality.
+Require Import Coq.Arith.PeanoNat List FunctionalExtensionality.
 
 (** Annotate "a" with additional information. *)
 Definition annot {A B} (a : A) (b : B) : A := a.
@@ -240,7 +240,7 @@ Lemma plusSn n m : S n + m = S (n + m). reflexivity. Qed.
 Lemma plusnS n m : n + S m = S (n + m). symmetry. apply plus_n_Sm. Qed.
 Lemma plusOn n : O + n = n. reflexivity. Qed.
 Lemma plusnO n : n + O = n. symmetry. apply plus_n_O. Qed.
-Lemma plusA n m k : n + (m + k) = (n + m) + k. apply plus_assoc. Qed.
+Lemma plusA n m k : n + (m + k) = (n + m) + k. apply Nat.add_assoc. Qed.
 
 Lemma scons_eta f n : f n .: (+S n) >>> f = (+n) >>> f.
 Proof.
