@@ -152,7 +152,7 @@ Fixpoint rho (s : term) : term :=
 
 Lemma pstep_refl s : pstep s s.
 Proof. elim: s; eauto using pstep. Qed.
-Global Hint Resolve pstep_refl.
+Global Hint Resolve pstep_refl : core.
 
 Lemma step_pstep s t : step s t -> pstep s t.
 Proof. elim; eauto using pstep. Qed.
@@ -206,13 +206,13 @@ Proof.
   apply: (cr_method (e2 := pstep) (rho := rho)).
     exact: step_pstep. exact: pstep_red. exact: rho_triangle.
 Qed.
-Global Hint Resolve church_rosser.
+Global Hint Resolve church_rosser : core.
 
 (** **** Reduction behaviour *)
 
 Lemma normal_step_sort n : normal step (Sort n).
 Proof. move=> [s st]. inv st. Qed.
-Global Hint Resolve normal_step_sort.
+Global Hint Resolve normal_step_sort : core.
 
 CoInductive RedProdSpec A1 B1 : term -> Prop :=
 | RedProdSpecI A2 B2 : red A1 A2 -> red B1 B2 -> RedProdSpec A1 B1 (Prod A2 B2).
@@ -264,7 +264,7 @@ Proof. move/conv_sub1. apply. exact: sub1_refl. Qed.
 
 Lemma sub_refl A : A <: A.
 Proof. apply: sub1_sub. exact: sub1_refl. Qed.
-Global Hint Resolve sub_refl.
+Global Hint Resolve sub_refl : core.
 
 Lemma sub_sort n m : n <= m -> Sort n <: Sort m.
 Proof. move=> leq. exact/sub1_sub/sub1_sort. Qed.
@@ -368,7 +368,7 @@ Notation "[ Gamma |- s ]" := (exists n, [ Gamma |- s :- Sort n ]).
 
 Lemma ty_sort_wf Gamma n : [ Gamma |- Sort n ].
 Proof. exists n.+1. exact: ty_sort. Qed.
-Global Hint Resolve ty_sort_wf ty_sort.
+Global Hint Resolve ty_sort_wf ty_sort : core.
 
 Lemma ty_prod_wf Gamma A B :
   [ Gamma |- A ] -> [ A :: Gamma |- B ] -> [ Gamma |- Prod A B ].
@@ -419,7 +419,7 @@ Proof. move=>->->. exact: weakening. Qed.
 Lemma ty_ok Gamma :
   [ Gamma |- ] -> forall x, x < size Gamma -> [ Gamma |- Gamma`_x ].
 Proof.
-  elim=> // {Gamma} Gamma A n tp _ ih [_|x /ih [{n tp} n tp]];
+  elim=> // {} Gamma A n tp _ ih [_|x /ih [{tp} n tp]];
     exists n; exact: weakening tp.
 Qed.
 

@@ -198,7 +198,7 @@ Definition admissible (rho : nat -> cand) :=
 
 Lemma reducible_sn : reducible sn.
 Proof. constructor; eauto using ARS.sn. by move=> s t [f] /f. Qed.
-Global Hint Resolve reducible_sn.
+Global Hint Resolve reducible_sn : core.
 
 Lemma reducible_var P x : reducible P -> P (TeVar x).
 Proof. move/p_nc. apply=> // t st. inv st. Qed.
@@ -216,7 +216,7 @@ Proof with eauto using step.
       eapply h. eapply reducible_var; eauto.
     + move=> s t h st u la. apply: (p_cl _ (s := App s u))...
     + move=> s ns h t la. have snt := p_sn (ih1 _ safe) la.
-      elim: snt la => {t} t _ ih3 la. apply: p_nc... move=> v st. inv st=> //...
+      elim: snt la => {} t _ ih3 la. apply: p_nc... move=> v st. inv st=> //...
       apply: ih3 => //. exact: (p_cl (ih1 _ safe)) la _.
   - constructor.
     + move=> s /(_ sn (TyVar 0) reducible_sn)/p_sn/sn_tclosed; apply.
@@ -251,7 +251,7 @@ Lemma beta_expansion A B rho s t :
   L A rho (App (Abs B s) t).
 Proof with eauto.
   move=> ad snt h. have sns := sn_subst (L_sn ad h).
-  elim: sns t snt h => {s} s sns ih1 t. elim=> {t} t snt ih2 h.
+  elim: sns t snt h => {} s sns ih1 t. elim=> {} t snt ih2 h.
   apply: L_nc => // u st. inv st => //.
   - inv H2. apply: ih1 => //. apply: L_cl ad h _. exact: step_subst.
   - apply: ih2 => //. apply: L_cl_star ad h _. exact: red_beta.
@@ -261,7 +261,7 @@ Lemma inst_expansion A B rho s :
   admissible rho -> L A rho s.|[B/] -> L A rho (TApp (TAbs s) B).
 Proof.
   move=> ad h. have sns := sn_hsubst (L_sn ad h). elim: sns h.
-  move=> {s} s _ ih h. apply: L_nc => // t st. inv st => //.
+  move=> {} s _ ih h. apply: L_nc => // t st. inv st => //.
   inv H2 => //. apply: ih => //. apply: L_cl ad h _. exact: step_hsubst.
 Qed.
 

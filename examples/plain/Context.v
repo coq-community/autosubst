@@ -67,12 +67,13 @@ Proof.
   - split.
     + autosubst.
     + autosubst.
-  - simpl. cutrewrite (A.[ren (+S (length Delta))] =
-                       A.[ren(+length Delta)].[ren(+1)]); [idtac|autosubst].
+  - simpl.
+    replace (A.[ren (+S (length Delta))]) with
+      (A.[ren(+length Delta)].[ren(+1)]); [idtac|autosubst].
     split.
-      + econstructor. eapply IHDelta; eassumption. reflexivity.
-      + intros H. inv H. rewrite IHDelta. apply lift_inj in H5.
-        subst. eassumption.
+    + econstructor. eapply IHDelta; eassumption. reflexivity.
+    + intros H. inv H. rewrite IHDelta. apply lift_inj in H5.
+      subst. eassumption.
 Qed.
 
 Lemma atnd_steps' x Gamma Delta A :
@@ -83,7 +84,7 @@ Proof.
   induction Delta; intros.
   - exists A.
     simpl in H.
-    rewrite plus_0_r in H. intuition autosubst.
+    rewrite Nat.add_0_r in H. intuition autosubst.
   - asimpl. simpl in *.
     rewrite plusnS in *.
     inv H.

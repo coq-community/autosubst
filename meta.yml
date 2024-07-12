@@ -47,11 +47,15 @@ license:
 
 supported_coq_versions:
   text: 8.14 or later
-  opam: '{(>= "8.14" & < "8.18~") | (= "dev")}'
+  opam: '{(>= "8.14" & < "8.21~") | (= "dev")}'
 
 tested_coq_opam_versions:
 - version: 'coq-dev'
   repo: 'mathcomp/mathcomp-dev'
+- version: '2.2.0-coq-8.19'
+  repo: 'mathcomp/mathcomp'
+- version: '2.1.0-coq-8.18'
+  repo: 'mathcomp/mathcomp'
 - version: '2.0.0-coq-8.17'
   repo: 'mathcomp/mathcomp'
 - version: '1.17.0-coq-8.17'

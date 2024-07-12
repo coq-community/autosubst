@@ -66,14 +66,14 @@ where "'SUB' Gamma |- A <: B" := (sub Gamma A B).
 
 Lemma sub_refl Gamma A : SUB Gamma |- A <: A.
 Proof. elim: A Gamma; eauto using sub. Qed.
-Global Hint Resolve sub_refl.
+Global Hint Resolve sub_refl : core.
 
 Lemma sub_ren Gamma Delta xi A B :
   (forall x, x < size Gamma -> xi x < size Delta) ->
   (forall x, x < size Gamma -> Delta`_(xi x) = (Gamma`_x).[ren xi]) ->
   SUB Gamma |- A <: B -> SUB Delta |- A.[ren xi] <: B.[ren xi].
 Proof.
-  move=> sub eqn ty. elim: ty Delta xi sub eqn => {Gamma A B} Gamma //=;
+  move=> sub eqn ty. elim: ty Delta xi sub eqn => {A B} Gamma //=;
     eauto using sub.
   - move=> x A lt _ ih Delta xi sub eqn. apply: sub_var_trans. exact: sub.
     rewrite eqn //. exact: ih.
@@ -94,7 +94,7 @@ Lemma transitivity_proj Gamma A B C :
   transitivity_at B ->
   SUB Gamma |- A <: B -> SUB Gamma |- B <: C -> SUB Gamma |- A <: C.
 Proof. move=> /(_ Gamma A C id). autosubst. Qed.
-Global Hint Resolve transitivity_proj.
+Global Hint Resolve transitivity_proj : core.
 
 Lemma transitivity_ren B xi : transitivity_at B -> transitivity_at B.[ren xi].
 Proof. move=> h Gamma A C zeta. asimpl. exact: h. Qed.
@@ -153,7 +153,7 @@ Lemma sub_subst Gamma Delta A B sigma :
   (forall x, x < size Gamma -> SUB Delta |- sigma x <: (Gamma`_x).[sigma]) ->
   SUB Gamma |- A <: B -> SUB Delta |- A.[sigma] <: B.[sigma].
 Proof with eauto using sub.
-  move=> h ty. elim: ty Delta sigma h => {Gamma A B} Gamma...
+  move=> h ty. elim: ty Delta sigma h => {A B} Gamma...
   - move=> x A lt _ ih Delta sigma h /=. apply: sub_trans (h _ lt) _. exact: ih.
   - move=> A1 A2 B1 B2 _ ih1 _ ih2 Delta sigma h /=. apply: sub_all...
     apply: ih2 => -[_|x /h/sub_weak]. apply: sub_var_trans => //. autosubst.
@@ -247,7 +247,7 @@ Proof with eauto using ty.
     apply. move=> [_|x/h/sub_weak] /=. apply: sub_var_trans => //. autosubst.
     autosubst.
   - move=> Delta1 Gamma A B C s _ ih sub Delta2 sigma h. asimpl.
-    eapply ty_etapp. Focus 2. by eapply ih. autosubst. exact: sub_subst sub.
+    eapply ty_etapp. 2: { by eapply ih. } autosubst. exact: sub_subst sub.
   - move=> Delta1 Gamma A B s _ ih sub Delta2 sigma h.
     eapply ty_sub. by eapply ih. exact: sub_subst sub.
 Qed.
@@ -354,7 +354,7 @@ Definition is_tabs s := if s is TAbs _ _ then true else false.
 Lemma canonical_arr' Delta Gamma s T A B :
   TY Delta;Gamma |- s : T -> SUB Delta |- T <: Arr A B -> value s -> is_abs s.
 Proof.
-  move=> ty. elim: ty A B => //={Delta Gamma s T} Delta Gamma A B s.
+  move=> ty. elim: ty A B => //= {Gamma s T} Delta Gamma A B s.
   - move=> ty _ A' B' sub. by inv sub.
   - move=> _ ih /sub_trans h A' B' /h. exact: ih.
 Qed.
@@ -368,7 +368,7 @@ Qed.
 Lemma canonical_all' Delta Gamma s T A B :
   TY Delta;Gamma |- s : T -> SUB Delta |- T <: All A B -> value s -> is_tabs s.
 Proof.
-  move=> ty. elim: ty A B => //={Delta Gamma s T} Delta Gamma A B s.
+  move=> ty. elim: ty A B => //= {Gamma s T} Delta Gamma A B s.
   - move=> _ _ A' B' sub. by inv sub.
   - move=> _ ih /sub_trans h A' B' /h. exact: ih.
 Qed.
