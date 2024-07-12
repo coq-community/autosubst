@@ -192,7 +192,7 @@ Proof.
         * now rewrite ren_size_inv.
         * intros. change (B' :: Delta) with ((B' :: nil) ++ Delta).
           rewrite app_assoc.
-          cutrewrite (S (length Delta') = length (Delta' ++ B' :: nil)).
+          replace (S (length Delta')) with (length (Delta' ++ B' :: nil)).
           now apply atnd_steps.
           rewrite app_length. simpl. lia.
         * asimpl in IHsub.
@@ -298,7 +298,8 @@ Lemma ty_weak_ty  xi Delta1 Delta2 Gamma1 Gamma2 s s' A A':
   s' = s.|[ren xi] ->
   TY Delta2;Gamma2 |- s' : A'.
 Proof.
-  intros. subst. cutrewrite(s.|[ren xi] = s.|[ren xi].[ren id]).
+  intros. subst.
+  replace (s.|[ren xi]) with (s.|[ren xi].[ren id]).
   eapply ty_weak; eauto. now autosubst.
 Qed.
 
@@ -319,8 +320,8 @@ Lemma ty_weak_ter xi Delta Gamma1 Gamma2 s A :
   TY Delta;Gamma2 |- s.[ren xi] : A.
 Proof.
   intros.
-  cutrewrite (s = s.|[ren id]).
-  cutrewrite (A = A.[ren id]).
+  replace s with (s.|[ren id]).
+  replace A with (A.[ren id]).
   eapply ty_weak; eauto; intros; asimpl; now eauto.
   autosubst. autosubst.
 Qed.
@@ -415,8 +416,8 @@ Corollary ty_subst_term Delta Gamma1 Gamma2 s A sigma:
   TY Delta;Gamma2 |- s.[sigma] : A.
 Proof.
   intros.
-  cutrewrite(s = s.|[ids]);[idtac|autosubst].
-  cutrewrite (A = A.[ids]);[idtac|autosubst].
+  replace s with (s.|[ids]);[idtac|autosubst].
+  replace A with (A.[ids]);[idtac|autosubst].
   eapply ty_subst; eauto; intros.
   - asimpl; eauto using sub, sub_refl.
   - asimpl; eauto using sub, sub_refl.
@@ -488,7 +489,7 @@ Proof.
     + pose proof (ty_inv_abs H0 H1) as [? [B' [? ?]]].
       eapply ty_subst_term; eauto using ty.
       intros [|] ? ?; simpl in *; subst; eauto using ty.
-  - cutrewrite (s.|[B/] = s.|[B/].[ids]);[idtac|autosubst].
+  - replace (s.|[B/]) with (s.|[B/].[ids]);[idtac|autosubst].
     inv H_ty; [idtac | pose proof (ty_inv_tabs H1 H2) as [? [B' [? ?]]]];
     (eapply ty_subst; eauto using ty; [
         now intros ? ? H_atnd; inv H_atnd; asimpl; eauto using sub, sub_refl

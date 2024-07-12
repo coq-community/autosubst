@@ -88,7 +88,7 @@ Proof. move<-. exact: pstep_beta. Qed.
 
 Lemma pstep_refl s : pstep s s.
 Proof. elim: s; eauto using pstep. Qed.
-Global Hint Resolve pstep_refl.
+Global Hint Resolve pstep_refl : core.
 
 Lemma step_pstep s t : step s t -> pstep s t.
 Proof. elim; eauto using pstep. Qed.

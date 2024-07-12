@@ -92,7 +92,7 @@ Arguments size_fact {A} x {P _}.
 
 Lemma size_app (A : Type) (size_A : Size A) l1 l2 :
   size (app l1 l2) = size l1 + size l2.
-Proof. induction l1; simpl; intuition. Qed.
+Proof. induction l1; simpl; intuition (auto with zarith). Qed.
 Global Hint Rewrite @size_app : size.
 
 Global Instance size_fact_app (A : Type) (size_A : Size A) l1 l2 :

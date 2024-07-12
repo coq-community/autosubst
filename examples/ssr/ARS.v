@@ -7,6 +7,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+Declare Scope prop_scope.
 Delimit Scope prop_scope with PROP.
 Open Scope prop_scope.
 
@@ -41,7 +42,7 @@ Definition diamond := forall x y z, e x y -> e x z -> exists2 u, e y u & e z u.
 Definition confluent := forall x y z, star x y -> star x z -> joinable star y z.
 Definition CR := forall x y, conv x y -> joinable star x y.
 
-Local Hint Resolve starR convR.
+Local Hint Resolve starR convR : core.
 
 Lemma star1 x y : e x y -> star x y.
 Proof. exact: starSE. Qed.
@@ -53,7 +54,7 @@ Lemma starES x y z : e x y -> star y z -> star x z.
 Proof. move/star1. exact: star_trans. Qed.
 
 Lemma star_conv x y : star x y -> conv x y.
-Proof. elim=> //={y} y z _. exact: convSE. Qed.
+Proof. elim=> //={} y z _. exact: convSE. Qed.
 
 Lemma conv1 x y : e x y -> conv x y.
 Proof. exact: convSE. Qed.
@@ -71,7 +72,7 @@ Lemma convESi x y z : e y x -> conv y z -> conv x z.
 Proof. move/conv1i. exact: conv_trans. Qed.
 
 Lemma conv_sym x y : conv x y -> conv y x.
-Proof. elim=> //={y} y z _ ih h; [exact: convESi ih|exact: convES ih]. Qed.
+Proof. elim=> //={} y z _ ih h; [exact: convESi ih|exact: convES ih]. Qed.
 
 Lemma join_conv x y z : star x y -> star z y -> conv x z.
 Proof.
@@ -82,9 +83,9 @@ Lemma confluent_cr :
   confluent <-> CR.
 Proof.
   split=> [h x y|h x y z /star_conv A /star_conv B].
-  - elim=> [|{y} y z _ [u h1 h2] /star1 h3|{y} y z _ [u h1 h2] h3].
+  - elim=> [|{} y z _ [u h1 h2] /star1 h3|{} y z _ [u h1 h2] h3].
     + by exists x.
-    + case: (h y u z h2 h3) => v {h2 h3} h2 h3.
+    + case: (h y u z h2 h3) => v {h3} h2 h3.
       exists v => //. exact: star_trans h2.
     + exists u => //. exact: starES h2.
   - apply: h. apply: conv_trans B. exact: conv_sym.
@@ -92,7 +93,7 @@ Qed.
 
 End Definitions.
 
-Global Hint Resolve starR convR.
+Global Hint Resolve starR convR : core.
 Arguments star_trans {T e} y {x z} A B.
 Arguments conv_trans {T e} y {x z} A B.
 
@@ -193,7 +194,7 @@ Inductive sn x : Prop :=
 Lemma sn_preimage (h : T -> T) x :
   (forall x y, e x y -> e (h x) (h y)) -> sn (h x) -> sn x.
 Proof.
-  move eqn:(h x) => v A B. elim: B h x A eqn => {v} v _ ih h x A eqn.
+  move eqn:(h x) => v A B. elim: B h x A eqn => {} v _ ih h x A eqn.
   apply: SNI => y /A. rewrite eqn => /ih; eauto.
 Qed.
 
@@ -281,7 +282,7 @@ Qed.
 
 Lemma sn_wn x : sn e x -> wn e x.
 Proof.
-  elim=> {x} x _ ih. case (classical x) => [[y exy]|A].
+  elim=> {} x _ ih. case (classical x) => [[y exy]|A].
   - case: (ih _ exy) => z [A B]. exists z. split=> //. exact: starES A.
   - exists x. by split.
 Qed.
