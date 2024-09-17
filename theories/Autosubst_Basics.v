@@ -4,8 +4,8 @@
   substitutions.
 *)
 
-Require Import Coq.Program.Tactics.
-Require Import Coq.Arith.PeanoNat List FunctionalExtensionality.
+From Coq.Program Require Import Tactics.
+From Coq Require Import PeanoNat List FunctionalExtensionality.
 
 (** Annotate "a" with additional information. *)
 Definition annot {A B} (a : A) (b : B) : A := a.
