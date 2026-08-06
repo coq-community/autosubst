@@ -11,6 +11,7 @@ synopsis: "Autosubst (CI only)"
 
 build: [make "-j%{jobs}%" "all"]
 depends: [
-  "coq"
-  "coq-mathcomp-ssreflect"
+  "rocq-core"
+  "rocq-stdlib"
+  "rocq-mathcomp-ssreflect"
 ]
