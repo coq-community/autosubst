@@ -1,7 +1,7 @@
 (** * Strong Normalization of System F *)
 
 From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq.
-From Coq Require Import ssrfun.
+From Stdlib Require Import ssrfun.
 Require Import AutosubstSsr ARS Context.
 
 Set Implicit Arguments.

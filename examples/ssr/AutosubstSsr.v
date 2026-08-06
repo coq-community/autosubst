@@ -6,7 +6,7 @@ Require Export Autosubst.Autosubst_Tactics.
 Require Export Autosubst.Autosubst_Lemmas.
 Require Export Autosubst.Autosubst_Derive.
 From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq.
-From Coq Require Import ssrfun.
+From Stdlib Require Import ssrfun.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
