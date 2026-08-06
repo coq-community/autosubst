@@ -9,6 +9,7 @@ on:
   pull_request:
     branches:
       - '**'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -23,10 +24,10 @@ jobs:
           - 'mathcomp/mathcomp:2.6.0-rocq-prover-9.0'
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: coq-community/docker-coq-action@v1
         with:
-          opam_file: 'coq-autosubst-ci.opam'
+          opam_file: 'coq-autosubst.opam'
           custom_image: ${{ matrix.image }}
 
 

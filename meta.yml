@@ -46,8 +46,8 @@ license:
   identifier: MIT
 
 supported_coq_versions:
-  text: 8.14 or later
-  opam: '{(>= "8.14" & < "8.21~") | (= "dev")}'
+  text: 9.0 or later
+  opam: '{(>= "9.0") | (= "dev")}'
 
 tested_coq_opam_versions:
 - version: 'rocq-prover-dev'

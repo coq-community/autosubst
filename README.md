@@ -10,8 +10,8 @@ Follow the instructions on https://github.com/coq-community/templates to regener
 [![Zulip][zulip-shield]][zulip-link]
 [![DOI][doi-shield]][doi-link]
 
-[docker-action-shield]: https://github.com/coq-community/autosubst/workflows/Docker%20CI/badge.svg?branch=master
-[docker-action-link]: https://github.com/coq-community/autosubst/actions?query=workflow:"Docker%20CI"
+[docker-action-shield]: https://github.com/coq-community/autosubst/actions/workflows/docker-action.yml/badge.svg?branch=master
+[docker-action-link]: https://github.com/coq-community/autosubst/actions/workflows/docker-action.yml
 
 [contributing-shield]: https://img.shields.io/badge/contributions-welcome-%23f7931e.svg
 [contributing-link]: https://github.com/coq-community/manifesto/blob/master/CONTRIBUTING.md
@@ -39,13 +39,13 @@ substitutions.
 - Author(s):
   - Steven Schäfer (initial)
   - Tobias Tebbi (initial)
-- Coq-community maintainer(s):
+- Rocq-community maintainer(s):
   - Ralf Jung ([**@RalfJung**](https://github.com/RalfJung))
   - Dan Frumin ([**@co-dan**](https://github.com/co-dan))
 - License: [MIT License](LICENSE)
-- Compatible Coq versions: 8.14 or later
+- Compatible Rocq/Coq versions: 9.0 or later
 - Additional dependencies: none
-- Coq namespace: `Autosubst`
+- Rocq/Coq namespace: `Autosubst`
 - Related publication(s):
   - [Autosubst: Reasoning with de Bruijn Terms and Parallel Substitutions](https://www.ps.uni-saarland.de/Publications/documents/SchaeferEtAl_2015_Autosubst_-Reasoning.pdf) doi:[10.1007/978-3-319-22102-1_24](https://doi.org/10.1007/978-3-319-22102-1_24)
 
@@ -55,15 +55,19 @@ The easiest way to install the latest released version of Autosubst
 is via [OPAM](https://opam.ocaml.org/doc/Install.html):
 
 ```shell
-opam repo add coq-released https://coq.inria.fr/opam/released
+opam repo add rocq-released https://rocq-prover.org/opam/released
 opam install coq-autosubst
 ```
 
-To instead build and install manually, do:
+To instead build and install manually, you need to make sure that all the
+libraries this development depends on are installed.  The easiest way to do that
+is still to rely on opam:
 
 ``` shell
 git clone https://github.com/coq-community/autosubst.git
 cd autosubst
+opam repo add rocq-released https://rocq-prover.org/opam/released
+opam install --deps-only .
 make   # or make -j <number-of-cores-on-your-machine> 
 make install
 ```
