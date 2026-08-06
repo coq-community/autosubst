@@ -94,10 +94,12 @@ Ltac mmap_typeclass_normalizeH H :=
      let s := constr:(@mmap A B _ f) in progress change (@mmap A B _ f) with s
   end.
 
+Create Rewrite HintDb mmap.
 Global Hint Rewrite @mmap_id_instE @mmap_const_instE : mmap.
 Global Hint Rewrite @mmap_id @mmap_comp @mmap_idX @mmap_compX @mmap_compR
   using exact _ : mmap.
 
+Create Rewrite HintDb autosubst.
 Global Hint Rewrite @mmap_id_instE @mmap_const_instE : autosubst.
 Global Hint Rewrite @mmap_id @mmap_comp @mmap_idX @mmap_compX @mmap_compR
   using exact _ : autosubst.
@@ -144,6 +146,8 @@ Ltac derive_MMap :=
         let ys := tmap ys in exact ys
     end
   end.
+
+Create HintDb derive.
 Global Hint Extern 0 (MMap _ _) => derive_MMap : derive.
 
 Ltac derive_MMapLemmas := constructor;

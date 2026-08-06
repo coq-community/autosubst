@@ -78,6 +78,7 @@ Proof. apply: star_hom. exact: step_subst. Qed.
 Lemma sred_up sigma tau : sred sigma tau -> sred (up sigma) (up tau).
 Proof. move=> A [|n] //=. asimpl. apply: red_subst. exact: A. Qed.
 
+Create HintDb red_congr.
 Global Hint Resolve red_app red_lam red_prod sred_up : red_congr.
 
 Lemma red_compat sigma tau s : sred sigma tau -> red s.[sigma] s.[tau].

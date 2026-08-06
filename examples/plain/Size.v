@@ -31,6 +31,7 @@ Ltac derive_Size :=
     end
   end.
 
+Create HintDb derive.
 Global Hint Extern 0 (Size _) => derive_Size : derive.
 
 Lemma size_rec {A : Type} f (x : A) :
@@ -93,6 +94,8 @@ Arguments size_fact {A} x {P _}.
 Lemma size_app (A : Type) (size_A : Size A) l1 l2 :
   size (app l1 l2) = size l1 + size l2.
 Proof. induction l1; simpl; intuition (auto with zarith). Qed.
+
+Create Rewrite HintDb size.
 Global Hint Rewrite @size_app : size.
 
 Global Instance size_fact_app (A : Type) (size_A : Size A) l1 l2 :

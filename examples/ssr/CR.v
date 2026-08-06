@@ -57,6 +57,7 @@ Qed.
 Lemma red_lam s1 s2 : red s1 s2 -> red (Lam s1) (Lam s2).
 Proof. apply: star_hom => x y. exact: step_lam. Qed.
 
+Create HintDb red_congr.
 Global Hint Resolve red_app red_lam : red_congr.
 
 (** **** Church-Rosser theorem *)
