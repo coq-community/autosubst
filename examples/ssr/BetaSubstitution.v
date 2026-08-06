@@ -25,7 +25,7 @@ Fixpoint lift_at (d k : nat) (s : term) : term :=
     | App s t => App (lift_at d k s) (lift_at d k t)
     | Lam s   => Lam (lift_at d.+1 k s)
   end.
-Notation lift := (lift_at 0).
+Abbreviation lift := (lift_at 0).
 
 Fixpoint sbst_at (d : nat) (t s : term) : term :=
   match s with
@@ -33,7 +33,7 @@ Fixpoint sbst_at (d : nat) (t s : term) : term :=
     | App s1 s2 => App (sbst_at d t s1) (sbst_at d t s2)
     | Lam s => Lam (sbst_at d.+1 t s)
   end.
-Notation sbst := (sbst_at 0).
+Abbreviation sbst := (sbst_at 0).
 
 (** Soundness proof *)
 

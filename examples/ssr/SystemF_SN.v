@@ -151,7 +151,7 @@ Inductive has_type (Gamma : ctx) : term -> type -> Prop :=
 
 (* Strong Normalization *)
 
-Notation sn := (sn step).
+Abbreviation sn := (sn step).
 
 Lemma sn_closed t s : sn (App s t) -> sn s.
 Proof. apply: (sn_preimage (h := App^~t)) => x y. exact: step_appL. Qed.

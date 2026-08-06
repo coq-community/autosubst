@@ -88,7 +88,7 @@ Fixpoint V (A : type) (rho : var -> term -> Prop) (v : term) {struct A} : Prop :
     | All A => exists2 s : term, v = TAbs s &
         forall i (B : type), L (V A (i .: rho)) s.|[B/]
   end.
-Notation E A rho := (L (V A rho)).
+Abbreviation E A rho := (L (V A rho)).
 
 Lemma V_value A rho v : V A rho v -> eval v v.
 Proof. by elim: A => [x[]|A _ B _/=[A'[s->]]|A _/=[s->]]. Qed.
