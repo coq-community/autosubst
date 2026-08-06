@@ -178,10 +178,10 @@ Proof.
     depind H; intros; simpl in *.
     - constructor.
       eapply wf_weak'. eassumption.
-      repeat rewrite app_length. simpl. lia.
+      repeat rewrite length_app. simpl. lia.
     - constructor. simpl.
       apply atnd_defined. apply atnd_defined in H.
-      repeat rewrite -> app_length in *. simpl in *. lia.
+      repeat rewrite -> length_app in *. simpl in *. lia.
     - decide (x = length Delta').
       + subst.
         econstructor. { apply atnd_repl. }
@@ -194,7 +194,7 @@ Proof.
           rewrite app_assoc.
           replace (S (length Delta')) with (length (Delta' ++ B' :: nil)).
           now apply atnd_steps.
-          rewrite app_length. simpl. lia.
+          rewrite length_app. simpl. lia.
         * asimpl in IHsub.
           eapply IHsub; now eauto.
       + econstructor; eauto.
@@ -203,7 +203,7 @@ Proof.
     - constructor.
       + now eauto.
       + eapply wf_weak'. eassumption.
-        repeat rewrite app_length. simpl. lia.
+        repeat rewrite length_app. simpl. lia.
       + change (B1 :: Delta' ++ B' :: Delta)
           with ((B1 :: Delta') ++ B' :: Delta).
         eapply IHsub2; eauto.
@@ -340,10 +340,10 @@ Lemma ty_narrow Delta2 Delta1 Gamma A B C s:
   TY Delta2 ++ A :: Delta1 ; Gamma |- s : C.
 Proof.
   intros H. depind H; econstructor; eauto using ty.
-  - eapply wf_weak'. eassumption. repeat rewrite app_length. simpl. lia.
+  - eapply wf_weak'. eassumption. repeat rewrite length_app. simpl. lia.
   - change (A0 :: Delta2 ++ A :: Delta1) with ((A0 :: Delta2) ++ A :: Delta1).
     eapply IHty. reflexivity. assumption.
-  - eapply wf_weak'. eassumption. repeat rewrite app_length. simpl. lia.
+  - eapply wf_weak'. eassumption. repeat rewrite length_app. simpl. lia.
   - now eapply sub_narrow; eauto.
   - now eapply sub_narrow; eauto.
 Qed.
