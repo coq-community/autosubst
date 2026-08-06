@@ -180,10 +180,10 @@ Qed.
 
 Lemma pstep_compat sigma tau s t :
   psstep sigma tau -> pstep s t -> pstep s.[sigma] t.[tau].
-Proof with eauto using pstep, psstep_up.
-  move=> A B. elim: B sigma tau A; asimpl...
+Proof.
+  move=> A B. elim: B sigma tau A; asimpl; eauto using pstep, psstep_up.
   move=> s1 s2 t1 t2 u -> _ A _ B sigma tau C.
-  apply: (@pstep_beta _ (s2.[up tau]) _ (t2.[tau])); asimpl...
+  apply: (@pstep_beta _ (s2.[up tau]) _ (t2.[tau])); asimpl; eauto using pstep, psstep_up.
 Qed.
 
 Lemma pstep_compat_beta s1 s2 t1 t2 :
@@ -193,11 +193,11 @@ Proof.
 Qed.
 
 Lemma rho_triangle : triangle pstep rho.
-Proof with eauto using pstep.
-  move=> s t. elim=> {s t} //=...
+Proof.
+  move=> s t. elim=> {s t} //=; eauto using pstep.
   - move=> s1 s2 t1 t2 u -> {u} _ A _ B. exact: pstep_compat_beta.
-  - move=> s1 s2 t1 t2 A ih1 _ ih2. case: s1 A ih1 => //=...
-    move=> s A ih1. inv A. inv ih1...
+  - move=> s1 s2 t1 t2 A ih1 _ ih2. case: s1 A ih1 => //=; eauto using pstep.
+    move=> s A ih1. inv A. inv ih1; eauto using pstep.
 Qed.
 
 Theorem church_rosser :
@@ -271,18 +271,18 @@ Proof. move=> leq. exact/sub1_sub/sub1_sort. Qed.
 
 Lemma sub1_trans A B C D :
   sub1 A B -> B === C -> sub1 C D -> A <: D.
-Proof with eauto using sub1, sub1_sub, sub1_conv, conv_sub1.
+Proof.
   move=> sb. elim: sb C D => {A B}
-    [A C D|n m leq C D conv sb|A B1 B2 sb1 ih C D conv sb2]...
-  - inv sb...
+    [A C D|n m leq C D conv sb|A B1 B2 sb1 ih C D conv sb2]; eauto using sub1, sub1_sub, sub1_conv, conv_sub1.
+  - inv sb; eauto using sub1, sub1_sub, sub1_conv, conv_sub1.
     + apply: sub_sort. move: conv => /inj_sort eqn. subst.
       exact: leq_trans leq _.
     + exfalso. exact: conv_prod_sort (conv_sym conv).
-  - inv sb2...
+  - inv sb2; eauto using sub1, sub1_sub, sub1_conv, conv_sub1.
     + exfalso. exact: conv_prod_sort conv.
     + move: conv => /inj_prod[conv1 conv2].
       move: (ih _ _ conv2 H) => {ih} sub. inv sub.
-      eapply SubI. eapply sub1_prod... eapply conv_prod... exact: conv_prod.
+      eapply SubI. eapply sub1_prod; eauto using sub1, sub1_sub, sub1_conv, conv_sub1. eapply conv_prod; eauto using sub1, sub1_sub, sub1_conv, conv_sub1. exact: conv_prod.
 Qed.
 
 Lemma sub_trans B A C :
