@@ -27,6 +27,7 @@ depends: [
     "coq" {>= "8.14"}
   ) | (
     "rocq-core" {< "9.3~" | (= "dev")}
+    "rocq-stdlib"
   )
 ]
 
