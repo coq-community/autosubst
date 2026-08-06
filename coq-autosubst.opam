@@ -23,7 +23,6 @@ substitutions."""
 build: [make "-j%{jobs}%"]
 install: [make "install"]
 depends: [
-    "coq-core"
     "rocq-core"
     "rocq-stdlib"
 ]
