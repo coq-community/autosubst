@@ -217,7 +217,7 @@ Proof.
       eapply h. eapply reducible_var; eauto.
     + move=> s t h st u la. apply: (p_cl _ (s := App s u)); eauto using step.
     + move=> s ns h t la. have snt := p_sn (ih1 _ safe) la.
-      elim: snt la => {} t _ ih3 la; eauto using step. apply: p_nc. move=> v st. inv st=> //; eauto using step.
+      elim: snt la => {} t _ ih3 la; eauto using step. apply: p_nc; eauto using step. move=> v st. inv st=> //; eauto using step.
       apply: ih3 => //. exact: (p_cl (ih1 _ safe)) la _.
   - constructor.
     + move=> s /(_ sn (TyVar 0) reducible_sn)/p_sn/sn_tclosed; apply.
