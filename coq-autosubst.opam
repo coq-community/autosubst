@@ -26,8 +26,7 @@ depends: [
   (
     "coq" {>= "8.14"}
   ) | (
-    "rocq-prover" {< "9.3~" | (= "dev")}
-    "rocq-runtime" {< "9.3~" | (= "dev")}
+    "rocq-core" {< "9.3~" | (= "dev")}
   )
 ]
 
