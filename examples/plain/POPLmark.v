@@ -5,7 +5,7 @@
     formalization of syntactic theories.  We solve part 1, that is,
     progress and preservation of System F with subtyping.  *)
 
-From Stslib Require Import Program.Equality List Lia.
+From Stdlib Require Import Program.Equality List Lia.
 Require Import Autosubst.Autosubst.
 Require Import Size Decidable Context.
 

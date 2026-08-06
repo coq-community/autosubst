@@ -114,7 +114,7 @@ Definition up {T} `{Ids T} `{Rename T} (sigma : var -> T) : var -> T :=
   ids 0 .: sigma >>> rename (+1).
 Arguments up {T _ _} sigma x : simpl never.
 
-Notation upn := (iterate up).
+Abbreviation upn := (iterate up).
 
 Definition upren (xi : var -> var) : (var -> var) := 0 .: xi >>> S.
 
