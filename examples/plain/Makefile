@@ -8,7 +8,7 @@ all: $(COQMAKEFILE)
 	+$(MAKE) -f $(COQMAKEFILE) all
 
 $(COQMAKEFILE): Makefile $(VS)
-	rocq makefile -R $(LIB) Autosubst -R . Plain $(VS) -o $(COQMAKEFILE) -arg "-w -notation-overridden"
+	rocq makefile -R $(LIB) Autosubst -R . Plain $(VS) -o $(COQMAKEFILE)
 
 clean: $(COQMAKEFILE)
 	-$(COQMAKE) clean
