@@ -1,5 +1,5 @@
 (** * Support for Size Induction *)
-Require Import ZArith Lia List Program.Equality.
+From Stdlib Require Import ZArith Lia List Program.Equality.
 Require Import Autosubst.Autosubst_Basics.
 
 Class Size (A : Type) := size : A -> nat.

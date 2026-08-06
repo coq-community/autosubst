@@ -4,7 +4,7 @@
 *)
 Require Import Autosubst_Basics Autosubst_MMap.
 
-Require List.
+From Stdlib Require List.
 
 Section MMapInstances.
 

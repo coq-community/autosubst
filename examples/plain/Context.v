@@ -1,5 +1,5 @@
 (** * Context *)
-Require Import Lia ZArith List Program.Equality.
+From Stdlib Require Import Lia ZArith List Program.Equality.
 Require Import Autosubst.Autosubst.
 
 Fixpoint atn {X} l n (x : X) :=

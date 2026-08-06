@@ -1,5 +1,5 @@
 (** * Notation for decidable propositions *)
-Require Import Arith.
+From Stdlib Require Import Arith.
 
 Definition dec (X : Prop) : Type := {X} + {~ X}.
 Class Dec (X : Prop) : Type := decide : dec X.
