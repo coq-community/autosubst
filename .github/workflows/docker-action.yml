@@ -1,4 +1,4 @@
-# This file was generated from `meta.yml`, please do not edit manually.
+# This file was generated from `meta.yml`, and then had to be edited manually.
 # Follow the instructions on https://github.com/coq-community/templates to regenerate.
 name: Docker CI
 
@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: coq-community/docker-coq-action@v1
         with:
-          opam_file: 'coq-autosubst.opam'
+          opam_file: 'coq-autosubst-ci.opam'
           custom_image: ${{ matrix.image }}
 
 
