@@ -1,4 +1,4 @@
-# This file was generated from `meta.yml`, please do not edit manually.
+# This file was generated from `meta.yml`, and then had to be edited manually.
 # Follow the instructions on https://github.com/coq-community/templates to regenerate.
 
 opam-version: "2.0"
@@ -23,7 +23,8 @@ substitutions."""
 build: [make "-j%{jobs}%"]
 install: [make "install"]
 depends: [
-  "coq" {(>= "9.0") | (= "dev")}
+    "rocq-core"
+    "rocq-stdlib"
 ]
 
 tags: [
