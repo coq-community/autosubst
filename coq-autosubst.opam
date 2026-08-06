@@ -23,8 +23,12 @@ substitutions."""
 build: [make "-j%{jobs}%"]
 install: [make "install"]
 depends: [
-  "rocq-prover"
-  "rocq-runtime"
+  (
+    "coq" {>= "8.14"}
+  ) | (
+    "rocq-prover"
+    "rocq-runtime"
+  )
 ]
 
 tags: [
