@@ -96,15 +96,15 @@ Proof. elim; eauto using pstep. Qed.
 
 Lemma pstep_red s t : pstep s t -> red s t.
 Proof.
-  elim=> {s t} //=; eauto with red_congr. move=> s1 s2 t1 t2 _ A _ B.
-  apply: (star_trans (App (Lam s2) t2)); eauto with red_congr. exact/star1/step_beta.
+  elim=> {s t} //=; auto with red_congr. move=> s1 s2 t1 t2 _ A _ B.
+  apply: (star_trans (App (Lam s2) t2)); auto with red_congr. exact/star1/step_beta.
 Qed.
 
 Lemma pstep_subst sigma s t :
   pstep s t -> pstep s.[sigma] t.[sigma].
 Proof.
-  move=> A. elim: A sigma => /=; eauto using pstep. move=> s1 s2 t1 t2 _ A _ B sigma.
-  eapply pstep_ebeta; eauto using pstep. by autosubst.
+  move=> A. elim: A sigma => /=; auto using pstep. move=> s1 s2 t1 t2 _ A _ B sigma.
+  eapply pstep_ebeta => //. by autosubst.
 Qed.
 
 Lemma psstep_up sigma tau :
@@ -116,9 +116,9 @@ Qed.
 Lemma pstep_compat sigma tau s t :
   psstep sigma tau -> pstep s t -> pstep s.[sigma] t.[tau].
 Proof.
-  move=> A B. elim: B sigma tau A; asimpl; eauto using pstep, psstep_up.
+  move=> A B. elim: B sigma tau A; asimpl; auto using pstep, psstep_up.
   move=> s1 s2 t1 t2 _ A _ B sigma tau C.
-  apply: (@pstep_ebeta _ (s2.[up tau]) _ (t2.[tau])); asimpl; eauto using pstep, psstep_up.
+  apply: (@pstep_ebeta _ (s2.[up tau]) _ (t2.[tau])); asimpl; auto using psstep_up.
 Qed.
 
 Lemma pstep_compat_beta s1 s2 t1 t2 :
@@ -129,10 +129,10 @@ Qed.
 
 Lemma rho_triangle : triangle pstep rho.
 Proof.
-  move=> s t. elim=> {s t} //=; eauto using pstep.
+  move=> s t. elim=> {s t} //=; auto using pstep.
   - move=> s1 s2 t1 t2 _ A _ B. exact: pstep_compat_beta.
-  - move=> s1 s2 t1 t2 A ih1 _ ih2. case: s1 A ih1 => //=; eauto using pstep.
-    move=> s A ih1. inv A. inv ih1; eauto using pstep.
+  - move=> s1 s2 t1 t2 A ih1 _ ih2. case: s1 A ih1 => //=; auto using pstep.
+    move=> s A ih1. inv A. inv ih1; auto using pstep.
 Qed.
 
 Theorem church_rosser :

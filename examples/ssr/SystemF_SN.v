@@ -211,21 +211,21 @@ Proof. by move=> H1 H2 [|i] //=. Qed.
 Lemma L_reducible T rho :
   admissible rho -> reducible (L T rho).
 Proof.
-  elim: T rho => /=[i|A ih1 B ih2|A ih] rho safe; eauto using step.
+  elim: T rho => /=[i|A ih1 B ih2|A ih] rho safe; auto.
   - constructor.
-    + move=> s h. apply: (@sn_closed (TeVar 0)). apply: (p_sn (P := L B rho)); eauto using step.
+    + move=> s h. apply: (@sn_closed (TeVar 0)). apply: (p_sn (P := L B rho)); auto.
       eapply h. eapply reducible_var; eauto.
-    + move=> s t h st u la. apply: (p_cl _ (s := App s u)); eauto using step.
+    + move=> s t h st u la. apply: (p_cl _ (s := App s u)); auto using step.
     + move=> s ns h t la. have snt := p_sn (ih1 _ safe) la.
-      elim: snt la => {} t _ ih3 la; eauto using step. apply: p_nc; eauto using step. move=> v st. inv st=> //; eauto using step.
+      elim: snt la => {} t _ ih3 la; auto. apply: p_nc; auto. move=> v st. inv st=> //; auto.
       apply: ih3 => //. exact: (p_cl (ih1 _ safe)) la _.
   - constructor.
     + move=> s /(_ sn (TyVar 0) reducible_sn)/p_sn/sn_tclosed; apply.
-      by apply/ih/ad_cons; eauto using step.
-    + move=> s t h st P B rep. apply: p_cl (step_tapp B st); eauto using step.
       by apply/ih/ad_cons.
-    + move=> s ns h P B rep. apply ih; eauto using step. exact: ad_cons.
-      move=> t st. inv st => //; eauto using step.
+    + move=> s t h st P B rep. apply: p_cl (step_tapp B st); auto.
+      by apply/ih/ad_cons.
+    + move=> s ns h P B rep. apply ih; auto. exact: ad_cons.
+      move=> t st. inv st => //; auto.
 Qed.
 
 Corollary L_sn A rho s : admissible rho -> L A rho s -> sn s.
@@ -315,10 +315,10 @@ Theorem soundness Gamma s A :
     admissible rho -> EL Gamma rho sigma -> L A rho s.|[theta].[sigma].
 Proof.
   elim=> {Gamma s A} [|Gamma A B s _ ih||Gamma A s _ ih|Gamma A B s _ /=ih]
-    rho theta sigma ad el; asimpl; eauto using L_sn, ad_cons.
-  - move=> t h. apply: beta_expansion; eauto using L_sn, ad_cons. asimpl. apply: ih; eauto using L_sn, ad_cons. by case.
-  - move=> P B h. apply: inst_expansion; eauto using L_sn, ad_cons. asimpl. apply: ih; eauto using L_sn, ad_cons. move=> x.
-    rewrite size_map => lt. rewrite get_map // L_weaken; eauto using L_sn, ad_cons.
+    rho theta sigma ad el; asimpl; eauto using ad_cons.
+  - move=> t h. apply: beta_expansion; eauto using L_sn. asimpl. apply: ih; auto. by case.
+  - move=> P B h. apply: inst_expansion; eauto using ad_cons. asimpl. apply: ih; auto using ad_cons. move=> x.
+    rewrite size_map => lt. rewrite get_map // L_weaken; eauto.
   - rewrite L_subst. specialize (ih _ theta sigma ad el (L B rho) B.[theta]).
     have/ih: reducible (L B rho). exact: L_reducible. apply L_ext. by case.
 Qed.
