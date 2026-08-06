@@ -8,7 +8,7 @@ all: $(COQMAKEFILE)
 	+$(MAKE) -f $(COQMAKEFILE) all
 
 $(COQMAKEFILE): Makefile $(VS)
-	coq_makefile -R $(LIB) Autosubst $(VS) -R . Ssr -o $(COQMAKEFILE)
+	rocq makefile -R $(LIB) Autosubst $(VS) -R . Ssr -o $(COQMAKEFILE)
 
 clean: $(COQMAKEFILE)
 	-$(COQMAKE) clean

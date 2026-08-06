@@ -42,7 +42,7 @@ dist:
 
 doc: clean-doc manual.pdf
 	- mkdir -p $(DOC)
-	coqdoc $(COQDOCFLAGS) -R theories Autosubst -R examples/plain Plain \
+	rocq doc $(COQDOCFLAGS) -R theories Autosubst -R examples/plain Plain \
 	  -R examples/ssr Ssr $(THEORIES) $(EXAMPLES_PLAIN) $(EXAMPLES_SSR)
 	cp $(EXTRA_DIR)resources/* $(DOC)
 	cp manual.pdf $(DOC)
