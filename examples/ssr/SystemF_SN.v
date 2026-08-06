@@ -315,10 +315,10 @@ Theorem soundness Gamma s A :
     admissible rho -> EL Gamma rho sigma -> L A rho s.|[theta].[sigma].
 Proof.
   elim=> {Gamma s A} [|Gamma A B s _ ih||Gamma A s _ ih|Gamma A B s _ /=ih]
-    rho theta sigma ad el; asimpl; eauto using L_sn, ad_con.
-  - move=> t h. apply: beta_expansion; eauto using L_sn, ad_con. asimpl. apply: ih; eauto using L_sn, ad_con. by case.
-  - move=> P B h. apply: inst_expansion; eauto using L_sn, ad_con. asimpl. apply: ih; eauto using L_sn, ad_con. move=> x.
-    rewrite size_map => lt. rewrite get_map // L_weaken; eauto using L_sn, ad_con.
+    rho theta sigma ad el; asimpl; eauto using L_sn, ad_cons.
+  - move=> t h. apply: beta_expansion; eauto using L_sn, ad_cons. asimpl. apply: ih; eauto using L_sn, ad_cons. by case.
+  - move=> P B h. apply: inst_expansion; eauto using L_sn, ad_cons. asimpl. apply: ih; eauto using L_sn, ad_cons. move=> x.
+    rewrite size_map => lt. rewrite get_map // L_weaken; eauto using L_sn, ad_cons.
   - rewrite L_subst. specialize (ih _ theta sigma ad el (L B rho) B.[theta]).
     have/ih: reducible (L B rho). exact: L_reducible. apply L_ext. by case.
 Qed.
