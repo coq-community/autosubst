@@ -5,6 +5,8 @@ Require Import Autosubst.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
+Set Warnings "-notation-for-abbreviation".
+
 (** Untyped Lambda Terms and Parallel Substitutions *)
 
 Inductive term :=

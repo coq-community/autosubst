@@ -2,6 +2,8 @@
 (** Type classes and notations for substitutions. *)
 Require Import Autosubst_Basics Autosubst_MMap.
 
+Set Warnings "-notation-for-abbreviation".
+
 (**
   [_bind] is used to annotate the position of binders in inductive
   definitions of syntactic objects
@@ -114,7 +116,7 @@ Definition up {T} `{Ids T} `{Rename T} (sigma : var -> T) : var -> T :=
   ids 0 .: sigma >>> rename (+1).
 Arguments up {T _ _} sigma x : simpl never.
 
-Abbreviation upn := (iterate up).
+Notation upn := (iterate up).
 
 Definition upren (xi : var -> var) : (var -> var) := 0 .: xi >>> S.
 

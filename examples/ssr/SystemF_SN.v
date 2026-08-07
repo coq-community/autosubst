@@ -8,7 +8,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Set Warnings "-implicit-create-hint-db".
+Set Warnings "-implicit-create-hint-db, -notation-for-abbreviation".
 
 (** **** Definitions *)
 

@@ -9,7 +9,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Set Warnings "-implicit-create-hint-db".
+Set Warnings "-implicit-create-hint-db, -notation-for-abbreviation".
 
 (** **** Curry-style type theory with a hierarchy of predicative universes. *)
 
