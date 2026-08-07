@@ -1,5 +1,5 @@
 <!---
-This file was generated from `meta.yml`, please do not edit manually.
+This file was generated from `meta.yml`, and then had to be edited manually.
 Follow the instructions on https://github.com/coq-community/templates to regenerate.
 --->
 # Autosubst
@@ -59,15 +59,11 @@ opam repo add rocq-released https://rocq-prover.org/opam/released
 opam install coq-autosubst
 ```
 
-To instead build and install manually, you need to make sure that all the
-libraries this development depends on are installed.  The easiest way to do that
-is still to rely on opam:
+To instead build and install manually, do:
 
 ``` shell
 git clone https://github.com/coq-community/autosubst.git
 cd autosubst
-opam repo add rocq-released https://rocq-prover.org/opam/released
-opam install --deps-only .
 make   # or make -j <number-of-cores-on-your-machine> 
 make install
 ```
