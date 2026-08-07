@@ -6,6 +6,8 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+Set Warnings "-implicit-create-hint-db".
+
 (** **** Untyped Lambda Calculus *)
 
 Inductive term : Type :=

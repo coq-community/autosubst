@@ -9,6 +9,8 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+Set Warnings "-implicit-create-hint-db".
+
 (** **** Curry-style type theory with a hierarchy of predicative universes. *)
 
 Inductive term : Type :=
