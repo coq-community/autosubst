@@ -32,7 +32,7 @@ Inductive step : term -> term -> Prop :=
 | step_lam s1 s2 :
     step s1 s2 -> step (Lam s1) (Lam s2).
 
-Abbreviation red := (star step).
+Notation red := (star step).
 Notation "s === t" := (conv step s t) (at level 50).
 
 (*

@@ -41,7 +41,7 @@ Inductive step : term -> term -> Prop :=
 | step_prodR A B1 B2 :
     step B1 B2 -> step (Prod A B1) (Prod A B2).
 
-Abbreviation red := (star step).
+Notation red := (star step).
 Notation "s === t" := (conv step s t) (at level 50).
 
 Definition sred sigma tau :=
