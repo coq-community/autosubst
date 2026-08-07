@@ -146,7 +146,6 @@ Ltac derive_MMap :=
         let ys := tmap ys in exact ys
     end
   end.
-
 Global Hint Extern 0 (MMap _ _) => derive_MMap : derive.
 
 Ltac derive_MMapLemmas := constructor;
