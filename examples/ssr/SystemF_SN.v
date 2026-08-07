@@ -116,7 +116,6 @@ Lemma sred_hup sigma tau theta :
   sred sigma tau -> sred (sigma >>| theta) (tau >>| theta).
 Proof. move=> A n /=. apply/red_hsubst/A. Qed.
 
-Create HintDb red_congr.
 Global Hint Resolve red_app red_abs red_tapp red_tabs sred_up sred_hup : red_congr.
 
 Lemma red_compat sigma tau s :
