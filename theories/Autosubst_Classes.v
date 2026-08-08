@@ -55,23 +55,29 @@ Arguments scomp {A _} f g x /.
 Notation "sigma >> tau" := (scomp sigma tau)
   (at level 56, left associativity) : subst_scope.
 
+#[warnings="-postfix-notation-not-level-1"]
 Notation "s .[ sigma ]" := (subst sigma s)
   (at level 2, sigma at level 200, left associativity,
    format "s .[ sigma ]" ) : subst_scope.
+#[warnings="-postfix-notation-not-level-1"]
 Notation "s .[ t /]" := (subst (t .: ids) s)
   (at level 2, t at level 200, left associativity,
    format "s .[ t /]") : subst_scope.
+#[warnings="-postfix-notation-not-level-1"]
 Notation "s .[ t1 , t2 , .. , tn /]" :=
   (subst (scons t1 (scons t2 .. (scons tn ids) .. )) s)
   (at level 2, left associativity,
    format "s '[ ' .[ t1 , '/' t2 , '/' .. , '/' tn /] ']'") : subst_scope.
 
+#[warnings="-postfix-notation-not-level-1"]
 Notation "s ..[ sigma ]" := (mmap (subst sigma) s)
   (at level 2, sigma at level 200, left associativity,
    format "s ..[ sigma ]" ) : subst_scope.
+#[warnings="-postfix-notation-not-level-1"]
 Notation "s ..[ t /]" := (mmap (subst (t .: ids)) s)
   (at level 2, t at level 200, left associativity,
    format "s ..[ t /]") : subst_scope.
+#[warnings="-postfix-notation-not-level-1"]
 Notation "s ..[ t1 , t2 , .. , tn /]" :=
   (mmap (subst (scons t1 (scons t2 .. (scons tn ids) .. ))) s)
   (at level 2, left associativity,
@@ -84,23 +90,29 @@ Arguments hcomp {A B _} f g x /.
 Notation "sigma >>| tau" := (hcomp sigma tau)
   (at level 56, left associativity) : subst_scope.
 
+#[warnings="-postfix-notation-not-level-1"]
 Notation "s .|[ sigma ]" := (hsubst sigma s)
   (at level 2, sigma at level 200, left associativity,
    format "s .|[ sigma ]" ) : subst_scope.
+#[warnings="-postfix-notation-not-level-1"]
 Notation "s .|[ t /]" := (hsubst (t .: ids) s)
   (at level 2, t at level 200, left associativity,
    format "s .|[ t /]") : subst_scope.
+#[warnings="-postfix-notation-not-level-1"]
 Notation "s .|[ t1 , t2 , .. , tn /]" :=
   (hsubst (scons t1 (scons t2 .. (scons tn ids) .. )) s)
   (at level 2, left associativity,
    format "s '[ ' .|[ t1 , '/' t2 , '/' .. , '/' tn /] ']'") : subst_scope.
 
+#[warnings="-postfix-notation-not-level-1"]
 Notation "s ..|[ sigma ]" := (mmap (hsubst sigma) s)
   (at level 2, sigma at level 200, left associativity,
    format "s ..|[ sigma ]" ) : subst_scope.
+#[warnings="-postfix-notation-not-level-1"]
 Notation "s ..|[ t /]" := (mmap (hsubst (t .: ids)) s)
   (at level 2, t at level 200, left associativity,
    format "s ..|[ t /]") : subst_scope.
+#[warnings="-postfix-notation-not-level-1"]
 Notation "s ..|[ t1 , t2 , .. , tn /]" :=
   (mmap (hsubst (scons t1 (scons t2 .. (scons tn ids) .. ))) s)
   (at level 2, left associativity,
