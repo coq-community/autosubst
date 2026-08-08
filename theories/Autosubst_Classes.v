@@ -2,7 +2,7 @@
 (** Type classes and notations for substitutions. *)
 Require Import Autosubst_Basics Autosubst_MMap.
 
-Set Warnings "-notation-for-abbreviation".
+Local Set Warnings "-notation-for-abbreviation".
 
 (**
   [_bind] is used to annotate the position of binders in inductive

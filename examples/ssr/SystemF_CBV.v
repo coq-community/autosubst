@@ -7,7 +7,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Set Warnings "-notation-for-abbreviation".
+Local Set Warnings "-notation-for-abbreviation".
 
 (** **** Definitions *)
 

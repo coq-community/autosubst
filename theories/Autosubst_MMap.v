@@ -10,7 +10,7 @@
 *)
 Require Import Autosubst_Basics.
 
-Set Warnings "-implicit-create-hint-db, -implicit-create-rewrite-hint-db".
+Local Set Warnings "-implicit-create-hint-db, -implicit-create-rewrite-hint-db".
 
 Class MMap (A B: Type) := mmap : (A -> A) -> B -> B.
 Arguments mmap {A B _} f !s /.
