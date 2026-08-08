@@ -2,6 +2,7 @@
 From Stdlib Require Import ZArith Lia List Program.Equality.
 Require Import Autosubst.Autosubst_Basics.
 
+(* Silence Rocq 9.2 deprecation warnings *)
 Local Set Warnings "-implicit-create-hint-db, -implicit-create-rewrite-hint-db".
 
 Class Size (A : Type) := size : A -> nat.

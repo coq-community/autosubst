@@ -2,6 +2,7 @@
 (** Type classes and notations for substitutions. *)
 Require Import Autosubst_Basics Autosubst_MMap.
 
+(* Silence Rocq 9.2 deprecation warnings *)
 Local Set Warnings "-notation-for-abbreviation".
 
 (**

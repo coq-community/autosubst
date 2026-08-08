@@ -10,6 +10,7 @@
 *)
 Require Import Autosubst_Basics.
 
+(* Silence Rocq 9.2 deprecation warnings *)
 Local Set Warnings "-implicit-create-hint-db, -implicit-create-rewrite-hint-db".
 
 Class MMap (A B: Type) := mmap : (A -> A) -> B -> B.

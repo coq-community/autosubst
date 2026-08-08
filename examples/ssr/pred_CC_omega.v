@@ -9,6 +9,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+(* Silence Rocq 9.2 deprecation warnings *)
 Local Set Warnings "-implicit-create-hint-db, -notation-for-abbreviation".
 
 (** **** Curry-style type theory with a hierarchy of predicative universes. *)

@@ -5,6 +5,7 @@ Require Import Autosubst.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
+(* Silence Rocq 9.2 deprecation warnings *)
 Local Set Warnings "-notation-for-abbreviation".
 
 (** Untyped Lambda Terms and Parallel Substitutions *)
