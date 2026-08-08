@@ -5,7 +5,7 @@ Require Import Autosubst_Basics Autosubst_MMap.
 (* Silence Rocq 9.2 deprecation warnings *)
 Local Set Warnings "-notation-for-abbreviation".
 
-(* Silence postfix notation level warnings *)
+(* Silence postfix notation level warnings: we don't want to risk changing the levels. *)
 Local Set Warnings "-postfix-notation-not-level-1".
 
 (**
