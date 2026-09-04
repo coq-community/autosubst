@@ -27,8 +27,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: coq-community/docker-coq-action@v1
         with:
-          opam_file: 'coq-autosubst-ci.opam'
+          opam_file: 'rocq-autosubst.opam'
           custom_image: ${{ matrix.image }}
+          after_install: |
+            startGroup "Install extra packages needed for CI"
+              opam instal rocq-mathcomp-ssreflect -y
+            endGroup
+            startGroup "List installed packages"
+              opam list
+            endGroup
 
 
 # See also:
