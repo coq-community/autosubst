@@ -1,18 +1,18 @@
 # This file was generated from `meta.yml`, and then had to be edited manually.
-# Follow the instructions on https://github.com/coq-community/templates to regenerate.
+# Follow the instructions on https://github.com/rocq-community/templates to regenerate.
 
 opam-version: "2.0"
 maintainer: "palmskog@gmail.com"
 version: "dev"
 
-homepage: "https://github.com/coq-community/autosubst"
-dev-repo: "git+https://github.com/coq-community/autosubst.git"
-bug-reports: "https://github.com/coq-community/autosubst/issues"
+homepage: "https://github.com/rocq-community/autosubst"
+dev-repo: "git+https://github.com/rocq-community/autosubst.git"
+bug-reports: "https://github.com/rocq-community/autosubst/issues"
 license: "MIT"
 
-synopsis: "Coq library for parallel de Bruijn substitutions"
+synopsis: "Rocq library for parallel de Bruijn substitutions"
 description: """
-Autosubst is a library for the Coq proof assistant which
+Autosubst is a library for the Rocq Prover which
 provides automation for formalizing syntactic theories with
 variable binders. Given an inductive definition of syntactic
 objects in de Bruijn representation augmented with binding

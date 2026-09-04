@@ -2,9 +2,9 @@ opam-version: "2.0"
 maintainer: "palmskog@gmail.com"
 version: "dev"
 
-homepage: "https://github.com/coq-community/autosubst"
-dev-repo: "git+https://github.com/coq-community/autosubst.git"
-bug-reports: "https://github.com/coq-community/autosubst/issues"
+homepage: "https://github.com/rocq-community/autosubst"
+dev-repo: "git+https://github.com/rocq-community/autosubst.git"
+bug-reports: "https://github.com/rocq-community/autosubst/issues"
 license: "MIT"
 
 synopsis: "Autosubst (CI only)"

@@ -1,6 +1,6 @@
 <!---
 This file was generated from `meta.yml`, and then had to be edited manually.
-Follow the instructions on https://github.com/coq-community/templates to regenerate.
+Follow the instructions on https://github.com/rocq-community/templates to regenerate.
 --->
 # Autosubst
 
@@ -10,14 +10,14 @@ Follow the instructions on https://github.com/coq-community/templates to regener
 [![Zulip][zulip-shield]][zulip-link]
 [![DOI][doi-shield]][doi-link]
 
-[docker-action-shield]: https://github.com/coq-community/autosubst/actions/workflows/docker-action.yml/badge.svg?branch=master
-[docker-action-link]: https://github.com/coq-community/autosubst/actions/workflows/docker-action.yml
+[docker-action-shield]: https://github.com/rocq-community/autosubst/actions/workflows/docker-action.yml/badge.svg?branch=master
+[docker-action-link]: https://github.com/rocq-community/autosubst/actions/workflows/docker-action.yml
 
 [contributing-shield]: https://img.shields.io/badge/contributions-welcome-%23f7931e.svg
-[contributing-link]: https://github.com/coq-community/manifesto/blob/master/CONTRIBUTING.md
+[contributing-link]: https://github.com/rocq-community/manifesto/blob/master/CONTRIBUTING.md
 
 [conduct-shield]: https://img.shields.io/badge/%E2%9D%A4-code%20of%20conduct-%23f15a24.svg
-[conduct-link]: https://github.com/coq-community/manifesto/blob/master/CODE_OF_CONDUCT.md
+[conduct-link]: https://github.com/rocq-community/manifesto/blob/master/CODE_OF_CONDUCT.md
 
 [zulip-shield]: https://img.shields.io/badge/chat-on%20zulip-%23c1272d.svg
 [zulip-link]: https://coq.zulipchat.com/#narrow/stream/237663-coq-community-devs.20.26.20users
@@ -26,7 +26,7 @@ Follow the instructions on https://github.com/coq-community/templates to regener
 [doi-shield]: https://zenodo.org/badge/DOI/10.1007/978-3-319-22102-1_24.svg
 [doi-link]: https://doi.org/10.1007/978-3-319-22102-1_24
 
-Autosubst is a library for the Coq proof assistant which
+Autosubst is a library for the Rocq Prover which
 provides automation for formalizing syntactic theories with
 variable binders. Given an inductive definition of syntactic
 objects in de Bruijn representation augmented with binding
@@ -43,9 +43,9 @@ substitutions.
   - Ralf Jung ([**@RalfJung**](https://github.com/RalfJung))
   - Dan Frumin ([**@co-dan**](https://github.com/co-dan))
 - License: [MIT License](LICENSE)
-- Compatible Rocq/Coq versions: 9.0 or later
+- Compatible Rocq versions: 9.0 or later
 - Additional dependencies: none
-- Rocq/Coq namespace: `Autosubst`
+- Rocq namespace: `Autosubst`
 - Related publication(s):
   - [Autosubst: Reasoning with de Bruijn Terms and Parallel Substitutions](https://www.ps.uni-saarland.de/Publications/documents/SchaeferEtAl_2015_Autosubst_-Reasoning.pdf) doi:[10.1007/978-3-319-22102-1_24](https://doi.org/10.1007/978-3-319-22102-1_24)
 
@@ -59,10 +59,10 @@ opam repo add rocq-released https://rocq-prover.org/opam/released
 opam install coq-autosubst
 ```
 
-To instead build and install manually, do:
+To instead build and install the dev version manually, do:
 
 ``` shell
-git clone https://github.com/coq-community/autosubst.git
+git clone https://github.com/rocq-community/autosubst.git
 cd autosubst
 make   # or make -j <number-of-cores-on-your-machine> 
 make install
@@ -88,5 +88,5 @@ You can use the file `doc/toc.html` to browse the documentation.
 
 ## Bug Reports
 
-Please submit bugs reports on https://github.com/coq-community/autosubst/issues
+Please submit bugs reports on https://github.com/rocq-community/autosubst/issues
 

@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: coq-community/docker-coq-action@v1
         with:
-          opam_file: 'coq-autosubst-ci.opam'
+          opam_file: 'rocq-autosubst-ci.opam'
           custom_image: ${{ matrix.image }}
 
 
